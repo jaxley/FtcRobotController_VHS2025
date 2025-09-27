@@ -29,5 +29,5 @@ dependencies {
     implementation 'dev.nextftc:hardware:1.0.0' // If you would like to use the hardware module
     implementation 'dev.nextftc:bindings:1.0.1'
     implementation 'dev.nextftc:control:1.0.0'
-    implementation 'com.bylazar:fullpanels:1.0.6'
+    implementation 'com.bylazar:fullpanels:1.0.4'
 }
