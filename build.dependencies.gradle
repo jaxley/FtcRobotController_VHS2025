@@ -1,6 +1,10 @@
 repositories {
     mavenCentral()
     google() // Needed for androidx
+    maven {
+        // For panels dashboard
+        url = "https://mymaven.bylazar.com/releases"
+    }
 }
 
 dependencies {
