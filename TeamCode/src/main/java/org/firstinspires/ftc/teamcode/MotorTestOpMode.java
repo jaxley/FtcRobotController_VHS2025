@@ -32,17 +32,24 @@ public class MotorTestOpMode extends NextFTCOpMode {
     DcMotor intake = hardwareMap.get(DcMotor.class, "intake");
     final double intakeFwdPower = -0.8;
     final double intakeRevPower = 0.2;
+    final double triggerDZ = 0.25;
 
-    DcMotor flywheel = hardwareMap.get(DcMotor.class, "flywheel");
-    final double flywheelPower = -0.9;
+    DcMotorEx flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
+    final double flywheelSpeed = -6000; // RPM
+    final double FWRPM2CPS = 28/60;
 
 
-    Servo launchServo = hardwareMap.get(Servo.class, "launch servo");
-    final double launchDownPos = 0;
-    final double launchUpPos= 0.5;
+    Servo fireServo = hardwareMap.get(Servo.class, "launch servo");
+    final double fireDownPos = 0;
+    final double fireUpPos= 0.5;
+    final double firePeriod = 800; // ms
+    double fireTime = 0;
 
     //control vars
     boolean intakeRunning = false;
+    boolean flywheelRunning = false;
+
+    DButton fireButton = new DButton();
 
     @Override
     public void onStartButtonPressed() {
@@ -57,14 +64,39 @@ public class MotorTestOpMode extends NextFTCOpMode {
                 Gamepads.gamepad1().rightStickX()
         );
         driverControlled.schedule();
+        flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+
+        double lastMillis = 0;
+
         // main loop
         while(opModeIsActive()) {
-            intakeRunning = (gamepad2.right_trigger > 0.25);
+            lastMillis = getRuntime();
+            
+            intakeRunning = (gamepad2.right_trigger > triggerDZ);
             if(intakeRunning) {
                 intake.setPower(intakeFwdPower);
             }
+            else if (gamepad2.right_bumper) {
+                intake.setPower(intakeRevPower);
+            }
+            else {
+                intake.setPower(0);
+            }
 
+            flywheelRunning = (gamepad2.left_trigger > triggerDZ);
+            if(flywheelRunning) {
+                flywheel.setVelocity(gamepad2.left_trigger * flywheelSpeed * FWRPM2CPS);
+            }
+            else {
+                flywheel.setPower(0);
+            }
 
+            fireButton.update(gamepad2.x);
+            if(fireButton.pressed()) {
+                fireTime = firePeriod;
+                fireServo.setPosition(fireUpPos);
+            }
+            fireTime -= getRuntime() - lastMillis;
         }
         // yield code here
     }
