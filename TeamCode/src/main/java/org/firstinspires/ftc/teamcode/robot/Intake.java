@@ -8,7 +8,6 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class Intake {
-    private final Gamepad gamepad;
     private final DcMotor motor;
     private Telemetry telemetry;
     private boolean intakeRunning = false;
@@ -16,8 +15,7 @@ public class Intake {
     final double intakeRevPower = 0.2;
     final double triggerDZ = 0.25;
 
-    public Intake(Gamepad gamepad, DcMotor motor) {
-        this.gamepad = gamepad;
+    public Intake(DcMotor motor) {
         this.motor = motor;
     }
 
@@ -25,7 +23,7 @@ public class Intake {
         this.telemetry = telemetry;
     }
 
-    public void run() {
+    public void run(Gamepad gamepad) {
         telemetry.addData("Intake", "started");
 
         intakeRunning = (gamepad.right_trigger > triggerDZ);

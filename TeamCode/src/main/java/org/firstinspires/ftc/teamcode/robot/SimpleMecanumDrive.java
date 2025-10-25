@@ -19,39 +19,40 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
  * @author Brandon Gong
  */
 public class SimpleMecanumDrive {
-    private final Gamepad driveGamepad;
     private final DcMotor frontLeft;
     private final DcMotor frontRight;
     private final DcMotor backLeft;
     private final DcMotor backRight;
-    private final double drive;
-    private final double strafe;
-    private final double twist;
+    private double drive;
+    private double strafe;
+    private double twist;
 
     final double maxDriveSpeed = 0.8;
     double driveSpeed = maxDriveSpeed;
     private Telemetry telemetry;
 
-    public SimpleMecanumDrive(Gamepad driveGamepad, DcMotor frontLeft, DcMotor frontRight,
+    public SimpleMecanumDrive(DcMotor frontLeft, DcMotor frontRight,
                               DcMotor backLeft, DcMotor backRight) {
-        this.driveGamepad = driveGamepad;
         this.frontLeft = frontLeft;
         this.frontRight = frontRight;
         this.backLeft = backLeft;
         this.backRight = backRight;
+    }
 
+    private void init(Gamepad driveGamepad) {
         // Mecanum drive is controlled with three axes: drive (front-and-back),
         // strafe (left-and-right), and twist (rotating the whole chassis).
-        this.drive = this.driveGamepad.left_stick_y;
-        this.strafe = -this.driveGamepad.left_stick_x;
-        this.twist = -this.driveGamepad.right_stick_x;
+        drive = driveGamepad.left_stick_y;
+        strafe = -driveGamepad.left_stick_x;
+        twist = -driveGamepad.right_stick_x;
     }
 
     public void setTelemetry(Telemetry telemetry){
         this.telemetry = telemetry;
     }
 
-    public void run() {
+    public void run(Gamepad driveGamepad) {
+        init(driveGamepad);
 
         double[] speeds = {
                 (drive + strafe + twist),

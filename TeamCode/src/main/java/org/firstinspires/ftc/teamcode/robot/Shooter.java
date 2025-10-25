@@ -12,7 +12,6 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.DButton;
 
 public class Shooter {
-    private final Gamepad gamepad;
     private final DcMotorEx flywheel;
     private final Servo fireServo;
 
@@ -35,8 +34,7 @@ public class Shooter {
     DButton fireButton = new DButton();
     private Telemetry telemetry;
 
-    public <T> Shooter(Gamepad gamepad, DcMotorEx flywheel, Servo fireServo) {
-        this.gamepad = gamepad;
+    public <T> Shooter(DcMotorEx flywheel, Servo fireServo) {
         this.flywheel = flywheel;
         this.fireServo = fireServo;
     }
@@ -52,7 +50,7 @@ public class Shooter {
         this.telemetry = telemetry;
     }
 
-    public void run() {
+    public void run(Gamepad gamepad) {
         if (!initialized) {
             init();
         }

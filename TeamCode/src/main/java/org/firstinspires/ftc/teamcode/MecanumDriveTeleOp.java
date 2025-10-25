@@ -25,13 +25,13 @@ public class MecanumDriveTeleOp extends LinearOpMode {
         DcMotor backLeft = hardwareMap.get(DcMotor.class, Wheel.BACK_LEFT);
         DcMotor backRight = hardwareMap.get(DcMotor.class, Wheel.BACK_RIGHT);
         SimpleMecanumDrive mecanumDrive =
-                new SimpleMecanumDrive(gamepad1, frontLeft, frontRight, backLeft, backRight);
+                new SimpleMecanumDrive(frontLeft, frontRight, backLeft, backRight);
         mecanumDrive.setTelemetry(telemetry);
 
-        Intake intake = new Intake(gamepad2, hardwareMap.get(DcMotor.class, Motors.INTAKE));
+        Intake intake = new Intake(hardwareMap.get(DcMotor.class, Motors.INTAKE));
         intake.setTelemetry(telemetry);
 
-        Shooter shooter = new Shooter(gamepad2, hardwareMap.get(DcMotorEx.class, Motors.FLYWHEEL),
+        Shooter shooter = new Shooter(hardwareMap.get(DcMotorEx.class, Motors.FLYWHEEL),
                 hardwareMap.get(Servo.class, Motors.LAUNCH_SERVO));
         shooter.setTelemetry(telemetry);
 
@@ -43,9 +43,9 @@ public class MecanumDriveTeleOp extends LinearOpMode {
         // main loop
         while(opModeIsActive()) {
 
-            intake.run();
-            shooter.run();
-            mecanumDrive.run();
+            intake.run(gamepad2);
+            shooter.run(gamepad2);
+            mecanumDrive.run(gamepad1);
 
             telemetry.update();
         }
