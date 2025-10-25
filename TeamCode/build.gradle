@@ -35,4 +35,6 @@ dependencies {
     implementation 'dev.nextftc:control:1.0.0'
     implementation 'com.bylazar:fullpanels:1.0.6'
     implementation 'androidx.core:core-ktx:1.8.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+    androidTestImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
 }
