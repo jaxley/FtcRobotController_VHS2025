@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.robot.Intake;
@@ -24,6 +25,9 @@ public class MecanumDriveTeleOp extends LinearOpMode {
         DcMotor frontRight = hardwareMap.get(DcMotor.class, Wheel.FRONT_RIGHT);
         DcMotor backLeft = hardwareMap.get(DcMotor.class, Wheel.BACK_LEFT);
         DcMotor backRight = hardwareMap.get(DcMotor.class, Wheel.BACK_RIGHT);
+        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
+
         SimpleMecanumDrive mecanumDrive =
                 new SimpleMecanumDrive(frontLeft, frontRight, backLeft, backRight);
         mecanumDrive.setTelemetry(telemetry);
