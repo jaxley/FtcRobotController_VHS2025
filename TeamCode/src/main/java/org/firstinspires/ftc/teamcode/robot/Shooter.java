@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.DButton;
 
 public class Shooter {
@@ -32,6 +33,7 @@ public class Shooter {
     boolean flywheelRunning = false;
 
     DButton fireButton = new DButton();
+    private Telemetry telemetry;
 
     public <T> Shooter(Gamepad gamepad, DcMotorEx flywheel, Servo fireServo) {
         this.gamepad = gamepad;
@@ -44,6 +46,10 @@ public class Shooter {
 
         initialized = true;
         telemetry.addData("Shooter", "initialized");
+    }
+
+    public void setTelemetry(Telemetry telemetry){
+        this.telemetry = telemetry;
     }
 
     public void run() {

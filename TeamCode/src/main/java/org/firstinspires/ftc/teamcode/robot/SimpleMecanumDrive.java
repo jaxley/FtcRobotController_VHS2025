@@ -5,6 +5,8 @@ import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.tel
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 /*
  * The mecanum drivetrain involves four separate motors that spin in
  * different directions and different speeds to produce the desired
@@ -28,6 +30,7 @@ public class SimpleMecanumDrive {
 
     final double maxDriveSpeed = 0.8;
     double driveSpeed = maxDriveSpeed;
+    private Telemetry telemetry;
 
     public SimpleMecanumDrive(Gamepad driveGamepad, DcMotor frontLeft, DcMotor frontRight,
                               DcMotor backLeft, DcMotor backRight) {
@@ -42,6 +45,10 @@ public class SimpleMecanumDrive {
         this.drive = this.driveGamepad.left_stick_y;
         this.strafe = -this.driveGamepad.left_stick_x;
         this.twist = -this.driveGamepad.right_stick_x;
+    }
+
+    public void setTelemetry(Telemetry telemetry){
+        this.telemetry = telemetry;
     }
 
     public void run() {

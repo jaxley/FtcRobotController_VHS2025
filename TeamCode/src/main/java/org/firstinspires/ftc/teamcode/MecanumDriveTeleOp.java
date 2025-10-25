@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode;
 import static org.firstinspires.ftc.teamcode.robot.Constants.Motors;
 import static org.firstinspires.ftc.teamcode.robot.Constants.Wheel;
 
+import android.telephony.CarrierConfigManager;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -13,11 +15,8 @@ import org.firstinspires.ftc.teamcode.robot.Intake;
 import org.firstinspires.ftc.teamcode.robot.Shooter;
 import org.firstinspires.ftc.teamcode.robot.SimpleMecanumDrive;
 
-
 @TeleOp(name="TeleOp", group="Iterative Opmode")
 public class MecanumDriveTeleOp extends LinearOpMode {
-
-
 
     @Override
     public void runOpMode() {
@@ -27,11 +26,14 @@ public class MecanumDriveTeleOp extends LinearOpMode {
         DcMotor backRight = hardwareMap.get(DcMotor.class, Wheel.BACK_RIGHT);
         SimpleMecanumDrive mecanumDrive =
                 new SimpleMecanumDrive(gamepad1, frontLeft, frontRight, backLeft, backRight);
+        mecanumDrive.setTelemetry(telemetry);
 
         Intake intake = new Intake(gamepad2, hardwareMap.get(DcMotor.class, Motors.INTAKE));
+        intake.setTelemetry(telemetry);
 
         Shooter shooter = new Shooter(gamepad2, hardwareMap.get(DcMotorEx.class, Motors.FLYWHEEL),
                 hardwareMap.get(Servo.class, Motors.LAUNCH_SERVO));
+        shooter.setTelemetry(telemetry);
 
         telemetry.addData("Status", "initialized");
         telemetry.update();
