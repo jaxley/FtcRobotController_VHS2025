@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.robot;
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -19,6 +20,12 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
  * @author Brandon Gong
  */
 public class SimpleMecanumDrive {
+    public static final int FL_SPEED_IDX = 0;
+    public static final int FR_SPEED_IDX = 1;
+    public static final int BL_SPEED_IDX = 2;
+    public static final int BR_SPEED_IDX = 3;
+    public static final String SUBSYSTEM_NAME = "SimpleMecanumDrive";
+    public static final String STOPPED = "stopped";
     private final DcMotor frontLeft;
     private final DcMotor frontRight;
     private final DcMotor backLeft;
@@ -29,7 +36,6 @@ public class SimpleMecanumDrive {
 
     final double maxDriveSpeed = 0.8;
     double driveSpeed = maxDriveSpeed;
-    private Telemetry telemetry;
 
     public SimpleMecanumDrive(DcMotor frontLeft, DcMotor frontRight,
                               DcMotor backLeft, DcMotor backRight) {
@@ -37,6 +43,9 @@ public class SimpleMecanumDrive {
         this.frontRight = frontRight;
         this.backLeft = backLeft;
         this.backRight = backRight;
+
+        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     private void init(Gamepad driveGamepad) {
@@ -47,11 +56,7 @@ public class SimpleMecanumDrive {
         twist = -driveGamepad.right_stick_x;
     }
 
-    public void setTelemetry(Telemetry telemetry){
-        this.telemetry = telemetry;
-    }
-
-    public void run(Gamepad driveGamepad) {
+    public void run(Gamepad driveGamepad, Telemetry telemetry) {
         init(driveGamepad);
 
         double[] speeds = {
@@ -68,9 +73,11 @@ public class SimpleMecanumDrive {
 
         // Loop through all values in the speeds[] array and find the greatest
         // *magnitude*.  Not the greatest velocity.
-        double max = Math.abs(speeds[0]);
+        double max = Math.abs(speeds[FL_SPEED_IDX]);
         for (double speed : speeds) {
-            if (max < Math.abs(speed)) max = Math.abs(speed);
+            if (max < Math.abs(speed)) {
+                max = Math.abs(speed);
+            }
         }
 
         // If and only if the maximum is outside of the range we want it to be,
@@ -82,19 +89,22 @@ public class SimpleMecanumDrive {
         }
 
         // apply the calculated values to the motors.
-        frontLeft.setPower(speeds[0]);
-        frontRight.setPower(speeds[1]);
-        backLeft.setPower(speeds[2]);
-        backRight.setPower(speeds[3]);
+        frontLeft.setPower(speeds[FL_SPEED_IDX]);
+        frontRight.setPower(speeds[FR_SPEED_IDX]);
+        backLeft.setPower(speeds[BL_SPEED_IDX]);
+        backRight.setPower(speeds[BR_SPEED_IDX]);
 
-        telemetry.addData("MecanumDrive speeds", speeds[0]);
+        telemetry.addData(SUBSYSTEM_NAME + " FL speed", speeds[FL_SPEED_IDX]);
+        telemetry.addData(SUBSYSTEM_NAME + " FR speed", speeds[FR_SPEED_IDX]);
+        telemetry.addData(SUBSYSTEM_NAME + " BL speed", speeds[BL_SPEED_IDX]);
+        telemetry.addData(SUBSYSTEM_NAME + " BR speed", speeds[BR_SPEED_IDX]);
     }
 
-    public void stop() {
+    public void stop(Telemetry telemetry) {
         frontLeft.setPower(0);
         frontRight.setPower(0);
         backLeft.setPower(0);
         backRight.setPower(0);
-        telemetry.addData("MecanumDrive", "stopped");
+        telemetry.addData(SUBSYSTEM_NAME, STOPPED);
     }
 }
