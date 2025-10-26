@@ -1,20 +1,19 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.pedropathing.follower.Follower;
-import com.pedropathing.ftc.localization.constants.ThreeWheelConstants;
-import com.pedropathing.ftc.localization.localizers.ThreeWheelLocalizer;
-import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.util.Timer;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.robot.RobotBase;
 
+/**
+ * Based on https://pedropathing.com/docs/pathing/examples/auto
+ */
+@Autonomous
 public class AutonomousOpMode extends OpMode {
-    private ThreeWheelConstants constants;
-
-    private Pose startingPose;
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
@@ -26,6 +25,7 @@ public class AutonomousOpMode extends OpMode {
     private Path path3;
     private Path path4;
     private Path path5;
+    private RobotBase robotBase;
 
     private void buildPaths() {
         // TODO: build our pedro paths here
@@ -56,15 +56,13 @@ public class AutonomousOpMode extends OpMode {
     public void init() {
         buildPaths();
 
-        ThreeWheelLocalizer localizer = new ThreeWheelLocalizer(hardwareMap, constants, startingPose);
-
         pathTimer = new Timer();
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
 
         follower = Constants.createFollower(hardwareMap);
         buildPaths();
-        follower.setStartingPose(startingPose);
+        follower.setStartingPose(Constants.startingPose);
     }
 
     /**
@@ -82,6 +80,11 @@ public class AutonomousOpMode extends OpMode {
     public void start() {
         opmodeTimer.resetTimer();
         setPathState(0);
+
+        robotBase = RobotBase.getInstance(hardwareMap);
+
+        telemetry.addData("Status", "initialized");
+        telemetry.update();
     }
 
     /**
@@ -96,7 +99,6 @@ public class AutonomousOpMode extends OpMode {
      * <p>
      * Below is an example state manager with explanations on what each case does, and how to modify it to fit your own routine.
      */
-
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
