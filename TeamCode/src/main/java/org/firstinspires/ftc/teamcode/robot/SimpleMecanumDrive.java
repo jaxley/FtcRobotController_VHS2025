@@ -53,7 +53,7 @@ public class SimpleMecanumDrive {
         // strafe (left-and-right), and twist (rotating the whole chassis).
         drive = driveGamepad.left_stick_y;
         strafe = -driveGamepad.left_stick_x;
-        twist = -driveGamepad.right_stick_x;
+        twist = 0.5 * driveGamepad.right_stick_x;
     }
 
     public void run(Gamepad driveGamepad, Telemetry telemetry) {
