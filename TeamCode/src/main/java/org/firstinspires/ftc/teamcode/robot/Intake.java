@@ -25,9 +25,9 @@ public class Intake {
         telemetry.addData("Intake running", intakeRunning);
 
         if (intakeRunning) {
-            motor.setPower(intakeFwdPower);
+            loadBallToShooter(telemetry);
         } else if (gamepad.right_bumper) {
-            motor.setPower(intakeRevPower);
+            momentaryReverse(telemetry);
         } else {
             stop(telemetry);
         }
@@ -36,5 +36,13 @@ public class Intake {
     public void stop(Telemetry telemetry) {
         motor.setPower(0);
         telemetry.addData("Intake", "stopped");
+    }
+
+    public void loadBallToShooter(Telemetry telemetry) {
+        motor.setPower(intakeFwdPower);
+    }
+
+    public void momentaryReverse(Telemetry telemetry) {
+        motor.setPower(intakeRevPower);
     }
 }

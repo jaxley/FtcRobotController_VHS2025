@@ -47,6 +47,12 @@ public class RobotBase {
         return intake;
     }
 
+    public void takeAShot(Telemetry telemetry) {
+        // TODO: verify this logic
+        intake.loadBallToShooter(telemetry);
+        shooter.fire(telemetry);
+    }
+
     public void run(Gamepad driverGamepad, Gamepad subsystemGamepad, Telemetry telemetry) {
         mecanumDrive.run(driverGamepad, telemetry);
         intake.run(subsystemGamepad, telemetry);
