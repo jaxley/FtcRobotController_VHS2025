@@ -36,8 +36,6 @@ public class Shooter {
     //control vars
     boolean flywheelRunning = false;
 
-    boolean TELEOP_MODE = true; // default to TELEOP
-
     DButton fireButton = new DButton();
 
     public Shooter(DcMotorEx flywheel, Servo fireServo) {
@@ -83,15 +81,6 @@ public class Shooter {
        // fireTime -= getRuntime() - lastMillis;
     }
 
-    public Shooter withAutonomousMode(Telemetry telemetry) {
-        enableAutonomousMode(telemetry);
-        return this;
-    }
-
-    private void enableAutonomousMode(Telemetry telemetry) {
-        TELEOP_MODE = false;
-    }
-
     public void stop(Telemetry telemetry) {
         stopFlywheel(telemetry);
     }
@@ -115,5 +104,16 @@ public class Shooter {
     public void reset(Telemetry telemetry) {
         telemetry.addData(SUBSYSTEM_NAME, "reset");
         fireServo.setPosition(fireDownPos);
+    }
+
+
+    private boolean TELEOP_MODE = true;
+    public Shooter withAutonomousMode(Telemetry telemetry) {
+        enableAutonomousMode(telemetry);
+        return this;
+    }
+
+    private void enableAutonomousMode(Telemetry telemetry) {
+        TELEOP_MODE = false;
     }
 }
