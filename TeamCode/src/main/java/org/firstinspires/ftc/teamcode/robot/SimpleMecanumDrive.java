@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.utils.DButton;
 
 /*
  * The mecanum drivetrain involves four separate motors that spin in
@@ -32,6 +33,9 @@ public class SimpleMecanumDrive {
     private double strafe;
     private double twist;
 
+    public int driveDir = 1;
+    DButton dirSwitch = new DButton();
+
     final double maxDriveSpeed = 0.8;
     double driveSpeed = maxDriveSpeed;
 
@@ -49,13 +53,17 @@ public class SimpleMecanumDrive {
     private void init(Gamepad driveGamepad) {
         // Mecanum drive is controlled with three axes: drive (front-and-back),
         // strafe (left-and-right), and twist (rotating the whole chassis).
-        drive = driveGamepad.left_stick_y;
-        strafe = -driveGamepad.left_stick_x;
-        twist = 0.5 * driveGamepad.right_stick_x;
+        drive = driveGamepad.left_stick_y * driveDir * driveSpeed;
+        strafe = -driveGamepad.left_stick_x * driveDir* driveSpeed;
+        twist = 0.5 * -driveGamepad.right_stick_x* driveSpeed;
     }
 
     public void run(Gamepad driveGamepad, Telemetry telemetry) {
         init(driveGamepad);
+
+        dirSwitch.update(driveGamepad.left_bumper);
+        if(dirSwitch.pressed())
+            driveDir = -driveDir;
 
         double[] speeds = {
                 (drive + strafe + twist),
@@ -64,7 +72,8 @@ public class SimpleMecanumDrive {
                 (drive + strafe - twist)
         };
 
-        driveSpeed = maxDriveSpeed * (1 - driveGamepad.right_trigger);
+        //driveSpeed = maxDriveSpeed * (1 - driveGamepad.right_trigger);
+        driveSpeed = driveGamepad.right_bumper ? 0.5 : maxDriveSpeed;
 
         // Because we are adding vectors and motors only take values between
         // [-1,1] we may need to normalize them.
@@ -82,7 +91,7 @@ public class SimpleMecanumDrive {
         // normalize all the other speeds based on the given speed value.
         if (max > 1) {
             for (int i = 0; i < speeds.length; i++) {
-                speeds[i] *= (driveSpeed / max);
+                speeds[i] *= (1 / max);
             }
         }
 
