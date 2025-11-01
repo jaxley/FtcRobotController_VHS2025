@@ -64,12 +64,18 @@ public class AutonomousOpMode extends OpMode {
      * This is the main loop of the OpMode, it will run repeatedly after clicking "Play".
      **/
 
+    private boolean done;
     @Override
     public void loop() {
 
         // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();
         autonomousPathUpdate();
+
+        if (!done && !follower.isBusy()) {
+            follower.followPath(redHitAndRun, true);
+            done = true;
+        }
 
         // Feedback to Driver Hub for debugging
         //telemetry.addData("path state", pathState);
