@@ -49,7 +49,7 @@ public class RobotBase {
 
     public void takeAShot(Telemetry telemetry) {
         // TODO: verify this logic
-        intake.startIntake(telemetry);
+        //intake.loadBallToShooter(telemetry);
         shooter.fire(telemetry);
     }
 
