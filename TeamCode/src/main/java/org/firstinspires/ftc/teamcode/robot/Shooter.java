@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.robot;
 
-import static dev.nextftc.ftc.ActiveOpMode.getRuntime;
-
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -22,10 +20,10 @@ public class Shooter {
 
     private boolean initialized = false;
 
-    final double flywheelSpeed = -6000; // RPM
-    //final double FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION = (double) 28 /60;
+    final double flywheelSpeedRpm = -6000; // RPM
 
-    double flywheelPower = -0.7;
+    final double flywheelPower = -0.7;
+    //final double FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION = (double) 28 /60;
 
     final double fireDownPos = 0;
     final double fireUpPos= 0.5;
@@ -37,8 +35,6 @@ public class Shooter {
 
     //control vars
     boolean flywheelRunning = false;
-
-    boolean TELEOP_MODE = true; // default to TELEOP
 
     DButton fireButton = new DButton();
 
@@ -61,7 +57,7 @@ public class Shooter {
         }
 
         telemetry.addData(SUBSYSTEM_NAME, STARTED);
-       // double lastMillis = getRuntime();
+        //double lastMillis = getRuntime();
 
         if (TELEOP_MODE) {
             flywheelRunning = (gamepad.left_trigger > triggerDZ);
@@ -85,15 +81,6 @@ public class Shooter {
        // fireTime -= getRuntime() - lastMillis;
     }
 
-    public Shooter withAutonomousMode(Telemetry telemetry) {
-        enableAutonomousMode(telemetry);
-        return this;
-    }
-
-    private void enableAutonomousMode(Telemetry telemetry) {
-        TELEOP_MODE = false;
-    }
-
     public void stop(Telemetry telemetry) {
         stopFlywheel(telemetry);
     }
@@ -104,7 +91,7 @@ public class Shooter {
     }
 
     public void startFlywheel(Telemetry telemetry, double power) {
-        telemetry.addData(FLYWHEEL, "power: " + power);
+        telemetry.addData(FLYWHEEL, power);
         flywheel.setPower(power);
     }
 
@@ -117,5 +104,16 @@ public class Shooter {
     public void reset(Telemetry telemetry) {
         telemetry.addData(SUBSYSTEM_NAME, "reset");
         fireServo.setPosition(fireDownPos);
+    }
+
+
+    private boolean TELEOP_MODE = true;
+    public Shooter withAutonomousMode(Telemetry telemetry) {
+        enableAutonomousMode(telemetry);
+        return this;
+    }
+
+    private void enableAutonomousMode(Telemetry telemetry) {
+        TELEOP_MODE = false;
     }
 }

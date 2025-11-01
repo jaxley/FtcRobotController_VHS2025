@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.pedroPathing;
 
-import static org.firstinspires.ftc.teamcode.robot.Constants.EncoderWheel.LEFT;
-
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
@@ -9,7 +7,6 @@ import com.pedropathing.ftc.drivetrains.MecanumConstants;
 import com.pedropathing.ftc.localization.constants.ThreeWheelConstants;
 import com.pedropathing.ftc.localization.localizers.ThreeWheelLocalizer;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.localization.Localizer;
 import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -28,7 +25,7 @@ public class Constants {
             .strafeEncoder_HardwareMapName(EncoderWheel.CENTER);
 
     public static Pose startingPose = new Pose(); // TODO: Need a menu of options
-    public static Follower createFollower(HardwareMap hardwareMap) { // TODO: Need ability to create followers with differen starting poses
+    public static Follower createFollower(HardwareMap hardwareMap) { // TODO: Need ability to create followers with different starting poses
         ThreeWheelLocalizer localizer = new ThreeWheelLocalizer(hardwareMap, localizerConstants, startingPose);
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .mecanumDrivetrain(mecanumConstants)
