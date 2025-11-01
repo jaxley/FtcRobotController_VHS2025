@@ -19,18 +19,18 @@ public class Constants {
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 
-    private final static ThreeWheelConstants localizerConstants = new ThreeWheelConstants()
+    /*private final static ThreeWheelConstants localizerConstants = new ThreeWheelConstants()
             .leftEncoder_HardwareMapName(EncoderWheel.LEFT)
             .rightEncoder_HardwareMapName(EncoderWheel.RIGHT)
-            .strafeEncoder_HardwareMapName(EncoderWheel.CENTER);
+            .strafeEncoder_HardwareMapName(EncoderWheel.CENTER); */
 
     public static Pose startingPose = new Pose(); // TODO: Need a menu of options
     public static Follower createFollower(HardwareMap hardwareMap) { // TODO: Need ability to create followers with different starting poses
-        ThreeWheelLocalizer localizer = new ThreeWheelLocalizer(hardwareMap, localizerConstants, startingPose);
+     //   ThreeWheelLocalizer localizer = new ThreeWheelLocalizer(hardwareMap, localizerConstants, startingPose);
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .mecanumDrivetrain(mecanumConstants)
                 .pathConstraints(pathConstraints)
-                .setLocalizer(localizer)
+         //       .setLocalizer(localizer)
                 .build();
     }
 }
