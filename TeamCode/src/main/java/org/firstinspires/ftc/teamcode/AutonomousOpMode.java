@@ -35,21 +35,21 @@ public class AutonomousOpMode extends OpMode {
     // poses here
     Pose redShootingPose = new Pose(72, 84, Math.toRadians(45));
     Pose redLoadingPose = new Pose(130, 10, Math.toRadians(180));
-    Pose redleavePose = new Pose(125, 100, Math.toRadians(200));
+    Pose blueleavePose = new Pose(125, 100, Math.toRadians(200));
     Pose blueShootingPose = new Pose(72, 84, Math.toRadians(135));
     Pose blueLoadingPose = new Pose(15, 10, Math.toRadians(0));
-    Pose blueLeavePose = new Pose(20, 100, Math.toRadians(330));
+    Pose blueLeavePose = new Pose(20, 8.5, Math.toRadians(330));
     Pose redIntakePoseR1 = new Pose(104, 37, Math.toRadians(0));
     Pose blueIntakePoseR1 = new Pose(40, 37, Math.toRadians(180));
     Pose redIntakePoseR2 = new Pose(104, 61, Math.toRadians(0));
     Pose blueIntakePoseR2 = new Pose(40, 61, Math.toRadians(180));
     Pose redIntakePoseR3 = new Pose(104, 85, Math.toRadians(0));
     Pose blueIntakePoseR3 = new Pose(40, 85, Math.toRadians(180));
-    Pose redStartingPose1 = new Pose(60, 8.5, Math.toRadians(90));
+    Pose blueStartingPose1 = new Pose(60, 8.5, Math.toRadians(90));
     Pose redStartingPose2 = new Pose(118, 128, Math.toRadians(37));
-    Pose blueStartingPose1 = new Pose(83, 8.5, Math.toRadians(90));
+    Pose redStartingPose1 = new Pose(83, 8.5, Math.toRadians(90));
     Pose blueStartingPose2 = new Pose(24, 128, Math.toRadians(37));
-
+    Pose redLeavePose = new Pose(108 ,8.5, Math.toRadians(90));
 
     // Pedro paths
     private Path path1;
@@ -59,13 +59,32 @@ public class AutonomousOpMode extends OpMode {
     private Path path5;
     private RobotBaseAutonomous robotBase;
     private PathChain redHitAndRun;
+    private PathChain blueHitAndRun;
+    private PathChain blueLeaveStart1;
+    private PathChain redLeaveStart1;
 
     private void buildPaths() {
         // TODO: build our pedro paths here
         redHitAndRun = follower.pathBuilder()
                 .addPath(new BezierLine(redStartingPose2, redShootingPose))
                 .setConstantHeadingInterpolation(redStartingPose2.getHeading())
-                .addPath(new BezierLine(redShootingPose, redleavePose))
+                .addPath(new BezierLine(redShootingPose, blueleavePose))
+                .build();
+
+        blueHitAndRun = follower.pathBuilder()
+                .addPath(new BezierLine(blueStartingPose2, blueShootingPose))
+                .setConstantHeadingInterpolation(blueStartingPose2.getHeading())
+                .addPath(new BezierLine(blueShootingPose, blueLeavePose))
+                .build();
+
+        redLeaveStart1 = follower.pathBuilder()
+                .addPath(new BezierLine(redStartingPose1, redLeavePose))
+                .setConstantHeadingInterpolation(redStartingPose1.getHeading())
+                .build();
+
+        blueLeaveStart1 = follower.pathBuilder()
+                .addPath(new BezierLine(blueStartingPose1, blueLeavePose))
+                .setConstantHeadingInterpolation(blueStartingPose1.getHeading())
                 .build();
     }
 
@@ -83,7 +102,7 @@ public class AutonomousOpMode extends OpMode {
         autonomousPathUpdate();
 
         if (!done && !follower.isBusy()) {
-            follower.followPath(redHitAndRun, true);
+            follower.followPath(redLeaveStart1, true);
             done = true;
         }
 
@@ -102,6 +121,7 @@ public class AutonomousOpMode extends OpMode {
 /*
     @Override
     public void init() {
+
         pathTimer = new Timer();
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
