@@ -25,10 +25,10 @@ public class AutonomousOpMode extends OpMode {
     private int pathState;
 
     // poses here
-    Pose redShootingPose = new Pose(106, 118, Math.toRadians(37));
+    Pose redShootingPose = new Pose(72, 84, Math.toRadians(45));
     Pose redLoadingPose = new Pose(130, 10, Math.toRadians(180));
     Pose redleavePose = new Pose(125, 100, Math.toRadians(200));
-    Pose blueShootingPose = new Pose(39, 118, Math.toRadians(143));
+    Pose blueShootingPose = new Pose(72, 84, Math.toRadians(135));
     Pose blueLoadingPose = new Pose(15, 10, Math.toRadians(0));
     Pose blueLeavePose = new Pose(20, 100, Math.toRadians(330));
     Pose redIntakePoseR1 = new Pose(104, 37, Math.toRadians(0));
