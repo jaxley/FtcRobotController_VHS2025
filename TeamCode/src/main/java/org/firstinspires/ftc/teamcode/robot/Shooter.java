@@ -20,9 +20,10 @@ public class Shooter {
 
     private boolean initialized = false;
 
-    final double flywheelSpeed = -6000; // RPM
-    //final double FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION = (double) 28 /60;
+    final double flywheelSpeedRpm = -6000; // RPM
 
+    //final double FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION = (double) 28 /60;
+    final double flywheelSpeed = -6000; // RPM
     double flywheelPower = -0.7;
 
     final double fireDownPos = 0;
@@ -59,7 +60,7 @@ public class Shooter {
         }
 
         telemetry.addData(SUBSYSTEM_NAME, STARTED);
-       // double lastMillis = getRuntime();
+        //double lastMillis = getRuntime();
 
         if (TELEOP_MODE) {
             flywheelRunning = (gamepad.left_trigger > triggerDZ);
@@ -102,7 +103,7 @@ public class Shooter {
     }
 
     public void startFlywheel(Telemetry telemetry, double power) {
-        telemetry.addData(FLYWHEEL, "power: " + power);
+        telemetry.addData(FLYWHEEL, power);
         flywheel.setPower(power);
     }
 
