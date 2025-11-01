@@ -7,7 +7,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class Intake {
     private final DcMotor motor;
-    private boolean intakeRunning = false;
+    private boolean intakeShouldRun = false;
     final double intakeFwdPower = -0.8;
     final double intakeRevPower = 0.2;
     final double triggerDZ = 0.25;
@@ -19,11 +19,11 @@ public class Intake {
     public void run(Gamepad gamepad, Telemetry telemetry) {
         telemetry.addData("Intake", "started");
 
-        intakeRunning = (gamepad.right_trigger > triggerDZ);
-        telemetry.addData("Intake running", intakeRunning);
+        intakeShouldRun = (gamepad.right_trigger > triggerDZ);
+        telemetry.addData("Intake running", intakeShouldRun);
 
-        if (intakeRunning) {
-            loadBallToShooter(telemetry);
+        if (intakeShouldRun) {
+            startIntake(telemetry);
         } else if (gamepad.right_bumper) {
             momentaryReverse(telemetry);
         } else {
@@ -36,7 +36,7 @@ public class Intake {
         telemetry.addData("Intake", "stopped");
     }
 
-    public void loadBallToShooter(Telemetry telemetry) {
+    public void startIntake(Telemetry telemetry) {
         motor.setPower(intakeFwdPower);
     }
 

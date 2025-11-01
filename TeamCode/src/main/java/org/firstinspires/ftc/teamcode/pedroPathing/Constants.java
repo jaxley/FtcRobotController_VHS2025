@@ -25,7 +25,7 @@ public class Constants {
             .strafeEncoder_HardwareMapName(EncoderWheel.CENTER);
 
     public static Pose startingPose = new Pose(); // TODO: Need a menu of options
-    public static Follower createFollower(HardwareMap hardwareMap) { // TODO: Need ability to create followers with differen starting poses
+    public static Follower createFollower(HardwareMap hardwareMap) { // TODO: Need ability to create followers with different starting poses
         ThreeWheelLocalizer localizer = new ThreeWheelLocalizer(hardwareMap, localizerConstants, startingPose);
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .mecanumDrivetrain(mecanumConstants)
