@@ -23,7 +23,9 @@ public class Shooter {
     private boolean initialized = false;
 
     final double flywheelSpeed = -6000; // RPM
-    final double FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION = (double) 28 /60;
+    //final double FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION = (double) 28 /60;
+
+    double flywheelPower = 0.8;
 
     final double fireDownPos = 0;
     final double fireUpPos= 0.5;
@@ -59,13 +61,13 @@ public class Shooter {
         }
 
         telemetry.addData(SUBSYSTEM_NAME, STARTED);
-        double lastMillis = getRuntime();
+       // double lastMillis = getRuntime();
 
         if (TELEOP_MODE) {
             flywheelRunning = (gamepad.left_trigger > triggerDZ);
             if (flywheelRunning) {
                 startFlywheel(telemetry,
-                        gamepad.left_trigger * flywheelSpeed * FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION);
+                        gamepad.left_trigger * flywheelPower);
             } else {
                 stop(telemetry);
             }
@@ -80,7 +82,7 @@ public class Shooter {
                 reset(telemetry);
             }
         }
-        fireTime -= getRuntime() - lastMillis;
+       // fireTime -= getRuntime() - lastMillis;
     }
 
     public Shooter withAutonomousMode(Telemetry telemetry) {
@@ -101,9 +103,9 @@ public class Shooter {
         flywheel.setPower(0);
     }
 
-    public void startFlywheel(Telemetry telemetry, double rpm) {
-        telemetry.addData(FLYWHEEL, rpm + " rpm");
-        flywheel.setVelocity(rpm);
+    public void startFlywheel(Telemetry telemetry, double power) {
+        telemetry.addData(FLYWHEEL, "power: " + power);
+        flywheel.setPower(power);
     }
 
     public void fire(Telemetry telemetry) {
