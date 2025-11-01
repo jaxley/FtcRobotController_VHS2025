@@ -10,9 +10,9 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class RobotBase {
     private static RobotBase INSTANCE;
-    private final SimpleMecanumDrive mecanumDrive;
-    private final Intake intake;
-    private final Shooter shooter;
+    protected final SimpleMecanumDrive mecanumDrive;
+    protected Intake intake;
+    protected Shooter shooter;
 
     /**
      * Singleton accessor
@@ -25,7 +25,7 @@ public class RobotBase {
         }
         return INSTANCE;
     }
-    private RobotBase(HardwareMap hardwareMap) {
+    protected RobotBase(HardwareMap hardwareMap) {
         DcMotor frontLeft = hardwareMap.get(DcMotor.class, Constants.Wheel.FRONT_LEFT);
         DcMotor frontRight = hardwareMap.get(DcMotor.class, Constants.Wheel.FRONT_RIGHT);
         DcMotor backLeft = hardwareMap.get(DcMotor.class, Constants.Wheel.BACK_LEFT);

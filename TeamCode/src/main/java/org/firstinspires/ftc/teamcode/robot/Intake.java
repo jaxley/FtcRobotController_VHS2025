@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.robot;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
-
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
@@ -50,5 +48,15 @@ public class Intake {
     public void momentaryReverse(Telemetry telemetry) {
         intakeAssistant.setPower(-intakeRevPower);
         motor.setPower(intakeRevPower);
+    }
+
+    private boolean TELEOP_MODE = true;
+    public Intake withAutonomousMode(Telemetry telemetry) {
+        enableAutonomousMode(telemetry);
+        return this;
+    }
+
+    private void enableAutonomousMode(Telemetry telemetry) {
+        TELEOP_MODE = false;
     }
 }
