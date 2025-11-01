@@ -22,7 +22,7 @@ public class Shooter {
 
     final double flywheelSpeedRpm = -6000; // RPM
 
-    final double flywheelPower = 0.9;
+    final double flywheelPower = -0.7;
     //final double FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION = (double) 28 /60;
 
     final double fireDownPos = 0;
