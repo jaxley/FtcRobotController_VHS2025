@@ -5,8 +5,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.robot.RobotBase;
 
-@TeleOp(name="TeleOp", group="Iterative Opmode")
+@TeleOp(name= MecanumDriveTeleOp.TELE_OP, group="Iterative Opmode")
 public class MecanumDriveTeleOp extends LinearOpMode {
+
+    public static final String TELE_OP = "TeleOp";
 
     @Override
     public void runOpMode() {
@@ -14,7 +16,7 @@ public class MecanumDriveTeleOp extends LinearOpMode {
 
         telemetry.addData("Code Version", BuildConfig.VERSION_NAME);
         telemetry.addData("Code Build Time", BuildConfig.APP_BUILD_TIME);
-        telemetry.addData("TeleOp", "initialized");
+        telemetry.addData(TELE_OP, "initialized");
         telemetry.update();
 
         waitForStart();
