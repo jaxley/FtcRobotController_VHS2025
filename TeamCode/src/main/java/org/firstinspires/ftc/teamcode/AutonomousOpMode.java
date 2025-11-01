@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robot.RobotBase;
+import org.firstinspires.ftc.teamcode.robot.RobotBaseAutonomous;
 
 /**
  * Based on https://pedropathing.com/docs/pathing/examples/auto
@@ -48,7 +49,7 @@ public class AutonomousOpMode extends OpMode {
     private Path path3;
     private Path path4;
     private Path path5;
-    private RobotBase robotBase;
+    private RobotBaseAutonomous robotBase;
     private PathChain redHitAndRun;
 
     private void buildPaths() {
@@ -114,7 +115,7 @@ public class AutonomousOpMode extends OpMode {
         opmodeTimer.resetTimer();
         setPathState(0);
 
-        robotBase = RobotBase.getInstance(hardwareMap);
+        robotBase = RobotBaseAutonomous.getInstance(hardwareMap, telemetry);
 
         telemetry.addData("Status", "initialized");
         telemetry.update();
