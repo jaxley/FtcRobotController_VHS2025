@@ -91,8 +91,6 @@ public class AutonomousOpMode extends OpMode {
 
     @Override
     public void init() {
-        buildPaths();
-
         pathTimer = new Timer();
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
