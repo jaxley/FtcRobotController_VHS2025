@@ -19,6 +19,12 @@ import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 import org.firstinspires.ftc.teamcode.robot.RobotBaseAutonomous;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.localization.Pose;
+import com.pedropathing.pathgen.BezierCurve;
+import com.pedropathing.pathgen.BezierLine;
+import com.pedropathing.pathgen.PathChain;
+import com.pedropathing.pathgen.Point;
 
 */
 /**
@@ -194,8 +200,6 @@ public class AutonomousOpMode extends OpMode {
                 */
 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position *//*
 
-
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if (!follower.isBusy()) {
                     */
 /* Score Preload *//*
@@ -275,7 +279,6 @@ public class AutonomousOpMode extends OpMode {
                 if (!follower.isBusy()) {
 */
 /* Set the state to a Case we won't use or define, so it just stops running an new paths *//*
-
                     setPathState(-1);
 
         }

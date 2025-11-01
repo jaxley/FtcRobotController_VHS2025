@@ -36,6 +36,8 @@ public class Shooter {
     //control vars
     boolean flywheelRunning = false;
 
+    boolean TELEOP_MODE = true; // default to TELEOP
+
     DButton fireButton = new DButton();
 
     public Shooter(DcMotorEx flywheel, Servo fireServo) {
@@ -57,7 +59,7 @@ public class Shooter {
         }
 
         telemetry.addData(SUBSYSTEM_NAME, STARTED);
-        //double lastMillis = getRuntime();
+       // double lastMillis = getRuntime();
 
         if (TELEOP_MODE) {
             flywheelRunning = (gamepad.left_trigger > triggerDZ);
@@ -79,7 +81,15 @@ public class Shooter {
             }
         }
        // fireTime -= getRuntime() - lastMillis;
-       // fireTime -= getRuntime() - lastMillis;
+    }
+
+    public Shooter withAutonomousMode(Telemetry telemetry) {
+        enableAutonomousMode(telemetry);
+        return this;
+    }
+
+    private void enableAutonomousMode(Telemetry telemetry) {
+        TELEOP_MODE = false;
     }
 
     public void stop(Telemetry telemetry) {
@@ -92,7 +102,7 @@ public class Shooter {
     }
 
     public void startFlywheel(Telemetry telemetry, double power) {
-        telemetry.addData(FLYWHEEL, power);
+        telemetry.addData(FLYWHEEL, "power: " + power);
         flywheel.setPower(power);
     }
 
@@ -105,16 +115,5 @@ public class Shooter {
     public void reset(Telemetry telemetry) {
         telemetry.addData(SUBSYSTEM_NAME, "reset");
         fireServo.setPosition(fireDownPos);
-    }
-
-
-    private boolean TELEOP_MODE = true;
-    public Shooter withAutonomousMode(Telemetry telemetry) {
-        enableAutonomousMode(telemetry);
-        return this;
-    }
-
-    private void enableAutonomousMode(Telemetry telemetry) {
-        TELEOP_MODE = false;
     }
 }
