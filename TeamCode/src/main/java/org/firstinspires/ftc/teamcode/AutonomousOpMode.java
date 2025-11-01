@@ -10,6 +10,8 @@ import static org.firstinspires.ftc.teamcode.robot.Poses.redStartingPose1;
 import static org.firstinspires.ftc.teamcode.robot.Poses.redStartingPose2;
 import static org.firstinspires.ftc.teamcode.robot.Poses.redTopLeavePose;
 
+import com.bylazar.telemetry.JoinedTelemetry;
+import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.paths.Path;
@@ -48,6 +50,7 @@ public class AutonomousOpMode extends OpMode {
     private PathChain blueHitAndRun;
     private PathChain blueLeaveStart1;
     private PathChain redLeaveStart1;
+    private JoinedTelemetry joinedTelemetry;
 
     private void buildPaths() {
         // TODO: build our pedro paths here
@@ -95,10 +98,10 @@ public class AutonomousOpMode extends OpMode {
 
         // Feedback to Driver Hub for debugging
         //telemetry.addData("path state", pathState);
-        telemetry.addData("x", follower.getPose().getX());
-        telemetry.addData("y", follower.getPose().getY());
-        telemetry.addData("heading", follower.getPose().getHeading());
-        telemetry.update();
+        joinedTelemetry.addData("x", follower.getPose().getX());
+        joinedTelemetry.addData("y", follower.getPose().getY());
+        joinedTelemetry.addData("heading", follower.getPose().getHeading());
+        joinedTelemetry.update();
     }
 
     /**
@@ -108,13 +111,15 @@ public class AutonomousOpMode extends OpMode {
     @Override
     public void init() {
 
+        joinedTelemetry = new JoinedTelemetry(telemetry, PanelsTelemetry.INSTANCE.getFtcTelemetry());
         pathTimer = new Timer();
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
 
         follower = Constants.createFollower(hardwareMap);
         buildPaths();
-        follower.setStartingPose(Constants.startingPose);
+       // follower.setStartingPose(Constants.startingPose);
+        follower.setStartingPose(redStartingPose1);
     }
 
     /**
@@ -137,8 +142,8 @@ public class AutonomousOpMode extends OpMode {
 
         robotBase = RobotBaseAutonomous.getInstance(hardwareMap, telemetry);
 
-        telemetry.addData("Status", "initialized");
-        telemetry.update();
+        joinedTelemetry.addData("Status", "initialized");
+        joinedTelemetry.update();
     }
 
     /**
