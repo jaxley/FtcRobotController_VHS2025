@@ -1,3 +1,5 @@
+import java.text.SimpleDateFormat
+
 //
 // build.gradle in TeamCode
 //
@@ -16,6 +18,38 @@ apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
 apply plugin: 'org.jetbrains.kotlin.android'
 
+def getCommitCount = { ->
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'rev-list', '--count', 'HEAD'
+        standardOutput = stdout
+    }
+    return stdout.toString().trim().toInteger()
+}
+
+def getBranchName = { ->
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'symbolic-ref', '--short', '-q', 'HEAD'
+        standardOutput = stdout
+    }
+    return stdout.toString().trim()
+}
+
+def getShortGitCommitSha = { ->
+    try {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'rev-parse', '--verify', '--short', 'HEAD'
+            standardOutput = stdout
+        }
+        return stdout.toString().trim()
+    }
+    catch (ignored) {
+        return null;
+    }
+}
+
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
     kotlinOptions {
@@ -25,7 +59,34 @@ android {
     packagingOptions {
         jniLibs.useLegacyPackaging true
     }
+    buildFeatures.buildConfig true
+
+    defaultConfig {
+        versionName getBranchName() + "_" + getCommitCount() + "_" + getShortGitCommitSha()
+        buildConfigField "String", "APP_BUILD_TIME", '"' + (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.ROOT).format(new Date())) + '"'
+        // define whether this build is a production build
+        buildConfigField "boolean", "IS_PRODUCTION", "false"
+    }
 }
+
+//tasks.register('createJar', Copy) {
+//    from('build/intermediates/javac/debug/compileDebugJavaWithJavac')
+//    into('build/outputs/libs/')
+//}
+//
+//build.dependsOn(createJar)
+
+//tasks.register('uberJar', Jar) {
+//    archiveClassifier = 'uber'
+//
+//    from('build/intermediates/javac/debug/compileDebugJavaWithJavac')
+//
+//    from {
+//        findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
+//    }
+//}
+//
+//build.dependsOn('uberJar')
 
 dependencies {
     implementation project(':FtcRobotController')

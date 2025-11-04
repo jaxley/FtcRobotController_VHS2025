@@ -14,6 +14,8 @@ public class MecanumDriveTeleOp extends LinearOpMode {
     public void runOpMode() {
         RobotBase robotBase = RobotBase.getInstance(hardwareMap);
 
+        telemetry.addData("Code Version", BuildConfig.VERSION_NAME);
+        telemetry.addData("Code Build Time", BuildConfig.APP_BUILD_TIME);
         telemetry.addData(TELE_OP, "initialized");
         telemetry.update();
 
