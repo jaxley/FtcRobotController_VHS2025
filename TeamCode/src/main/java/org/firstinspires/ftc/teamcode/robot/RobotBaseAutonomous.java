@@ -8,26 +8,14 @@ public class RobotBaseAutonomous extends RobotBase {
     private static RobotBaseAutonomous INSTANCE;
 
     protected RobotBaseAutonomous(HardwareMap hardwareMap) {
-        super(hardwareMap);
+
+        super(hardwareMap, false);
     }
 
     public static RobotBaseAutonomous getInstance(HardwareMap hardwareMap, Telemetry telemetry) {
         if (INSTANCE == null) {
-            INSTANCE = new RobotBaseAutonomous(hardwareMap)
-                    .withAutonomousMode(telemetry);
+            INSTANCE = new RobotBaseAutonomous(hardwareMap);
         }
         return INSTANCE;
-    }
-
-    private boolean TELEOP_MODE = true;
-    public RobotBaseAutonomous withAutonomousMode(Telemetry telemetry) {
-        enableAutonomousMode(telemetry);
-        return this;
-    }
-
-    private void enableAutonomousMode(Telemetry telemetry) {
-        TELEOP_MODE = false;
-        shooter = shooter.withAutonomousMode(telemetry);
-        intake = intake.withAutonomousMode(telemetry);
     }
 }
