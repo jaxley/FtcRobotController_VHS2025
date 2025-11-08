@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.robot;
 
+import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -9,8 +10,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class RobotBase {
+    protected boolean TELEOP_MODE = true;
     private static RobotBase INSTANCE;
-    protected final SimpleMecanumDrive mecanumDrive;
+    protected IMecanumDrive mecanumDrive;
     protected Intake intake;
     protected Shooter shooter;
 
@@ -25,18 +27,29 @@ public class RobotBase {
         }
         return INSTANCE;
     }
-    protected RobotBase(HardwareMap hardwareMap) {
+
+    protected RobotBase(HardwareMap hardwareMap, boolean teleop) {
+        this.TELEOP_MODE = teleop;
+
         DcMotor frontLeft = hardwareMap.get(DcMotor.class, Constants.Wheel.FRONT_LEFT);
         DcMotor frontRight = hardwareMap.get(DcMotor.class, Constants.Wheel.FRONT_RIGHT);
         DcMotor backLeft = hardwareMap.get(DcMotor.class, Constants.Wheel.BACK_LEFT);
         DcMotor backRight = hardwareMap.get(DcMotor.class, Constants.Wheel.BACK_RIGHT);
 
-        mecanumDrive = new SimpleMecanumDrive(frontLeft, frontRight, backLeft, backRight);
+        if (TELEOP_MODE) {
+            Follower follower = org.firstinspires.ftc.teamcode.pedroPathing.Constants.createFollower(hardwareMap);
+   //         mecanumDrive = new SimpleMecanumDrive(frontLeft, frontRight, backLeft, backRight, follower);
+            mecanumDrive = new PedroPathingMecanumDrive(frontLeft, frontRight, backLeft, backRight, follower);
+        }
 
         intake = new Intake(hardwareMap.get(DcMotor.class, Constants.Motor.INTAKE));
 
         shooter = new Shooter(hardwareMap.get(DcMotorEx.class, Constants.Motor.FLYWHEEL),
                 hardwareMap.get(Servo.class, Constants.Motor.LAUNCH_SERVO));
+    }
+
+    protected RobotBase(HardwareMap hardwareMap) {
+        this(hardwareMap, true);
     }
 
     public Shooter getShooter() {
@@ -54,13 +67,17 @@ public class RobotBase {
     }
 
     public void run(Gamepad driverGamepad, Gamepad subsystemGamepad, Telemetry telemetry) {
-        mecanumDrive.run(driverGamepad, telemetry);
+        if (TELEOP_MODE) {
+            mecanumDrive.run(driverGamepad, telemetry);
+        }
         intake.run(subsystemGamepad, telemetry);
         shooter.run(subsystemGamepad, telemetry);
     }
 
     public void stop(Telemetry telemetry) {
-        mecanumDrive.stop(telemetry);
+        if (TELEOP_MODE) {
+            mecanumDrive.stop(telemetry);
+        }
         intake.stop(telemetry);
         shooter.stop(telemetry);
     }
