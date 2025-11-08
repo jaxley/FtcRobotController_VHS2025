@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.gamepad
+package org.firstinspires.ftc.teamcode.panels
 
 import com.bylazar.gamepad.PanelsGamepad
 import com.bylazar.telemetry.PanelsTelemetry
