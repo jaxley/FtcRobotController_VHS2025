@@ -24,10 +24,13 @@ public class AutonomousOpMode extends OpMode {
     private int pathState;
 
     // poses here
-    Pose redShootingPose = new Pose(72, 84, Math.toRadians(45));
+
+    //Pose redShootingPose = new Pose(72, 84, Math.toRadians(45));
+    Pose redShootingPose = new Pose(128, 80, Math.toRadians(90));
     Pose redLoadingPose = new Pose(130, 10, Math.toRadians(180));
     Pose blueleavePose = new Pose(125, 100, Math.toRadians(200));
-    Pose blueShootingPose = new Pose(72, 84, Math.toRadians(135));
+    //Pose blueShootingPose = new Pose(72, 84, Math.toRadians(135));
+    Pose blueShootingPose = new Pose(16, 80, Math.toRadians(90));
     Pose blueLoadingPose = new Pose(15, 10, Math.toRadians(0));
     Pose blueLeavePose = new Pose(20, 8.5, Math.toRadians(330));
     Pose redIntakePoseR1 = new Pose(104, 37, Math.toRadians(0));
@@ -89,7 +92,8 @@ public class AutonomousOpMode extends OpMode {
 
         // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();
-        autonomousPathUpdate();
+        // TODO: we may not use this state machine
+        //autonomousPathUpdate();
 
         if (!done && !follower.isBusy()) {
             follower.followPath(redLeaveStart1, true);
