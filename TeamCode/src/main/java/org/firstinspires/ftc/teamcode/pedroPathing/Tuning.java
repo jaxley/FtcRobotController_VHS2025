@@ -19,7 +19,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.*;
 import com.pedropathing.math.*;
 import com.pedropathing.paths.*;
-import com.pedropathing.telemetry.SelectableOpMode;
+import com.pedropathing.telemetry.PanelsSelectableOpMode;
 import com.pedropathing.util.*;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -35,7 +35,7 @@ import java.util.List;
  */
 @Configurable
 @TeleOp(name = "Tuning", group = "Pedro Pathing")
-public class Tuning extends SelectableOpMode {
+public class Tuning extends PanelsSelectableOpMode {
     public static Follower follower;
 
     @IgnoreConfigurable
@@ -48,6 +48,7 @@ public class Tuning extends SelectableOpMode {
     static ArrayList<String> changes = new ArrayList<>();
 
     public Tuning() {
+
         super("Select a Tuning OpMode", s -> {
             s.folder("Localization", l -> {
                 l.add("Localization Test", LocalizationTest::new);
@@ -74,6 +75,8 @@ public class Tuning extends SelectableOpMode {
             });
         });
     }
+
+
 
     @Override
     public void onSelect() {
