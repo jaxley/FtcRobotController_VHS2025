@@ -1,8 +1,17 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.robot.Poses.blueLowLeavePose;
+import static org.firstinspires.ftc.teamcode.robot.Poses.blueShootingPose;
+import static org.firstinspires.ftc.teamcode.robot.Poses.blueStartingPose1;
+import static org.firstinspires.ftc.teamcode.robot.Poses.blueStartingPose2;
+import static org.firstinspires.ftc.teamcode.robot.Poses.blueleavePose;
+import static org.firstinspires.ftc.teamcode.robot.Poses.redLowLeavePose;
+import static org.firstinspires.ftc.teamcode.robot.Poses.redShootingPose;
+import static org.firstinspires.ftc.teamcode.robot.Poses.redStartingPose1;
+import static org.firstinspires.ftc.teamcode.robot.Poses.redStartingPose2;
+
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
-import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
@@ -26,24 +35,7 @@ public class AutonomousOpMode extends OpMode {
     // poses here
 
     //Pose redShootingPose = new Pose(72, 84, Math.toRadians(45));
-    Pose redShootingPose = new Pose(128, 80, Math.toRadians(90));
-    Pose redLoadingPose = new Pose(130, 10, Math.toRadians(180));
-    Pose blueleavePose = new Pose(125, 100, Math.toRadians(200));
-    //Pose blueShootingPose = new Pose(72, 84, Math.toRadians(135));
-    Pose blueShootingPose = new Pose(16, 80, Math.toRadians(90));
-    Pose blueLoadingPose = new Pose(15, 10, Math.toRadians(0));
-    Pose blueLeavePose = new Pose(20, 8.5, Math.toRadians(330));
-    Pose redIntakePoseR1 = new Pose(104, 37, Math.toRadians(0));
-    Pose blueIntakePoseR1 = new Pose(40, 37, Math.toRadians(180));
-    Pose redIntakePoseR2 = new Pose(104, 61, Math.toRadians(0));
-    Pose blueIntakePoseR2 = new Pose(40, 61, Math.toRadians(180));
-    Pose redIntakePoseR3 = new Pose(104, 85, Math.toRadians(0));
-    Pose blueIntakePoseR3 = new Pose(40, 85, Math.toRadians(180));
-    Pose blueStartingPose1 = new Pose(60, 8.5, Math.toRadians(90));
-    Pose redStartingPose2 = new Pose(118, 128, Math.toRadians(37));
-    Pose redStartingPose1 = new Pose(83, 8.5, Math.toRadians(90));
-    Pose blueStartingPose2 = new Pose(24, 128, Math.toRadians(37));
-    Pose redLeavePose = new Pose(108 ,8.5, Math.toRadians(90));
+
 
     // Pedro paths
     private Path path1;
@@ -68,16 +60,16 @@ public class AutonomousOpMode extends OpMode {
         blueHitAndRun = follower.pathBuilder()
                 .addPath(new BezierLine(blueStartingPose2, blueShootingPose))
                 .setConstantHeadingInterpolation(blueStartingPose2.getHeading())
-                .addPath(new BezierLine(blueShootingPose, blueLeavePose))
+                .addPath(new BezierLine(blueShootingPose, blueLowLeavePose))
                 .build();
 
         redLeaveStart1 = follower.pathBuilder()
-                .addPath(new BezierLine(redStartingPose1, redLeavePose))
+                .addPath(new BezierLine(redStartingPose1, redLowLeavePose))
                 .setConstantHeadingInterpolation(redStartingPose1.getHeading())
                 .build();
 
         blueLeaveStart1 = follower.pathBuilder()
-                .addPath(new BezierLine(blueStartingPose1, blueLeavePose))
+                .addPath(new BezierLine(blueStartingPose1, blueLowLeavePose))
                 .setConstantHeadingInterpolation(blueStartingPose1.getHeading())
                 .build();
     }

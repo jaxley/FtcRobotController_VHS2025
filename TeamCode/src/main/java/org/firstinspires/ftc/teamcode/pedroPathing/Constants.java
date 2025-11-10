@@ -26,8 +26,11 @@ public class Constants {
             .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE);
     public static final double PROGRAMMING_BASE_MASS = 6.713;
+    public static final double COMPETITION_BASE_MASS = 10.16047;
+
+
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .mass(PROGRAMMING_BASE_MASS);
+            .mass(COMPETITION_BASE_MASS);
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 
@@ -38,7 +41,10 @@ public class Constants {
     private final static ThreeWheelConstants localizerConstants = new ThreeWheelConstants()
             .leftEncoder_HardwareMapName(EncoderWheel.LEFT)
             .rightEncoder_HardwareMapName(EncoderWheel.RIGHT)
-            .strafeEncoder_HardwareMapName(EncoderWheel.CENTER);
+            .strafeEncoder_HardwareMapName(EncoderWheel.CENTER)
+            .leftPodY(3)
+            .rightPodY(-2.625)
+            .strafePodX(-7.25);
 
     public static Pose startingPose = new Pose(24, 128, Math.toRadians(37)); // TODO: Need a menu of options
     public static Follower createFollower(HardwareMap hardwareMap) { // TODO: Need ability to create followers with different starting poses
