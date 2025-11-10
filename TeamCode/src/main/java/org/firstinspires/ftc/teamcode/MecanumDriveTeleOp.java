@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.bylazar.gamepad.PanelsGamepad;
+import com.bylazar.panels.Panels;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.robot.RobotBase;
 
@@ -23,7 +26,8 @@ public class MecanumDriveTeleOp extends LinearOpMode {
 
         // main loop
         while(opModeIsActive()) {
-            robotBase.run(gamepad1, gamepad2, telemetry);
+            Gamepad panelGamepad = PanelsGamepad.INSTANCE.getFirstManager().asCombinedFTCGamepad(gamepad1);
+            robotBase.run(panelGamepad, gamepad2, telemetry);
             telemetry.update();
         }
     }
