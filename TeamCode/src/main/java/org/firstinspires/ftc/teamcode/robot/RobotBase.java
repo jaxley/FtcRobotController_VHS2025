@@ -33,7 +33,8 @@ public class RobotBase {
 
         mecanumDrive = new SimpleMecanumDrive(frontLeft, frontRight, backLeft, backRight);
 
-        intake = new Intake(hardwareMap.get(DcMotor.class, Constants.Motor.INTAKE));
+        intake = new Intake(hardwareMap.get(DcMotor.class, Constants.Motor.INTAKE_BASE),
+                hardwareMap.get(DcMotor.class, Constants.Motor.INTAKE_ASSISTANT));
 
         shooter = new Shooter(hardwareMap.get(DcMotorEx.class, Constants.Motor.FLYWHEEL),
                 hardwareMap.get(Servo.class, Constants.Motor.LAUNCH_SERVO));
