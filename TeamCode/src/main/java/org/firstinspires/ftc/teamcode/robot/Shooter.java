@@ -57,7 +57,7 @@ public class Shooter {
         }
 
         telemetry.addData(SUBSYSTEM_NAME, STARTED);
-       // double lastMillis = getRuntime();
+        //double lastMillis = getRuntime();
 
         if (TELEOP_MODE) {
             flywheelRunning = (gamepad.left_trigger > triggerDZ);
@@ -91,7 +91,7 @@ public class Shooter {
     }
 
     public void startFlywheel(Telemetry telemetry, double power) {
-        telemetry.addData(FLYWHEEL, "power: " + power);
+        telemetry.addData(FLYWHEEL, power);
         flywheel.setPower(power);
     }
 

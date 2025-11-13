@@ -24,6 +24,7 @@ import org.firstinspires.ftc.teamcode.robot.RobotBaseAutonomous;
 /**
  * Based on https://pedropathing.com/docs/pathing/examples/auto
  */
+
 @Autonomous
 public class AutonomousOpMode extends OpMode {
 
@@ -119,6 +120,7 @@ public class AutonomousOpMode extends OpMode {
     /**
      * This method is called continuously after Init while waiting for "play".
      **/
+
     @Override
     public void init_loop() {
     }
@@ -127,6 +129,7 @@ public class AutonomousOpMode extends OpMode {
      * This method is called once at the start of the OpMode.
      * It runs all the setup actions, including building paths and starting the path system
      **/
+
     @Override
     public void start() {
         opmodeTimer.resetTimer();
@@ -141,6 +144,7 @@ public class AutonomousOpMode extends OpMode {
     /**
      * We do not use this because everything should automatically disable
      **/
+
     @Override
     public void stop() {
     }
@@ -158,7 +162,7 @@ public class AutonomousOpMode extends OpMode {
                 break;
             case 1:
 
-            /* You could check for
+/* You could check for
             - Follower State: "if(!follower.isBusy()) {}"
             - Time: "if(pathTimer.getElapsedTimeSeconds() > 1) {}"
             - Robot Position: "if(follower.getPose().getX() > 36) {}"
@@ -167,30 +171,36 @@ public class AutonomousOpMode extends OpMode {
                 if (!follower.isBusy()) {
                     /* Score Preload */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
+
                     follower.followPath(path2, true);
                     setPathState(2);
                 }
                 break;
             case 2:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup1Pose's position */
+
                 if (!follower.isBusy()) {
                     /* Grab Sample */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
+
                     follower.followPath(path3, true);
                     setPathState(3);
                 }
                 break;
             case 3:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
+
                 if (!follower.isBusy()) {
                     /* Score Sample */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
+
                     follower.followPath(path4, true);
                     setPathState(4);
                 }
                 break;
             case 4:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup2Pose's position */
+
                 if (!follower.isBusy()) {
                     /* Grab Sample */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
@@ -225,12 +235,14 @@ public class AutonomousOpMode extends OpMode {
 
                     setPathState(-1);
                 }
+                break;
         }
     }
 
     /**
      * These change the states of the paths and actions. It will also reset the timers of the individual switches
      **/
+
     public void setPathState(int pState) {
         pathState = pState;
         pathTimer.resetTimer();
