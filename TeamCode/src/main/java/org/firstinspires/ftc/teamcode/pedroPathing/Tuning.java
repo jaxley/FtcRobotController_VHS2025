@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.pedroPathing;
 
+import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.aButton;
+import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.bButton;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.changes;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.drawOnlyCurrent;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.draw;
@@ -13,6 +15,7 @@ import com.bylazar.configurables.annotations.IgnoreConfigurable;
 import com.bylazar.field.FieldManager;
 import com.bylazar.field.PanelsField;
 import com.bylazar.field.Style;
+import com.bylazar.gamepad.PanelsGamepad;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
@@ -23,6 +26,9 @@ import com.pedropathing.telemetry.PanelsSelectableOpMode;
 import com.pedropathing.util.*;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
+
+import org.firstinspires.ftc.teamcode.utils.DButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +52,9 @@ public class Tuning extends PanelsSelectableOpMode {
 
     @IgnoreConfigurable
     static ArrayList<String> changes = new ArrayList<>();
+
+    static DButton aButton = new DButton();
+    static DButton bButton = new DButton();
 
     public Tuning() {
 
@@ -74,12 +83,12 @@ public class Tuning extends PanelsSelectableOpMode {
                 p.add("Circle", Circle::new);
             });
         });
+        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
     }
-
-
 
     @Override
     public void onSelect() {
+        panelsGamepad = PanelsGamepad.INSTANCE.getFirstManager().asCombinedFTCGamepad(gamepad1);
         if (follower == null) {
             follower = Constants.createFollower(hardwareMap);
             PanelsConfigurables.INSTANCE.refreshClass(this);
@@ -90,8 +99,6 @@ public class Tuning extends PanelsSelectableOpMode {
         follower.setStartingPose(new Pose());
 
         poseHistory = follower.getPoseHistory();
-
-        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
         Drawing.init();
     }
@@ -129,6 +136,8 @@ public class Tuning extends PanelsSelectableOpMode {
  * @version 1.0, 5/6/2024
  */
 class LocalizationTest extends OpMode {
+    private Gamepad panelsGamepad;
+
     @Override
     public void init() {
         follower.setStartingPose(new Pose(72,72));
@@ -156,7 +165,9 @@ class LocalizationTest extends OpMode {
      */
     @Override
     public void loop() {
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
+        panelsGamepad = PanelsGamepad.INSTANCE.getFirstManager().asCombinedFTCGamepad(gamepad1);
+
+        follower.setTeleOpDrive(-panelsGamepad.left_stick_y, -panelsGamepad.left_stick_x, -panelsGamepad.right_stick_x, true);
         follower.update();
 
         telemetryM.debug("x:" + follower.getPose().getX());
@@ -335,9 +346,11 @@ class ForwardVelocityTuner extends OpMode {
     public static double RECORD_NUMBER = 10;
 
     private boolean end;
+    private Gamepad panelsGamepad;
 
     @Override
     public void init() {
+
         follower.setStartingPose(new Pose(72, 72));
     }
 
@@ -373,7 +386,11 @@ class ForwardVelocityTuner extends OpMode {
      */
     @Override
     public void loop() {
-        if (gamepad1.bWasPressed()) {
+        panelsGamepad = PanelsGamepad.INSTANCE.getFirstManager().asCombinedFTCGamepad(gamepad1);
+
+        Tuning.bButton.update(panelsGamepad.b);
+        Tuning.aButton.update(panelsGamepad.a);
+        if (Tuning.bButton.pressed()) {
             stopRobot();
             requestOpModeStop();
         }
@@ -411,7 +428,7 @@ class ForwardVelocityTuner extends OpMode {
             telemetryM.update(telemetry);
             telemetry.update();
 
-            if (gamepad1.aWasPressed()) {
+            if (Tuning.aButton.pressed()) {
                 follower.setXVelocity(average);
                 String message = "XMovement: " + average;
                 changes.add(message);
@@ -481,7 +498,13 @@ class LateralVelocityTuner extends OpMode {
      */
     @Override
     public void loop() {
-        if (gamepad1.bWasPressed()) {
+        Gamepad panelsGamepad = PanelsGamepad.INSTANCE.getFirstManager().asCombinedFTCGamepad(gamepad1);
+
+        // For some reason, the panelsGamepad.bWasPressed() doesn't work reliably with the virtual gamepads
+        // DButton works great though. the button press is being recorded.
+        Tuning.bButton.update(panelsGamepad.b);
+        Tuning.aButton.update(panelsGamepad.a);
+        if (Tuning.bButton.pressed()) {
             stopRobot();
             requestOpModeStop();
         }
@@ -512,7 +535,7 @@ class LateralVelocityTuner extends OpMode {
             telemetryM.debug("Press A to set the Lateral Velocity temporarily (while robot remains on).");
             telemetryM.update(telemetry);
 
-            if (gamepad1.aWasPressed()) {
+            if (aButton.pressed()) {
                 follower.setYVelocity(average);
                 String message = "YMovement: " + average;
                 changes.add(message);
@@ -580,7 +603,11 @@ class ForwardZeroPowerAccelerationTuner extends OpMode {
      */
     @Override
     public void loop() {
-        if (gamepad1.bWasPressed()) {
+        Gamepad panelsGamepad = PanelsGamepad.INSTANCE.getFirstManager().asCombinedFTCGamepad(gamepad1);
+
+        Tuning.bButton.update(panelsGamepad.b);
+        Tuning.aButton.update(panelsGamepad.a);
+        if (bButton.pressed()) {
             stopRobot();
             requestOpModeStop();
         }
@@ -618,7 +645,7 @@ class ForwardZeroPowerAccelerationTuner extends OpMode {
             telemetryM.debug("Press A to set the Forward Zero Power Acceleration temporarily (while robot remains on).");
             telemetryM.update(telemetry);
 
-            if (gamepad1.aWasPressed()) {
+            if (aButton.pressed()) {
                 follower.getConstants().setForwardZeroPowerAcceleration(average);
                 String message = "Forward Zero Power Acceleration: " + average;
                 changes.add(message);
@@ -684,7 +711,11 @@ class LateralZeroPowerAccelerationTuner extends OpMode {
      */
     @Override
     public void loop() {
-        if (gamepad1.bWasPressed()) {
+        Gamepad panelsGamepad = PanelsGamepad.INSTANCE.getFirstManager().asCombinedFTCGamepad(gamepad1);
+
+        Tuning.bButton.update(panelsGamepad.b);
+        Tuning.aButton.update(panelsGamepad.a);
+        if (bButton.pressed()) {
             stopRobot();
             requestOpModeStop();
         }
@@ -722,7 +753,7 @@ class LateralZeroPowerAccelerationTuner extends OpMode {
             telemetryM.debug("Press A to set the Lateral Zero Power Acceleration temporarily (while robot remains on).");
             telemetryM.update(telemetry);
 
-            if (gamepad1.aWasPressed()) {
+            if (aButton.pressed()) {
                 follower.getConstants().setLateralZeroPowerAcceleration(average);
                 String message = "Lateral Zero Power Acceleration: " + average;
                 changes.add(message);
