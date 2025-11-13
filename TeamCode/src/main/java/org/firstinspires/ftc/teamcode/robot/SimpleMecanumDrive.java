@@ -62,6 +62,26 @@ public class SimpleMecanumDrive implements IMecanumDrive {
         return; // not supported
     }
 
+    @Override
+    public DcMotor getFrontLeft() {
+        return null;
+    }
+
+    @Override
+    public DcMotor getFrontRight() {
+        return null;
+    }
+
+    @Override
+    public DcMotor getBackLeft() {
+        return null;
+    }
+
+    @Override
+    public DcMotor getBackRight() {
+        return null;
+    }
+
     public void run(Gamepad driveGamepad, Telemetry telemetry) {
         init(driveGamepad);
         dirSwitch.update(driveGamepad.left_bumper);

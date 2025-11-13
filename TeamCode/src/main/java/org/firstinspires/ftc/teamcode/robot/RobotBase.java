@@ -60,6 +60,10 @@ public class RobotBase {
         return intake;
     }
 
+    public IMecanumDrive getMecanumDrive() {
+        return mecanumDrive;
+    }
+
     public void takeAShot(Telemetry telemetry) {
         // TODO: verify this logic
         //intake.loadBallToShooter(telemetry);
