@@ -4,9 +4,8 @@ import com.pedropathing.ftc.localization.Encoder;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import org.firstinspires.ftc.teamcode.robot.Constants;
+import org.firstinspires.ftc.teamcode.robot.RobotConstants;
 import org.firstinspires.ftc.teamcode.robot.RobotBase;
 
 
@@ -22,9 +21,9 @@ public class EncoderTest extends LinearOpMode {
 
         robotBase = RobotBase.getInstance(hardwareMap);
 
-        rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, Constants.EncoderWheel.RIGHT));
-        leftEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, Constants.EncoderWheel.LEFT));
-        strafeEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, Constants.EncoderWheel.CENTER));
+        rightEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, RobotConstants.EncoderWheel.RIGHT));
+        leftEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, RobotConstants.EncoderWheel.LEFT));
+        strafeEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, RobotConstants.EncoderWheel.CENTER));
 
         leftEncoder.setDirection(Encoder.FORWARD);
         rightEncoder.setDirection(Encoder.FORWARD);

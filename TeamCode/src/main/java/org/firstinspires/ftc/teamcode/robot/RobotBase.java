@@ -31,10 +31,10 @@ public class RobotBase {
     protected RobotBase(HardwareMap hardwareMap, boolean teleop) {
         this.TELEOP_MODE = teleop;
 
-        DcMotor frontLeft = hardwareMap.get(DcMotor.class, Constants.Wheel.FRONT_LEFT);
-        DcMotor frontRight = hardwareMap.get(DcMotor.class, Constants.Wheel.FRONT_RIGHT);
-        DcMotor backLeft = hardwareMap.get(DcMotor.class, Constants.Wheel.BACK_LEFT);
-        DcMotor backRight = hardwareMap.get(DcMotor.class, Constants.Wheel.BACK_RIGHT);
+        DcMotor frontLeft = hardwareMap.get(DcMotor.class, RobotConstants.Wheel.FRONT_LEFT);
+        DcMotor frontRight = hardwareMap.get(DcMotor.class, RobotConstants.Wheel.FRONT_RIGHT);
+        DcMotor backLeft = hardwareMap.get(DcMotor.class, RobotConstants.Wheel.BACK_LEFT);
+        DcMotor backRight = hardwareMap.get(DcMotor.class, RobotConstants.Wheel.BACK_RIGHT);
 
         if (TELEOP_MODE) {
             Follower follower = org.firstinspires.ftc.teamcode.pedroPathing.Constants.createFollower(hardwareMap);
@@ -42,11 +42,11 @@ public class RobotBase {
             mecanumDrive = new PedroPathingMecanumDrive(frontLeft, frontRight, backLeft, backRight, follower);
         }
 
-        intake = new Intake(hardwareMap.get(DcMotor.class, Constants.Motor.INTAKE_BASE),
-                hardwareMap.get(DcMotor.class, Constants.Motor.INTAKE_ASSISTANT));
+        intake = new Intake(hardwareMap.get(DcMotor.class, RobotConstants.Motor.INTAKE_BASE),
+                hardwareMap.get(DcMotor.class, RobotConstants.Motor.INTAKE_ASSISTANT));
 
-        shooter = new Shooter(hardwareMap.get(DcMotorEx.class, Constants.Motor.FLYWHEEL),
-                hardwareMap.get(Servo.class, Constants.Motor.LAUNCH_SERVO));
+        shooter = new Shooter(hardwareMap.get(DcMotorEx.class, RobotConstants.Motor.FLYWHEEL),
+                hardwareMap.get(Servo.class, RobotConstants.Motor.LAUNCH_SERVO));
     }
 
     protected RobotBase(HardwareMap hardwareMap) {

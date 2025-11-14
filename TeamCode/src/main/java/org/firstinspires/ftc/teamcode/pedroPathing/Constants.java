@@ -8,23 +8,24 @@ import com.pedropathing.ftc.drivetrains.MecanumConstants;
 import com.pedropathing.ftc.localization.Encoder;
 import com.pedropathing.ftc.localization.constants.ThreeWheelConstants;
 import com.pedropathing.ftc.localization.localizers.ThreeWheelLocalizer;
-import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.robot.Constants.EncoderWheel;
+import org.firstinspires.ftc.teamcode.robot.RobotConstants;
+import org.firstinspires.ftc.teamcode.robot.RobotConstants.EncoderWheel;
 
 public class Constants {
 
-    public static double motorMaxPower = 0.5;
+    public static double AUTONOMOUS_MOTOR_MAX_POWER = 0.5;
+    public static double TELEOP_MOTOR_MAX_POWER = 0.8;
 
     public static MecanumConstants mecanumConstants = new MecanumConstants()
-            .maxPower(motorMaxPower)
-            .rightFrontMotorName(org.firstinspires.ftc.teamcode.robot.Constants.Wheel.FRONT_RIGHT)
-            .rightRearMotorName(org.firstinspires.ftc.teamcode.robot.Constants.Wheel.BACK_RIGHT)
-            .leftFrontMotorName(org.firstinspires.ftc.teamcode.robot.Constants.Wheel.FRONT_LEFT)
-            .leftRearMotorName(org.firstinspires.ftc.teamcode.robot.Constants.Wheel.BACK_LEFT)
+            .maxPower(AUTONOMOUS_MOTOR_MAX_POWER)
+            .rightFrontMotorName(RobotConstants.Wheel.FRONT_RIGHT)
+            .rightRearMotorName(RobotConstants.Wheel.BACK_RIGHT)
+            .leftFrontMotorName(RobotConstants.Wheel.FRONT_LEFT)
+            .leftRearMotorName(RobotConstants.Wheel.BACK_LEFT)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)

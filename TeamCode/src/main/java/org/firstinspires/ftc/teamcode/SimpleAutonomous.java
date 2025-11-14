@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.robot.Constants;
+import org.firstinspires.ftc.teamcode.robot.RobotConstants;
 
 import java.util.concurrent.TimeUnit;
 @Autonomous
@@ -24,10 +24,10 @@ public class SimpleAutonomous extends OpMode {
 
     @Override
     public void init() {
-        frontLeft = hardwareMap.get(DcMotor.class, Constants.Wheel.FRONT_LEFT);
-        frontRight = hardwareMap.get(DcMotor.class, Constants.Wheel.FRONT_RIGHT);
-        backLeft = hardwareMap.get(DcMotor.class, Constants.Wheel.BACK_LEFT);
-        backRight = hardwareMap.get(DcMotor.class, Constants.Wheel.BACK_RIGHT);
+        frontLeft = hardwareMap.get(DcMotor.class, RobotConstants.Wheel.FRONT_LEFT);
+        frontRight = hardwareMap.get(DcMotor.class, RobotConstants.Wheel.FRONT_RIGHT);
+        backLeft = hardwareMap.get(DcMotor.class, RobotConstants.Wheel.BACK_LEFT);
+        backRight = hardwareMap.get(DcMotor.class, RobotConstants.Wheel.BACK_RIGHT);
         frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
         backRight.setDirection(DcMotorSimple.Direction.REVERSE);
     }

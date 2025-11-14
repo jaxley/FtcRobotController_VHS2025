@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.robot;
 
-public class Constants {
+public class RobotConstants {
 
     public static final class Wheel {
         public static final String FRONT_LEFT = "frontLeft"; // expansion hub port 0 // 0
