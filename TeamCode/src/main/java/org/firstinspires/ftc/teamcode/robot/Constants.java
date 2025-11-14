@@ -10,9 +10,10 @@ public class Constants {
     }
 
     public static final class Motor {
-        public static final String INTAKE = "intake";
+        public static final String INTAKE_BASE = "intake";
         public static final String FLYWHEEL = "flywheel";
         public static final String LAUNCH_SERVO = "launch servo";
+        public static final String INTAKE_ASSISTANT = "intakeAssistant";
     }
 
     public static final class EncoderWheel {
