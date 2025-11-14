@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.pedroPathing;
 
+import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.aButton;
+import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.bButton;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.changes;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.drawOnlyCurrent;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.draw;
@@ -13,16 +15,20 @@ import com.bylazar.configurables.annotations.IgnoreConfigurable;
 import com.bylazar.field.FieldManager;
 import com.bylazar.field.PanelsField;
 import com.bylazar.field.Style;
+import com.bylazar.gamepad.PanelsGamepad;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.*;
 import com.pedropathing.math.*;
 import com.pedropathing.paths.*;
-import com.pedropathing.telemetry.SelectableOpMode;
+import com.pedropathing.telemetry.PanelsSelectableOpMode;
 import com.pedropathing.util.*;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
+
+import org.firstinspires.ftc.teamcode.utils.DButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +41,7 @@ import java.util.List;
  */
 @Configurable
 @TeleOp(name = "Tuning", group = "Pedro Pathing")
-public class Tuning extends SelectableOpMode {
+public class Tuning extends PanelsSelectableOpMode {
     public static Follower follower;
 
     @IgnoreConfigurable
@@ -47,7 +53,11 @@ public class Tuning extends SelectableOpMode {
     @IgnoreConfigurable
     static ArrayList<String> changes = new ArrayList<>();
 
+    static DButton aButton = new DButton();
+    static DButton bButton = new DButton();
+
     public Tuning() {
+
         super("Select a Tuning OpMode", s -> {
             s.folder("Localization", l -> {
                 l.add("Localization Test", LocalizationTest::new);
@@ -73,10 +83,12 @@ public class Tuning extends SelectableOpMode {
                 p.add("Circle", Circle::new);
             });
         });
+        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
     }
 
     @Override
     public void onSelect() {
+        panelsGamepad = PanelsGamepad.INSTANCE.getFirstManager().asCombinedFTCGamepad(gamepad1);
         if (follower == null) {
             follower = Constants.createFollower(hardwareMap);
             PanelsConfigurables.INSTANCE.refreshClass(this);
@@ -88,7 +100,7 @@ public class Tuning extends SelectableOpMode {
 
         poseHistory = follower.getPoseHistory();
 
-        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+        Drawing.init();
     }
 
     @Override
@@ -124,8 +136,12 @@ public class Tuning extends SelectableOpMode {
  * @version 1.0, 5/6/2024
  */
 class LocalizationTest extends OpMode {
+    private Gamepad panelsGamepad;
+
     @Override
-    public void init() {}
+    public void init() {
+        follower.setStartingPose(new Pose(72,72));
+    }
 
     /** This initializes the PoseUpdater, the mecanum drive motors, and the Panels telemetry. */
     @Override
@@ -149,7 +165,9 @@ class LocalizationTest extends OpMode {
      */
     @Override
     public void loop() {
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
+        panelsGamepad = PanelsGamepad.INSTANCE.getFirstManager().asCombinedFTCGamepad(gamepad1);
+
+        follower.setTeleOpDrive(-panelsGamepad.left_stick_y, -panelsGamepad.left_stick_x, -panelsGamepad.right_stick_x, true);
         follower.update();
 
         telemetryM.debug("x:" + follower.getPose().getX());
@@ -180,6 +198,7 @@ class ForwardTuner extends OpMode {
 
     @Override
     public void init() {
+        follower.setStartingPose(new Pose(72,72));
         follower.update();
         drawOnlyCurrent();
     }
@@ -202,7 +221,7 @@ class ForwardTuner extends OpMode {
 
         telemetryM.debug("Distance Moved: " + follower.getPose().getX());
         telemetryM.debug("The multiplier will display what your forward ticks to inches should be to scale your current distance to " + DISTANCE + " inches.");
-        telemetryM.debug("Multiplier: " + (DISTANCE / (follower.getPose().getX() / follower.getPoseTracker().getLocalizer().getForwardMultiplier())));
+        telemetryM.debug("Multiplier: " + (DISTANCE / ((follower.getPose().getX() - 72) / follower.getPoseTracker().getLocalizer().getForwardMultiplier())));
         telemetryM.update(telemetry);
 
         draw();
@@ -227,6 +246,7 @@ class LateralTuner extends OpMode {
 
     @Override
     public void init() {
+        follower.setStartingPose(new Pose(72,72));
         follower.update();
         drawOnlyCurrent();
     }
@@ -234,7 +254,7 @@ class LateralTuner extends OpMode {
     /** This initializes the PoseUpdater as well as the Panels telemetry. */
     @Override
     public void init_loop() {
-        telemetryM.debug("Pull your robot to the left " + DISTANCE + " inches. Your strafe ticks to inches will be shown on the telemetry.");
+        telemetryM.debug("Pull your robot to the right " + DISTANCE + " inches. Your strafe ticks to inches will be shown on the telemetry.");
         telemetryM.update(telemetry);
         drawOnlyCurrent();
     }
@@ -249,7 +269,7 @@ class LateralTuner extends OpMode {
 
         telemetryM.debug("Distance Moved: " + follower.getPose().getY());
         telemetryM.debug("The multiplier will display what your strafe ticks to inches should be to scale your current distance to " + DISTANCE + " inches.");
-        telemetryM.debug("Multiplier: " + (DISTANCE / (follower.getPose().getY() / follower.getPoseTracker().getLocalizer().getLateralMultiplier())));
+        telemetryM.debug("Multiplier: " + (DISTANCE / ((follower.getPose().getY() - 72) / follower.getPoseTracker().getLocalizer().getLateralMultiplier())));
         telemetryM.update(telemetry);
 
         draw();
@@ -274,6 +294,7 @@ class TurnTuner extends OpMode {
 
     @Override
     public void init() {
+        follower.setStartingPose(new Pose(72,72));
         follower.update();
         drawOnlyCurrent();
     }
@@ -309,7 +330,7 @@ class TurnTuner extends OpMode {
  * power until it reaches some specified distance. It records the most recent velocities, and on
  * reaching the end of the distance, it averages them and prints out the velocity obtained. It is
  * recommended to run this multiple times on a full battery to get the best results. What this does
- * is, when paired with StrafeVelocityTuner, allows Constants to create a Vector that
+ * is, when paired with StrafeVelocityTuner, allows FollowerConstants to create a Vector that
  * empirically represents the direction your mecanum wheels actually prefer to go in, allowing for
  * more accurate following.
  *
@@ -325,9 +346,13 @@ class ForwardVelocityTuner extends OpMode {
     public static double RECORD_NUMBER = 10;
 
     private boolean end;
+    private Gamepad panelsGamepad;
 
     @Override
-    public void init() {}
+    public void init() {
+
+        follower.setStartingPose(new Pose(72, 72));
+    }
 
     /** This initializes the drive motors as well as the cache of velocities and the Panels telemetry. */
     @Override
@@ -338,7 +363,6 @@ class ForwardVelocityTuner extends OpMode {
         telemetryM.debug("Press B on game pad 1 to stop.");
         telemetryM.debug("pose", follower.getPose());
         telemetryM.update(telemetry);
-
         follower.update();
         drawOnlyCurrent();
     }
@@ -362,7 +386,11 @@ class ForwardVelocityTuner extends OpMode {
      */
     @Override
     public void loop() {
-        if (gamepad1.bWasPressed()) {
+        panelsGamepad = PanelsGamepad.INSTANCE.getFirstManager().asCombinedFTCGamepad(gamepad1);
+
+        Tuning.bButton.update(panelsGamepad.b);
+        Tuning.aButton.update(panelsGamepad.a);
+        if (Tuning.bButton.pressed()) {
             stopRobot();
             requestOpModeStop();
         }
@@ -372,7 +400,7 @@ class ForwardVelocityTuner extends OpMode {
 
 
         if (!end) {
-            if (Math.abs(follower.getPose().getX()) > DISTANCE) {
+            if (Math.abs(follower.getPose().getX()) > (DISTANCE + 72)) {
                 end = true;
                 stopRobot();
             } else {
@@ -400,7 +428,7 @@ class ForwardVelocityTuner extends OpMode {
             telemetryM.update(telemetry);
             telemetry.update();
 
-            if (gamepad1.aWasPressed()) {
+            if (Tuning.aButton.pressed()) {
                 follower.setXVelocity(average);
                 String message = "XMovement: " + average;
                 changes.add(message);
@@ -410,11 +438,11 @@ class ForwardVelocityTuner extends OpMode {
 }
 
 /**
- * This is the LateralVelocityTuner autonomous follower OpMode. This runs the robot left at max
+ * This is the StrafeVelocityTuner autonomous follower OpMode. This runs the robot left at max
  * power until it reaches some specified distance. It records the most recent velocities, and on
  * reaching the end of the distance, it averages them and prints out the velocity obtained. It is
  * recommended to run this multiple times on a full battery to get the best results. What this does
- * is, when paired with ForwardVelocityTuner, allows Constants to create a Vector that
+ * is, when paired with ForwardVelocityTuner, allows FollowerConstants to create a Vector that
  * empirically represents the direction your mecanum wheels actually prefer to go in, allowing for
  * more accurate following.
  *
@@ -433,7 +461,9 @@ class LateralVelocityTuner extends OpMode {
     private boolean end;
 
     @Override
-    public void init() {}
+    public void init() {
+        follower.setStartingPose(new Pose(72, 72));
+    }
 
     /**
      * This initializes the drive motors as well as the cache of velocities and the Panels
@@ -446,7 +476,6 @@ class LateralVelocityTuner extends OpMode {
         telemetryM.debug("After running the distance, the robot will cut power from the drivetrain and display the strafe velocity.");
         telemetryM.debug("Press B on Gamepad 1 to stop.");
         telemetryM.update(telemetry);
-
         follower.update();
         drawOnlyCurrent();
     }
@@ -469,7 +498,13 @@ class LateralVelocityTuner extends OpMode {
      */
     @Override
     public void loop() {
-        if (gamepad1.bWasPressed()) {
+        Gamepad panelsGamepad = PanelsGamepad.INSTANCE.getFirstManager().asCombinedFTCGamepad(gamepad1);
+
+        // For some reason, the panelsGamepad.bWasPressed() doesn't work reliably with the virtual gamepads
+        // DButton works great though. the button press is being recorded.
+        Tuning.bButton.update(panelsGamepad.b);
+        Tuning.aButton.update(panelsGamepad.a);
+        if (Tuning.bButton.pressed()) {
             stopRobot();
             requestOpModeStop();
         }
@@ -478,7 +513,7 @@ class LateralVelocityTuner extends OpMode {
         draw();
 
         if (!end) {
-            if (Math.abs(follower.getPose().getY()) > DISTANCE) {
+            if (Math.abs(follower.getPose().getY()) > (DISTANCE + 72)) {
                 end = true;
                 stopRobot();
             } else {
@@ -500,7 +535,7 @@ class LateralVelocityTuner extends OpMode {
             telemetryM.debug("Press A to set the Lateral Velocity temporarily (while robot remains on).");
             telemetryM.update(telemetry);
 
-            if (gamepad1.aWasPressed()) {
+            if (aButton.pressed()) {
                 follower.setYVelocity(average);
                 String message = "YMovement: " + average;
                 changes.add(message);
@@ -535,7 +570,9 @@ class ForwardZeroPowerAccelerationTuner extends OpMode {
     private boolean end;
 
     @Override
-    public void init() {}
+    public void init() {
+        follower.setStartingPose(new Pose(72, 72));
+    }
 
     /** This initializes the drive motors as well as the Panels telemetryM. */
     @Override
@@ -566,7 +603,11 @@ class ForwardZeroPowerAccelerationTuner extends OpMode {
      */
     @Override
     public void loop() {
-        if (gamepad1.bWasPressed()) {
+        Gamepad panelsGamepad = PanelsGamepad.INSTANCE.getFirstManager().asCombinedFTCGamepad(gamepad1);
+
+        Tuning.bButton.update(panelsGamepad.b);
+        Tuning.aButton.update(panelsGamepad.a);
+        if (bButton.pressed()) {
             stopRobot();
             requestOpModeStop();
         }
@@ -604,7 +645,7 @@ class ForwardZeroPowerAccelerationTuner extends OpMode {
             telemetryM.debug("Press A to set the Forward Zero Power Acceleration temporarily (while robot remains on).");
             telemetryM.update(telemetry);
 
-            if (gamepad1.aWasPressed()) {
+            if (aButton.pressed()) {
                 follower.getConstants().setForwardZeroPowerAcceleration(average);
                 String message = "Forward Zero Power Acceleration: " + average;
                 changes.add(message);
@@ -637,7 +678,9 @@ class LateralZeroPowerAccelerationTuner extends OpMode {
     private boolean end;
 
     @Override
-    public void init() {}
+    public void init() {
+        follower.setStartingPose(new Pose(72, 72));
+    }
 
     /** This initializes the drive motors as well as the Panels telemetry. */
     @Override
@@ -668,7 +711,11 @@ class LateralZeroPowerAccelerationTuner extends OpMode {
      */
     @Override
     public void loop() {
-        if (gamepad1.bWasPressed()) {
+        Gamepad panelsGamepad = PanelsGamepad.INSTANCE.getFirstManager().asCombinedFTCGamepad(gamepad1);
+
+        Tuning.bButton.update(panelsGamepad.b);
+        Tuning.aButton.update(panelsGamepad.a);
+        if (bButton.pressed()) {
             stopRobot();
             requestOpModeStop();
         }
@@ -706,7 +753,7 @@ class LateralZeroPowerAccelerationTuner extends OpMode {
             telemetryM.debug("Press A to set the Lateral Zero Power Acceleration temporarily (while robot remains on).");
             telemetryM.update(telemetry);
 
-            if (gamepad1.aWasPressed()) {
+            if (aButton.pressed()) {
                 follower.getConstants().setLateralZeroPowerAcceleration(average);
                 String message = "Lateral Zero Power Acceleration: " + average;
                 changes.add(message);
@@ -733,7 +780,9 @@ class TranslationalTuner extends OpMode {
     private Path backwards;
 
     @Override
-    public void init() {}
+    public void init() {
+        follower.setStartingPose(new Pose(72, 72));
+    }
 
     /** This initializes the Follower and creates the forward and backward Paths. */
     @Override
@@ -750,9 +799,9 @@ class TranslationalTuner extends OpMode {
     public void start() {
         follower.deactivateAllPIDFs();
         follower.activateTranslational();
-        forwards = new Path(new BezierLine(new Pose(0,0), new Pose(DISTANCE,0)));
+        forwards = new Path(new BezierLine(new Pose(72,72), new Pose(DISTANCE + 72,72)));
         forwards.setConstantHeadingInterpolation(0);
-        backwards = new Path(new BezierLine(new Pose(DISTANCE,0), new Pose(0,0)));
+        backwards = new Path(new BezierLine(new Pose(DISTANCE + 72,72), new Pose(72,72)));
         backwards.setConstantHeadingInterpolation(0);
         follower.followPath(forwards);
     }
@@ -797,7 +846,9 @@ class HeadingTuner extends OpMode {
     private Path backwards;
 
     @Override
-    public void init() {}
+    public void init() {
+        follower.setStartingPose(new Pose(72, 72));
+    }
 
     /**
      * This initializes the Follower and creates the forward and backward Paths. Additionally, this
@@ -817,9 +868,9 @@ class HeadingTuner extends OpMode {
     public void start() {
         follower.deactivateAllPIDFs();
         follower.activateHeading();
-        forwards = new Path(new BezierLine(new Pose(0,0), new Pose(DISTANCE,0)));
+        forwards = new Path(new BezierLine(new Pose(72,72), new Pose(DISTANCE + 72,72)));
         forwards.setConstantHeadingInterpolation(0);
-        backwards = new Path(new BezierLine(new Pose(DISTANCE,0), new Pose(0,0)));
+        backwards = new Path(new BezierLine(new Pose(DISTANCE + 72,72), new Pose(72,72)));
         backwards.setConstantHeadingInterpolation(0);
         follower.followPath(forwards);
     }
@@ -865,7 +916,9 @@ class DriveTuner extends OpMode {
     private PathChain backwards;
 
     @Override
-    public void init() {}
+    public void init() {
+        follower.setStartingPose(new Pose(72, 72));
+    }
 
     /**
      * This initializes the Follower and creates the forward and backward Paths. Additionally, this
@@ -885,16 +938,16 @@ class DriveTuner extends OpMode {
     public void start() {
         follower.deactivateAllPIDFs();
         follower.activateDrive();
-        
+
         forwards = follower.pathBuilder()
                 .setGlobalDeceleration()
-                .addPath(new BezierLine(new Pose(0,0), new Pose(DISTANCE,0)))
+                .addPath(new BezierLine(new Pose(72,72), new Pose(DISTANCE + 72,72)))
                 .setConstantHeadingInterpolation(0)
                 .build();
 
         backwards = follower.pathBuilder()
                 .setGlobalDeceleration()
-                .addPath(new BezierLine(new Pose(DISTANCE,0), new Pose(0,0)))
+                .addPath(new BezierLine(new Pose(DISTANCE + 72,72), new Pose(72,72)))
                 .setConstantHeadingInterpolation(0)
                 .build();
 
@@ -943,7 +996,9 @@ class Line extends OpMode {
     private Path backwards;
 
     @Override
-    public void init() {}
+    public void init() {
+        follower.setStartingPose(new Pose(72, 72));
+    }
 
     /** This initializes the Follower and creates the forward and backward Paths. */
     @Override
@@ -959,9 +1014,9 @@ class Line extends OpMode {
     @Override
     public void start() {
         follower.activateAllPIDFs();
-        forwards = new Path(new BezierLine(new Pose(0,0), new Pose(DISTANCE,0)));
+        forwards = new Path(new BezierLine(new Pose(72,72), new Pose(DISTANCE + 72,72)));
         forwards.setConstantHeadingInterpolation(0);
-        backwards = new Path(new BezierLine(new Pose(DISTANCE,0), new Pose(0,0)));
+        backwards = new Path(new BezierLine(new Pose(DISTANCE + 72,72), new Pose(72,72)));
         backwards.setConstantHeadingInterpolation(0);
         follower.followPath(forwards);
     }
@@ -1008,7 +1063,9 @@ class CentripetalTuner extends OpMode {
     private Path backwards;
 
     @Override
-    public void init() {}
+    public void init() {
+        follower.setStartingPose(new Pose(72, 72));
+    }
 
     /**
      * This initializes the Follower and creates the forward and backward Paths.
@@ -1027,8 +1084,8 @@ class CentripetalTuner extends OpMode {
     @Override
     public void start() {
         follower.activateAllPIDFs();
-        forwards = new Path(new BezierCurve(new Pose(), new Pose(Math.abs(DISTANCE),0), new Pose(Math.abs(DISTANCE),DISTANCE)));
-        backwards = new Path(new BezierCurve(new Pose(Math.abs(DISTANCE),DISTANCE), new Pose(Math.abs(DISTANCE),0), new Pose(0,0)));
+        forwards = new Path(new BezierCurve(new Pose(72,72), new Pose(Math.abs(DISTANCE) + 72,72), new Pose(Math.abs(DISTANCE) + 72,DISTANCE + 72)));
+        backwards = new Path(new BezierCurve(new Pose(Math.abs(DISTANCE) + 72,DISTANCE + 72), new Pose(Math.abs(DISTANCE) + 72,72), new Pose(72,72)));
 
         backwards.setTangentHeadingInterpolation();
         backwards.reverseHeadingInterpolation();
@@ -1069,9 +1126,9 @@ class CentripetalTuner extends OpMode {
  */
 class Triangle extends OpMode {
 
-    private final Pose startPose = new Pose(0, 0, Math.toRadians(0));
-    private final Pose interPose = new Pose(24, -24, Math.toRadians(90));
-    private final Pose endPose = new Pose(24, 24, Math.toRadians(45));
+    private final Pose startPose = new Pose(72, 72, Math.toRadians(0));
+    private final Pose interPose = new Pose(24 + 72, -24 + 72, Math.toRadians(90));
+    private final Pose endPose = new Pose(24 + 72, 24 + 72, Math.toRadians(45));
 
     private PathChain triangle;
 
@@ -1090,7 +1147,9 @@ class Triangle extends OpMode {
     }
 
     @Override
-    public void init() {}
+    public void init() {
+        follower.setStartingPose(new Pose(72, 72));
+    }
 
     @Override
     public void init_loop() {
@@ -1136,14 +1195,14 @@ class Circle extends OpMode {
 
     public void start() {
         circle = follower.pathBuilder()
-                .addPath(new BezierCurve(new Pose(0, 0), new Pose(RADIUS, 0), new Pose(RADIUS, RADIUS)))
-                .setHeadingInterpolation(HeadingInterpolator.facingPoint(0, RADIUS))
-                .addPath(new BezierCurve(new Pose(RADIUS, RADIUS), new Pose(RADIUS, 2 * RADIUS), new Pose(0, 2 * RADIUS)))
-                .setHeadingInterpolation(HeadingInterpolator.facingPoint(0, RADIUS))
-                .addPath(new BezierCurve(new Pose(0, 2 * RADIUS), new Pose(-RADIUS, 2 * RADIUS), new Pose(-RADIUS, RADIUS)))
-                .setHeadingInterpolation(HeadingInterpolator.facingPoint(0, RADIUS))
-                .addPath(new BezierCurve(new Pose(-RADIUS, RADIUS), new Pose(-RADIUS, 0), new Pose(0, 0)))
-                .setHeadingInterpolation(HeadingInterpolator.facingPoint(0, RADIUS))
+                .addPath(new BezierCurve(new Pose(72, 72), new Pose(RADIUS + 72, 72), new Pose(RADIUS + 72, RADIUS + 72)))
+                .setHeadingInterpolation(HeadingInterpolator.facingPoint(72, RADIUS + 72))
+                .addPath(new BezierCurve(new Pose(RADIUS + 72, RADIUS + 72), new Pose(RADIUS + 72, (2 * RADIUS) + 72), new Pose(72, (2 * RADIUS) + 72)))
+                .setHeadingInterpolation(HeadingInterpolator.facingPoint(72, RADIUS + 72))
+                .addPath(new BezierCurve(new Pose(72, (2 * RADIUS) + 72), new Pose(-RADIUS + 72, (2 * RADIUS) + 72), new Pose(-RADIUS + 72, RADIUS + 72)))
+                .setHeadingInterpolation(HeadingInterpolator.facingPoint(72, RADIUS + 72))
+                .addPath(new BezierCurve(new Pose(-RADIUS + 72, RADIUS + 72), new Pose(-RADIUS + 72, 72), new Pose(72, 72)))
+                .setHeadingInterpolation(HeadingInterpolator.facingPoint(72, RADIUS + 72))
                 .build();
         follower.followPath(circle);
     }
@@ -1159,7 +1218,9 @@ class Circle extends OpMode {
     }
 
     @Override
-    public void init() {}
+    public void init() {
+        follower.setStartingPose(new Pose(72, 72));
+    }
 
     /**
      * This runs the OpMode, updating the Follower as well as printing out the debug statements to

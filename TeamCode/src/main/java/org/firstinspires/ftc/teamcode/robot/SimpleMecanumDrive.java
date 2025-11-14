@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.robot;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
-
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -20,7 +18,7 @@ import org.firstinspires.ftc.teamcode.utils.DButton;
  *
  * @author Brandon Gong
  */
-public class SimpleMecanumDrive {
+public class SimpleMecanumDrive implements IMecanumDrive {
     public static final int FL_SPEED_IDX = 0;
     public static final int FR_SPEED_IDX = 1;
     public static final int BL_SPEED_IDX = 2;
@@ -56,14 +54,38 @@ public class SimpleMecanumDrive {
         // Mecanum drive is controlled with three axes: drive (front-and-back),
         // strafe (left-and-right), and twist (rotating the whole chassis).
         drive = driveGamepad.left_stick_y * driveDir * driveSpeed;
-        strafe = -driveGamepad.left_stick_x * driveDir* driveSpeed;
-        twist = 0.5 * -driveGamepad.right_stick_x* driveSpeed;
+        strafe = -driveGamepad.left_stick_x * driveDir * driveSpeed;
+        twist = 0.5 * -driveGamepad.right_stick_x * driveSpeed;
+    }
+
+    public void hold() {
+        return; // not supported
+    }
+
+    @Override
+    public DcMotor getFrontLeft() {
+        return null;
+    }
+
+    @Override
+    public DcMotor getFrontRight() {
+        return null;
+    }
+
+    @Override
+    public DcMotor getBackLeft() {
+        return null;
+    }
+
+    @Override
+    public DcMotor getBackRight() {
+        return null;
     }
 
     public void run(Gamepad driveGamepad, Telemetry telemetry) {
         init(driveGamepad);
-
         dirSwitch.update(driveGamepad.left_bumper);
+
         if(dirSwitch.pressed())
             driveDir = -driveDir;
 

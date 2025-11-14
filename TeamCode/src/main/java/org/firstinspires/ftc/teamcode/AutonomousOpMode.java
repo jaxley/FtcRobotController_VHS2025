@@ -1,73 +1,125 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.robot.Poses.blueLowLeavePose;
+import static org.firstinspires.ftc.teamcode.robot.Poses.blueShootingPose;
+import static org.firstinspires.ftc.teamcode.robot.Poses.blueStartingPose1;
+import static org.firstinspires.ftc.teamcode.robot.Poses.blueStartingPose2;
+import static org.firstinspires.ftc.teamcode.robot.Poses.redLowLeavePose;
+import static org.firstinspires.ftc.teamcode.robot.Poses.redShootingPose;
+import static org.firstinspires.ftc.teamcode.robot.Poses.redStartingPose1;
+import static org.firstinspires.ftc.teamcode.robot.Poses.redStartingPose2;
+import static org.firstinspires.ftc.teamcode.robot.Poses.redTopLeavePose;
+
+import com.bylazar.telemetry.JoinedTelemetry;
+import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.paths.Path;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.robot.RobotBase;
+import org.firstinspires.ftc.teamcode.robot.RobotBaseAutonomous;
 
 /**
  * Based on https://pedropathing.com/docs/pathing/examples/auto
  */
+
 @Autonomous
 public class AutonomousOpMode extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
-    private int pathState;
+    private RobotBaseAutonomous robotBase;
+
+    private PathState pathState;
 
     // Pedro paths
-    private Path path1;
-    private Path path2;
-    private Path path3;
-    private Path path4;
-    private Path path5;
-    private RobotBase robotBase;
+    private PathChain redHitAndRun;
+    private PathChain blueHitAndRun;
+    private PathChain blueLeaveStart1;
+    private PathChain redLeaveStart1;
+    private JoinedTelemetry joinedTelemetry;
 
     private void buildPaths() {
         // TODO: build our pedro paths here
+        // TODO - these hit and run paths are using OLD shooting positions in front the goals. Need to change based on updated shooter mechanism
+        redHitAndRun = follower.pathBuilder()
+                .addPath(new BezierLine(redStartingPose2, redShootingPose))
+                .setConstantHeadingInterpolation(redStartingPose2.getHeading())
+                .addPath(new BezierLine(redShootingPose, redTopLeavePose))
+                .build();
+
+        blueHitAndRun = follower.pathBuilder()
+                .addPath(new BezierLine(blueStartingPose2, blueShootingPose))
+                .setConstantHeadingInterpolation(blueStartingPose2.getHeading())
+                .addPath(new BezierLine(blueShootingPose, blueLowLeavePose))
+                .build();
+
+        // TODO - rename these - these are minimal paths to exit the lower launch zone to get leave points ONLY
+        redLeaveStart1 = follower.pathBuilder()
+                .addPath(new BezierLine(redStartingPose1, redLowLeavePose))
+                .setConstantHeadingInterpolation(redStartingPose1.getHeading())
+                .build();
+
+        blueLeaveStart1 = follower.pathBuilder()
+                .addPath(new BezierLine(blueStartingPose1, blueLowLeavePose))
+                .setConstantHeadingInterpolation(blueStartingPose1.getHeading())
+                .build();
+
+        // TODO - we are missing paths to collect balls from each of the rows...
     }
 
     /**
      * This is the main loop of the OpMode, it will run repeatedly after clicking "Play".
      **/
+
+    private boolean done;
+
     @Override
     public void loop() {
 
         // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();
-        autonomousPathUpdate();
+        // TODO: we need to configure the state machine
+        //autonomousPathUpdate();
+
+        if (!done && !follower.isBusy()) {
+            follower.followPath(redLeaveStart1, true);
+            done = true;
+        }
 
         // Feedback to Driver Hub for debugging
-        telemetry.addData("path state", pathState);
-        telemetry.addData("x", follower.getPose().getX());
-        telemetry.addData("y", follower.getPose().getY());
-        telemetry.addData("heading", follower.getPose().getHeading());
-        telemetry.update();
+        //telemetry.addData("path state", pathState);
+        joinedTelemetry.addData("x", follower.getPose().getX());
+        joinedTelemetry.addData("y", follower.getPose().getY());
+        joinedTelemetry.addData("heading", follower.getPose().getHeading());
+        joinedTelemetry.update();
     }
 
     /**
      * This method is called once at the init of the OpMode.
      **/
+
     @Override
     public void init() {
-        buildPaths();
 
+        joinedTelemetry = new JoinedTelemetry(telemetry, PanelsTelemetry.INSTANCE.getFtcTelemetry());
         pathTimer = new Timer();
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
 
         follower = Constants.createFollower(hardwareMap);
         buildPaths();
-        follower.setStartingPose(Constants.startingPose);
+       // follower.setStartingPose(Constants.startingPose);
+        follower.setStartingPose(redStartingPose1);
     }
 
     /**
      * This method is called continuously after Init while waiting for "play".
      **/
+
     @Override
     public void init_loop() {
     }
@@ -76,22 +128,22 @@ public class AutonomousOpMode extends OpMode {
      * This method is called once at the start of the OpMode.
      * It runs all the setup actions, including building paths and starting the path system
      **/
+
     @Override
     public void start() {
         opmodeTimer.resetTimer();
-        setPathState(0);
+        //setPathState(0);
 
-        robotBase = RobotBase.getInstance(hardwareMap);
+        robotBase = RobotBaseAutonomous.getInstance(hardwareMap, telemetry);
 
-        telemetry.addData("Code Version", BuildConfig.VERSION_NAME);
-        telemetry.addData("Code Build Time", BuildConfig.APP_BUILD_TIME);
-        telemetry.addData("Status", "initialized");
-        telemetry.update();
+        joinedTelemetry.addData("Status", "initialized");
+        joinedTelemetry.update();
     }
 
     /**
      * We do not use this because everything should automatically disable
      **/
+
     @Override
     public void stop() {
     }
@@ -103,83 +155,76 @@ public class AutonomousOpMode extends OpMode {
      */
     public void autonomousPathUpdate() {
         switch (pathState) {
-            case 0:
-                follower.followPath(path1);
-                setPathState(1);
+            case SCORE_PRELOADED:
+                if (!follower.isBusy()) {
+                    //follower.followPath(path1);
+                    setNextPathState(PathState.INTAKE_ROW3);
+                }
                 break;
-            case 1:
+            case INTAKE_ROW3:
 
             /* You could check for
             - Follower State: "if(!follower.isBusy()) {}"
             - Time: "if(pathTimer.getElapsedTimeSeconds() > 1) {}"
             - Robot Position: "if(follower.getPose().getX() > 36) {}"
             */
-
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if (!follower.isBusy()) {
                     /* Score Preload */
-
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    follower.followPath(path2, true);
-                    setPathState(2);
+
+                    //follower.followPath(path2, true);
+                    setNextPathState(PathState.SCORE);
                 }
                 break;
-            case 2:
+            case INTAKE_ROW2:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup1Pose's position */
+
                 if (!follower.isBusy()) {
                     /* Grab Sample */
-
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    follower.followPath(path3, true);
-                    setPathState(3);
+
+                    //follower.followPath(path3, true);
+                    setNextPathState(PathState.SCORE);
                 }
                 break;
-            case 3:
+            case INTAKE_ROW1:
+                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
+
+                if (!follower.isBusy()) {
+                    /* Score Sample */
+                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
+
+                    //follower.followPath(path4, true);
+                    setNextPathState(PathState.SCORE);
+                }
+                break;
+            case SCORE:
+                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup2Pose's position */
+
+                if (!follower.isBusy()) {
+                    /* Grab Sample */
+                    /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
+                    //follower.followPath(path5, true);
+                    // TODO: SCORE state can lead to more than one next state, including SCORE_LEAVE_POINTS
+                    // How should this handle those cases?
+                    setNextPathState(PathState.INTAKE_ROW2);
+                }
+                break;
+            case SCORE_LEAVE_POINTS:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if (!follower.isBusy()) {
                     /* Score Sample */
-
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    follower.followPath(path4, true);
-                    setPathState(4);
+                    // follower.followPath(grabPickup3, true);
+                    // TODO - do we want to consider a timer-based trigger to enter this state so we do it before auto ends?
+                    setNextPathState(PathState.AUTO_DONE);
                 }
                 break;
-            case 4:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup2Pose's position */
-                if (!follower.isBusy()) {
-                    /* Grab Sample */
-
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    follower.followPath(path5, true);
-                    setPathState(5);
-                }
-                break;
-            /*            case 5:
-             *//* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position *//*
-                if(!follower.isBusy()) {
-                    *//* Score Sample *//*
-
-             *//* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample *//*
-                    follower.followPath(grabPickup3,true);
-                    setPathState(6);
-                }
-                break;
-            case 6:
-                *//* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup3Pose's position *//*
-                if(!follower.isBusy()) {
-                    *//* Grab Sample *//*
-
-             *//* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample *//*
-                    follower.followPath(scorePickup3, true);
-                    setPathState(7);
-                }
-                break;*/
-            case 7:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
-                if (!follower.isBusy()) {
-                    /* Set the state to a Case we won't use or define, so it just stops running an new paths */
-                    setPathState(-1);
-                }
+            case AUTO_DONE:
+                // terminal state
+                // Stop robot
+                robotBase.stop(telemetry);
                 break;
         }
     }
@@ -187,8 +232,21 @@ public class AutonomousOpMode extends OpMode {
     /**
      * These change the states of the paths and actions. It will also reset the timers of the individual switches
      **/
-    public void setPathState(int pState) {
+
+    public void setNextPathState(PathState pState) {
         pathState = pState;
         pathTimer.resetTimer();
+    }
+
+    // Use an enum to use *named states* for the path follower. integers vs. names aren't good
+    // for human comprehension. These are suggestions
+    public enum PathState {
+        SCORE_PRELOADED,
+        INTAKE_ROW1,
+        INTAKE_ROW2,
+        INTAKE_ROW3,
+        SCORE,
+        SCORE_LEAVE_POINTS,
+        AUTO_DONE
     }
 }
