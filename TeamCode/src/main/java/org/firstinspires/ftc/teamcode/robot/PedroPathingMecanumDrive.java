@@ -26,6 +26,22 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
         this.backRight = backRight;
     }
 
+    public DcMotor getFrontLeft() {
+        return frontLeft;
+    }
+
+    public DcMotor getFrontRight() {
+        return frontRight;
+    }
+
+    public DcMotor getBackLeft() {
+        return backLeft;
+    }
+
+    public DcMotor getBackRight() {
+        return backRight;
+    }
+
     public void init(Telemetry telemetry) {
         follower.startTeleOpDrive();
         // TODO - set this
