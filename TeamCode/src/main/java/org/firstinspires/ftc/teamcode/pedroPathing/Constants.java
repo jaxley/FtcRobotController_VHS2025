@@ -17,8 +17,7 @@ import org.firstinspires.ftc.teamcode.robot.Constants.EncoderWheel;
 
 public class Constants {
 
-    public static double motorMaxPower = 0.8;
-
+    public static double motorMaxPower = 0.5;
 
     public static MecanumConstants mecanumConstants = new MecanumConstants()
             .maxPower(motorMaxPower)
@@ -34,7 +33,7 @@ public class Constants {
             .yVelocity(45.0864789564824);
 
     public static final double PROGRAMMING_BASE_MASS = 6.713;
-    public static final double COMPETITION_BASE_MASS = 10.16047;
+    public static final double COMPETITION_BASE_MASS = 10.16047; // TODO - set this back for competition. should be runtime configurable
     public static final double ROBOT_BASE_MASS = PROGRAMMING_BASE_MASS;
 
 
@@ -60,22 +59,18 @@ public class Constants {
             .leftEncoder_HardwareMapName(EncoderWheel.LEFT)
             .rightEncoder_HardwareMapName(EncoderWheel.RIGHT)
             .strafeEncoder_HardwareMapName(EncoderWheel.CENTER)
-//            .leftEncoderDirection(Encoder.REVERSE)
-//            .rightEncoderDirection(Encoder.REVERSE)
-//            .strafeEncoderDirection(Encoder.REVERSE)
             .leftEncoderDirection(Encoder.REVERSE)
             .rightEncoderDirection(Encoder.REVERSE)
             .strafeEncoderDirection(Encoder.FORWARD)
             .leftPodY(2.625)
             .rightPodY(-3)
-            .strafePodX(-7.25) // TODO: put negative back
+            .strafePodX(-7.25)
             .forwardTicksToInches(-0.0020663255536204467)
             .strafeTicksToInches(-0.0019800424427746676)
             .turnTicksToInches(0.0019798844520130614);
 
-    public static Pose startingPose = new Pose(24, 128, Math.toRadians(37)); // TODO: Need a menu of options
-    public static Follower createFollower(HardwareMap hardwareMap) { // TODO: Need ability to create followers with different starting poses
-        ThreeWheelLocalizer localizer = new ThreeWheelLocalizer(hardwareMap, localizerConstants, startingPose);
+    public static Follower createFollower(HardwareMap hardwareMap) {
+        ThreeWheelLocalizer localizer = new ThreeWheelLocalizer(hardwareMap, localizerConstants);
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .mecanumDrivetrain(mecanumConstants)
                 .pathConstraints(pathConstraints)
