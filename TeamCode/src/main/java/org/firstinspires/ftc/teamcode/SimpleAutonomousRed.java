@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.robot.RobotConstants;
 
 import java.util.concurrent.TimeUnit;
 @Autonomous
-public class SimpleAutonomous extends OpMode {
+public class SimpleAutonomousRed extends OpMode {
 
     private DcMotor frontLeft;
     private DcMotor frontRight;
