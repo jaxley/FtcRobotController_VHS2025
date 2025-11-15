@@ -34,7 +34,7 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
 
     private double driveSpeedModifier = 1.0;
 
-    private boolean initialized;
+    private boolean initialized = false;
 
     private boolean ROBOT_CENTRIC_DRIVE = true;
     public PedroPathingMecanumDrive(DcMotor frontLeft, DcMotor frontRight,

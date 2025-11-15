@@ -45,7 +45,7 @@ public class MecanumDriveTeleOp extends LinearOpMode {
 
         // main loop
         while(opModeIsActive()) {
-            robotBase.run(driverGamepad, gamepad2, joinedTelemetry);
+            robotBase.run(driverGamepad, gamepad2, telemetry);
             telemetry.update();
         }
     }
