@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode;
 
 import com.bylazar.gamepad.PanelsGamepad;
 import com.bylazar.panels.Panels;
+import com.bylazar.telemetry.JoinedTelemetry;
+import com.bylazar.telemetry.PanelsTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -13,22 +15,36 @@ public class MecanumDriveTeleOp extends LinearOpMode {
 
     public static final String TELE_OP = "TeleOp";
 
+    private JoinedTelemetry joinedTelemetry;
+    private RobotBase robotBase;
+    private boolean usePanels = false;
+
+    @Override
+    public void waitForStart() {
+        super.waitForStart();
+        robotBase = RobotBase.getInstance(hardwareMap);
+    }
+
     @Override
     public void runOpMode() {
-        RobotBase robotBase = RobotBase.getInstance(hardwareMap);
+        joinedTelemetry = new JoinedTelemetry(telemetry, PanelsTelemetry.INSTANCE.getFtcTelemetry());
 
-        telemetry.addData("Code Version", BuildConfig.VERSION_NAME);
-        telemetry.addData("Code Build Time", BuildConfig.APP_BUILD_TIME);
-        telemetry.addData(TELE_OP, "initialized");
-        telemetry.update();
+        joinedTelemetry.addData("Code Version", BuildConfig.VERSION_NAME);
+        joinedTelemetry.addData("Code Build Time", BuildConfig.APP_BUILD_TIME);
+        joinedTelemetry.addData(TELE_OP, "initialized");
+        joinedTelemetry.update();
 
         waitForStart();
 
+        Gamepad driverGamepad = gamepad1;
+        if (usePanels) {
+            driverGamepad = PanelsGamepad.INSTANCE.getFirstManager().asCombinedFTCGamepad(gamepad1);
+        }
+
         // main loop
         while(opModeIsActive()) {
-            Gamepad panelGamepad = PanelsGamepad.INSTANCE.getFirstManager().asCombinedFTCGamepad(gamepad1);
-            robotBase.run(panelGamepad, gamepad2, telemetry);
-            telemetry.update();
+            robotBase.run(driverGamepad, gamepad2, joinedTelemetry);
+            joinedTelemetry.update();
         }
     }
 }

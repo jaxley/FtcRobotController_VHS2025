@@ -26,6 +26,14 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
 
     private final DcMotor backRight;
     private final DButton holdButton = new DButton();
+
+    private final DButton dpadUp = new DButton();
+    private final DButton dpadRight = new DButton();
+    private final DButton dpadDown = new DButton();
+    private final DButton dpadLeft = new DButton();
+
+    private double driveSpeedModifier = 1.0;
+
     private boolean initialized;
 
     private boolean ROBOT_CENTRIC_DRIVE = true;
@@ -78,7 +86,7 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
 
         follower.update();
 
-        double driveSpeed = driveGamepad.right_bumper ? 0.5 : Constants.TELEOP_MOTOR_MAX_POWER;
+        double driveSpeed = getDriveSpeed(driveGamepad);
 
         double forwardSpeed = -driveGamepad.left_stick_y * driveSpeed;
         double strafeSpeed = -driveGamepad.left_stick_x * driveSpeed;
@@ -90,11 +98,31 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
             hold();
         } else if (holdButton.released()) {
             follower.startTeleOpDrive(); // go back to manual mode
+            follower.setTeleOpDrive(forwardSpeed, strafeSpeed, turnSpeed, ROBOT_CENTRIC_DRIVE);
         }
 
         telemetry.addData(SUBSYSTEM_NAME + " FWD speed", forwardSpeed);
         telemetry.addData(SUBSYSTEM_NAME + " STRAFE speed", strafeSpeed);
         telemetry.addData(SUBSYSTEM_NAME + " TURN speed", turnSpeed);
+    }
+
+    private double getDriveSpeed(Gamepad driveGamepad) {
+        dpadUp.update(driveGamepad.dpad_up);
+        dpadRight.update(driveGamepad.dpad_right);
+        dpadDown.update(driveGamepad.dpad_down);
+        dpadLeft.update(driveGamepad.dpad_left);
+
+        if (dpadUp.pressed()) {
+            driveSpeedModifier = 1.0;
+        } else if (dpadRight.pressed()) {
+            driveSpeedModifier = 0.75;
+        } else if (dpadDown.pressed()) {
+            driveSpeedModifier = 0.50;
+        } else if (dpadLeft.pressed()) {
+            driveSpeedModifier = 0.25;
+        }
+
+        return driveSpeedModifier * Constants.TELEOP_MOTOR_MAX_POWER;
     }
 
     /**

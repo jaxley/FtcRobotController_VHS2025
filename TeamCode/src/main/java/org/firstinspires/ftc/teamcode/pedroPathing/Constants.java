@@ -21,7 +21,7 @@ public class Constants {
     public static double TELEOP_MOTOR_MAX_POWER = 0.8;
 
     public static MecanumConstants mecanumConstants = new MecanumConstants()
-            .maxPower(AUTONOMOUS_MOTOR_MAX_POWER)
+            .maxPower(TELEOP_MOTOR_MAX_POWER)
             .rightFrontMotorName(RobotConstants.Wheel.FRONT_RIGHT)
             .rightRearMotorName(RobotConstants.Wheel.BACK_RIGHT)
             .leftFrontMotorName(RobotConstants.Wheel.FRONT_LEFT)
@@ -34,8 +34,8 @@ public class Constants {
             .yVelocity(45.0864789564824);
 
     public static final double PROGRAMMING_BASE_MASS = 6.713;
-    public static final double COMPETITION_BASE_MASS = 10.16047; // TODO - set this back for competition. should be runtime configurable
-    public static final double ROBOT_BASE_MASS = PROGRAMMING_BASE_MASS;
+    public static final double COMPETITION_BASE_MASS = 10.16047;
+    public static final double ROBOT_BASE_MASS = COMPETITION_BASE_MASS;
 
 
     public static FollowerConstants followerConstants = new FollowerConstants()
