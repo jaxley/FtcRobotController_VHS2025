@@ -2,12 +2,8 @@ package org.firstinspires.ftc.teamcode;
 
 import static org.firstinspires.ftc.teamcode.robot.Poses.blueLowLeavePose;
 import static org.firstinspires.ftc.teamcode.robot.Poses.blueShootingPose;
-import static org.firstinspires.ftc.teamcode.robot.Poses.blueStartingPose1;
-import static org.firstinspires.ftc.teamcode.robot.Poses.blueStartingPose2;
 import static org.firstinspires.ftc.teamcode.robot.Poses.redLowLeavePose;
 import static org.firstinspires.ftc.teamcode.robot.Poses.redShootingPose;
-import static org.firstinspires.ftc.teamcode.robot.Poses.redStartingPose1;
-import static org.firstinspires.ftc.teamcode.robot.Poses.redStartingPose2;
 import static org.firstinspires.ftc.teamcode.robot.Poses.redTopLeavePose;
 
 import com.bylazar.telemetry.JoinedTelemetry;
@@ -45,28 +41,28 @@ public class AutonomousOpMode extends OpMode {
     private void buildPaths() {
         // TODO: build our pedro paths here
         // TODO - these hit and run paths are using OLD shooting positions in front the goals. Need to change based on updated shooter mechanism
-        redHitAndRun = follower.pathBuilder()
-                .addPath(new BezierLine(redStartingPose2, redShootingPose))
-                .setConstantHeadingInterpolation(redStartingPose2.getHeading())
-                .addPath(new BezierLine(redShootingPose, redTopLeavePose))
-                .build();
-
-        blueHitAndRun = follower.pathBuilder()
-                .addPath(new BezierLine(blueStartingPose2, blueShootingPose))
-                .setConstantHeadingInterpolation(blueStartingPose2.getHeading())
-                .addPath(new BezierLine(blueShootingPose, blueLowLeavePose))
-                .build();
-
-        // TODO - rename these - these are minimal paths to exit the lower launch zone to get leave points ONLY
-        redLeaveStart1 = follower.pathBuilder()
-                .addPath(new BezierLine(redStartingPose1, redLowLeavePose))
-                .setConstantHeadingInterpolation(redStartingPose1.getHeading())
-                .build();
-
-        blueLeaveStart1 = follower.pathBuilder()
-                .addPath(new BezierLine(blueStartingPose1, blueLowLeavePose))
-                .setConstantHeadingInterpolation(blueStartingPose1.getHeading())
-                .build();
+//        redHitAndRun = follower.pathBuilder()
+//                .addPath(new BezierLine(redStartingPose2, redShootingPose))
+//                .setConstantHeadingInterpolation(redStartingPose2.getHeading())
+//                .addPath(new BezierLine(redShootingPose, redTopLeavePose))
+//                .build();
+//
+//        blueHitAndRun = follower.pathBuilder()
+//                .addPath(new BezierLine(blueStartingPose2, blueShootingPose))
+//                .setConstantHeadingInterpolation(blueStartingPose2.getHeading())
+//                .addPath(new BezierLine(blueShootingPose, blueLowLeavePose))
+//                .build();
+//
+//        // TODO - rename these - these are minimal paths to exit the lower launch zone to get leave points ONLY
+//        redLeaveStart1 = follower.pathBuilder()
+//                .addPath(new BezierLine(redStartingPose1, redLowLeavePose))
+//                .setConstantHeadingInterpolation(redStartingPose1.getHeading())
+//                .build();
+//
+//        blueLeaveStart1 = follower.pathBuilder()
+//                .addPath(new BezierLine(blueStartingPose1, blueLowLeavePose))
+//                .setConstantHeadingInterpolation(blueStartingPose1.getHeading())
+//                .build();
 
         // TODO - we are missing paths to collect balls from each of the rows...
     }
@@ -113,7 +109,7 @@ public class AutonomousOpMode extends OpMode {
         follower = Constants.createFollower(hardwareMap);
         buildPaths();
        // follower.setStartingPose(Constants.startingPose);
-        follower.setStartingPose(redStartingPose1);
+        //follower.setStartingPose(redStartingPose1);
     }
 
     /**
