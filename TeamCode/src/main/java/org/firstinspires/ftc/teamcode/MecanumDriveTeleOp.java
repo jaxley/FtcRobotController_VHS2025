@@ -27,12 +27,14 @@ public class MecanumDriveTeleOp extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        joinedTelemetry = new JoinedTelemetry(telemetry, PanelsTelemetry.INSTANCE.getFtcTelemetry());
+        if (usePanels) {
+            joinedTelemetry = new JoinedTelemetry(telemetry, PanelsTelemetry.INSTANCE.getFtcTelemetry());
+        }
 
-        joinedTelemetry.addData("Code Version", BuildConfig.VERSION_NAME);
-        joinedTelemetry.addData("Code Build Time", BuildConfig.APP_BUILD_TIME);
-        joinedTelemetry.addData(TELE_OP, "initialized");
-        joinedTelemetry.update();
+        telemetry.addData("Code Version", BuildConfig.VERSION_NAME);
+        telemetry.addData("Code Build Time", BuildConfig.APP_BUILD_TIME);
+        telemetry.addData(TELE_OP, "initialized");
+        telemetry.update();
 
         waitForStart();
 
@@ -44,7 +46,7 @@ public class MecanumDriveTeleOp extends LinearOpMode {
         // main loop
         while(opModeIsActive()) {
             robotBase.run(driverGamepad, gamepad2, joinedTelemetry);
-            joinedTelemetry.update();
+            telemetry.update();
         }
     }
 }

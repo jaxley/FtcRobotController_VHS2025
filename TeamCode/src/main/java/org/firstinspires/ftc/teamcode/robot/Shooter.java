@@ -48,7 +48,7 @@ public class Shooter {
     }
 
     private void init(Telemetry telemetry) {
-        flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER); // TODO - should this be using the encoder since we're setting speed, not velocity?
+        flywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // TODO - should this be using the encoder since we're setting speed, not velocity?
         reset(telemetry); // Ensure firing servo at the starting position
         initialized = true;
         telemetry.addData(SUBSYSTEM_NAME, INITIALIZED + ": " +
