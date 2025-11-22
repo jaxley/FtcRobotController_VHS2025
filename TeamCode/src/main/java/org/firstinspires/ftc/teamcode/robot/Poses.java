@@ -69,7 +69,7 @@ public class Poses {
     public static final Pose redIntakePoseR2 = new Pose(104, 61, Math.toRadians(0)); // correct.
     public static final Pose blueIntakePoseR2 = new Pose(40, 61, Math.toRadians(180)); // correct.
     public static final Pose redIntakePoseR3 = new Pose(104, 85, Math.toRadians(0)); // correct.
-    public static final Pose blueIntakePoseR3 = new Pose(40, 85, Math.toRadians(180)); //correct.
+    public static final Pose blueIntakePoseR3 = new Pose(40, 82.625, Math.toRadians(180)); //correct.
     public static final Pose redStartingPoseTop_D6 = new Pose(81, 135, Math.toRadians(0)); // correct.
     public static final Pose redStartingPoseTop_E6 = new Pose(110, 135, Math.toRadians(0)); // correct
     public static final Pose redStartingPoseLow_D1 = new Pose(83, 8.5, Math.toRadians(90)); // correct
