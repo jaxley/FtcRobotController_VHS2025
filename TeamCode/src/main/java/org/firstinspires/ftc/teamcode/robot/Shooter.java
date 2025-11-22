@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.robot;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.ftc.localization.Encoder;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -21,9 +23,9 @@ public class Shooter {
 
     private boolean initialized = false;
 
-    final double flywheelSpeedRpm = -6000; // RPM
+    final double flywheelSpeedRpm = -4414; // RPM
 
-    double flywheelPower = -0.7;
+    double flywheelPower = -0.8;
     final double FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION = (double) 28 /60;
 
     final double fireDownPos = 0;
@@ -41,6 +43,7 @@ public class Shooter {
 
     DButton dpadUp = new DButton();
     DButton dpadDown = new DButton();
+    private PIDFCoefficients defaultPidCoefficients;
 
     public Shooter(DcMotorEx flywheel, Servo fireServo) {
         this.flywheel = flywheel;
@@ -50,16 +53,29 @@ public class Shooter {
     private void init(Telemetry telemetry) {
         flywheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         flywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         reset(telemetry); // Ensure firing servo at the starting position
         initialized = true;
         telemetry.addData(SUBSYSTEM_NAME, INITIALIZED + ": " +
                 (TELEOP_MODE ? "TeleOp Mode" : "Auto Mode"));
+        defaultPidCoefficients = flywheel.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
     }
-
+    @Configurable
+    public static class PID {
+        static double P = 16;
+        static double I = 3;
+        static double D = 0;
+        static double F = 0;
+    }
     public void run(Gamepad gamepad, Telemetry telemetry) {
         if (!initialized) {
             init(telemetry);
         }
+        flywheel.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(PID.P, PID.I, PID.D, PID.F));
+        telemetry.addData("P ", defaultPidCoefficients.p);
+        telemetry.addData("I ", defaultPidCoefficients.i);
+        telemetry.addData("D ", defaultPidCoefficients.d);
+        telemetry.addData("F ", defaultPidCoefficients.f);
 
         telemetry.addData(SUBSYSTEM_NAME, STARTED);
         //double lastMillis = getRuntime();
@@ -69,9 +85,9 @@ public class Shooter {
             dpadDown.update(gamepad.dpad_down);
             // dpad up and down can change flywheel power by 5% of max power
             if (dpadUp.pressed()) {
-                flywheelPower = flywheelPower - 0.05;
+                flywheelPower = flywheelPower - 0.025;
             } else if (dpadDown.pressed()) {
-                flywheelPower = flywheelPower + 0.05;
+                flywheelPower = flywheelPower + 0.025;
             }
 
             telemetry.addData(FLYWHEEL + " power", flywheelPower);
@@ -104,14 +120,15 @@ public class Shooter {
 
     public void stopFlywheel(Telemetry telemetry) {
         telemetry.addData(FLYWHEEL, STOPPED);
-//        flywheel.setVelocity(0);
-        flywheel.setPower(0);
+        flywheel.setVelocity(0);
+        //flywheel.setPower(0);
     }
 
     public void startFlywheel(Telemetry telemetry, double power) {
         telemetry.addData(FLYWHEEL, power);
-        flywheel.setPower(power);
-        //flywheel.setVelocity(-power * flywheelSpeedRpm * FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION);
+        //flywheel.setPower(power);
+        telemetry.addData("Speed Command: ", power * flywheelSpeedRpm * FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION);
+        flywheel.setVelocity(power * flywheelSpeedRpm * FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION);
     }
 
     public void fire(Telemetry telemetry) {
