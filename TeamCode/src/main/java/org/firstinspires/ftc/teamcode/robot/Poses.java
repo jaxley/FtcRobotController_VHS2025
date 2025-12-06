@@ -90,7 +90,7 @@ public class Poses {
         }
 
         private final EnumMap<NamedPose,Pose> posesByName = new EnumMap<>(Map.ofEntries(
-                Map.entry(NamedPose.STARTING_TOP_1, new Pose()),
+                Map.entry(NamedPose.STARTING_TOP_1, new Pose(110, 136, Math.toRadians(0))),
                 Map.entry(NamedPose.STARTING_TOP_2, new Pose(116, 132, Math.toRadians(38))), // in front of red goal
                 Map.entry(NamedPose.STARTING_SIDE_1, new Pose()),
                 Map.entry(NamedPose.INTAKE_ROW_1_START, new Pose(104, 37, Math.toRadians(0))),
