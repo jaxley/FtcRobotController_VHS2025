@@ -120,6 +120,8 @@ public abstract class AutonomousOpMode extends OpMode {
     @Override
     public void init() {
 
+        Drawing.init();
+
         telemetryMirror = new TelemetryMirror(telemetry, USE_PANELS);
         pathTimer = new Timer();
         opmodeTimer = new Timer();
