@@ -27,7 +27,7 @@ public class Shooter {
     double flywheelPower = -0.8;
     final double FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION = (double) 28 /60;
 
-    final double fireDownPos = 0;
+    final double fireDownPos = 0.2;
     final double fireUpPos= 0.5;
     final double firePeriodMs = 800; // ms
 
