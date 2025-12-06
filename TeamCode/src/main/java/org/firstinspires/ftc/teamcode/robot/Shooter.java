@@ -27,7 +27,11 @@ public class Shooter {
     double flywheelPower = -0.8;
     final double FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION = (double) 28 /60;
 
-    final double fireDownPos = 0.16;
+    @Configurable
+    public static class FiringServo {
+        static double fireDownPos = 0.15;
+    }
+
     final double fireUpPos= 0.5;
     final double firePeriodMs = 800; // ms
 
@@ -138,7 +142,7 @@ public class Shooter {
 
     public void reset(TelemetryMirror telemetryMirror) {
         telemetryMirror.addData(SUBSYSTEM_NAME, "reset");
-        fireServo.setPosition(fireDownPos);
+        fireServo.setPosition(FiringServo.fireDownPos);
     }
 
 
