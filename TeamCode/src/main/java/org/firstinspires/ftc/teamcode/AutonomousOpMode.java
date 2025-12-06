@@ -1,12 +1,17 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.pedroPathing.Alliance;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.Drawing;
+import org.firstinspires.ftc.teamcode.robot.Poses;
 import org.firstinspires.ftc.teamcode.robot.RobotBaseAutonomous;
 import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
 
@@ -14,48 +19,78 @@ import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
  * Based on https://pedropathing.com/docs/pathing/examples/auto
  */
 
-@Autonomous
-public class AutonomousOpMode extends OpMode {
+public abstract class AutonomousOpMode extends OpMode {
+
+    public static final String AUTONOMOUS_OP_MODE = "AutonomousOpMode";
+    public static final String ALLIANCE = "Alliance";
+    private PathChain getRow3ThenReturnToStartTop1;
+
+    private AutonomousOpMode() {}
+    protected AutonomousOpMode(Alliance alliance) {
+        this.alliance = alliance;
+    }
 
     public static final boolean USE_PANELS = true;
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private RobotBaseAutonomous robotBase;
 
+    private Alliance alliance;
+
     private PathState pathState;
 
     // Pedro paths
-    private PathChain redHitAndRun;
-    private PathChain blueHitAndRun;
-    private PathChain blueLeaveStart1;
-    private PathChain redLeaveStart1;
+    private PathChain hitAndRun;
+    private PathChain lowStartThenLeave;
     private TelemetryMirror telemetryMirror;
+    private static ElapsedTime stopWatch = new ElapsedTime();
+    boolean firstFired = false;
+    boolean secondFired = false;
+    boolean thirdFired = false;
 
     private void buildPaths() {
+
+        Poses.AlliancePoses poses = Poses.forAlliance(alliance);
         // TODO: build our pedro paths here
-        // TODO - these hit and run paths are using OLD shooting positions in front the goals. Need to change based on updated shooter mechanism
-//        redHitAndRun = follower.pathBuilder()
-//                .addPath(new BezierLine(redStartingPose2, redShootingPose))
-//                .setConstantHeadingInterpolation(redStartingPose2.getHeading())
-//                .addPath(new BezierLine(redShootingPose, redTopLeavePose))
-//                .build();
-//
-//        blueHitAndRun = follower.pathBuilder()
-//                .addPath(new BezierLine(blueStartingPose2, blueShootingPose))
-//                .setConstantHeadingInterpolation(blueStartingPose2.getHeading())
-//                .addPath(new BezierLine(blueShootingPose, blueLowLeavePose))
-//                .build();
-//
+        // hit and run is designed to move from starting to shooting position, then to leave position
+        // TODO: this probably needs to be separate path segments to allow for shooting inbetween movement
+        hitAndRun = follower.pathBuilder()
+                .addPath(new BezierLine(poses.get(Poses.NamedPose.SHOOTING_GOAL_TOP_2),
+                        poses.get(Poses.NamedPose.SHOOTING_GOAL_TOP_2)))
+                .setConstantHeadingInterpolation(poses.get(Poses.NamedPose.SHOOTING_GOAL_TOP_2).getHeading())
+                .addPath(new BezierLine(poses.get(Poses.NamedPose.SHOOTING_GOAL_TOP_2),
+                        poses.get(Poses.NamedPose.LEAVE_TOP)))
+                .build();
+
 //        // TODO - rename these - these are minimal paths to exit the lower launch zone to get leave points ONLY
-//        redLeaveStart1 = follower.pathBuilder()
-//                .addPath(new BezierLine(redStartingPose1, redLowLeavePose))
-//                .setConstantHeadingInterpolation(redStartingPose1.getHeading())
-//                .build();
-//
-//        blueLeaveStart1 = follower.pathBuilder()
-//                .addPath(new BezierLine(blueStartingPose1, blueLowLeavePose))
-//                .setConstantHeadingInterpolation(blueStartingPose1.getHeading())
-//                .build();
+        lowStartThenLeave = follower.pathBuilder()
+                .addPath(new BezierLine(poses.get(Poses.NamedPose.STARTING_LOW),
+                        poses.get(Poses.NamedPose.LEAVE_LOW)))
+                .setConstantHeadingInterpolation(poses.get(Poses.NamedPose.STARTING_LOW).getHeading())
+                .build();
+
+        getRow3ThenReturnToStartTop1 = follower.pathBuilder()
+                .addPath(new BezierLine(poses.get(Poses.NamedPose.STARTING_TOP_1),
+                        poses.get(Poses.NamedPose.INTAKE_ROW_3_START)))
+                .setConstantHeadingInterpolation(poses.get(Poses.NamedPose.INTAKE_ROW_3_START).getHeading())
+                .addPoseCallback(poses.get(Poses.NamedPose.INTAKE_ROW_3_START), new Runnable() {
+                    @Override
+                    public void run() {
+                        robotBase.getIntake().loadBallToShooter(telemetryMirror);
+                    }
+                }, 0.5)
+                .addPath(new BezierLine(poses.get(Poses.NamedPose.INTAKE_ROW_3_START),
+                        poses.get(Poses.NamedPose.INTAKE_ROW_3_END)))
+                .addPoseCallback(poses.get(Poses.NamedPose.INTAKE_ROW_3_END), new Runnable() {
+                    @Override
+                    public void run() {
+                        robotBase.getIntake().stop(telemetryMirror);
+                    }
+                }, 0.5)
+                .setConstantHeadingInterpolation(poses.get(Poses.NamedPose.STARTING_TOP_1).getHeading())
+                .addPath(new BezierLine(poses.get(Poses.NamedPose.INTAKE_ROW_3_END),
+                        poses.get(Poses.NamedPose.STARTING_TOP_1)))
+                .build();
 
         // TODO - we are missing paths to collect balls from each of the rows...
     }
@@ -63,34 +98,25 @@ public class AutonomousOpMode extends OpMode {
     /**
      * This is the main loop of the OpMode, it will run repeatedly after clicking "Play".
      **/
-
-    private boolean done;
-
     @Override
     public void loop() {
 
         // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();
-        // TODO: we need to configure the state machine
-        //autonomousPathUpdate();
-
-        if (!done && !follower.isBusy()) {
-            follower.followPath(redLeaveStart1, USE_PANELS);
-            done = USE_PANELS;
-        }
+        autonomousPathUpdate(telemetry);
 
         // Feedback to Driver Hub for debugging
-        //telemetry.addData("path state", pathState);
+        telemetryMirror.addData("path state", pathState);
         telemetryMirror.addData("x", follower.getPose().getX());
         telemetryMirror.addData("y", follower.getPose().getY());
         telemetryMirror.addData("heading", follower.getPose().getHeading());
         telemetryMirror.update();
+        draw();
     }
 
     /**
      * This method is called once at the init of the OpMode.
      **/
-
     @Override
     public void init() {
 
@@ -99,34 +125,43 @@ public class AutonomousOpMode extends OpMode {
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
 
+        Poses.AlliancePoses poses = Poses.forAlliance(alliance);
         follower = Constants.createFollower(hardwareMap);
+        follower.setStartingPose(poses.get(Poses.NamedPose.STARTING_TOP_2));
         buildPaths();
-       // follower.setStartingPose(Constants.startingPose);
-        //follower.setStartingPose(redStartingPose1);
+        drawOnlyCurrent();
     }
 
     /**
      * This method is called continuously after Init while waiting for "play".
      **/
-
     @Override
     public void init_loop() {
+        telemetryMirror.addData("Code Version", BuildConfig.VERSION_NAME);
+        telemetryMirror.addData("Code Build Time", BuildConfig.APP_BUILD_TIME);
+        telemetryMirror.addData(ALLIANCE, alliance.name());
+        telemetryMirror.addData(AUTONOMOUS_OP_MODE, "initialized");
+        telemetryMirror.update();
+
+        follower.update();
+        drawOnlyCurrent();
     }
 
     /**
      * This method is called once at the start of the OpMode.
      * It runs all the setup actions, including building paths and starting the path system
      **/
-
     @Override
     public void start() {
         opmodeTimer.resetTimer();
-        //setPathState(0);
+        setNextPathState(PathState.SCORE_PRELOADED);
 
         robotBase = RobotBaseAutonomous.getInstance(hardwareMap, telemetry);
 
-        telemetryMirror.addData("Status", "initialized");
+        telemetryMirror.addData(ALLIANCE, alliance.name());
+        telemetryMirror.addData(AUTONOMOUS_OP_MODE, "started");
         telemetryMirror.update();
+        follower.update();
     }
 
     /**
@@ -142,14 +177,35 @@ public class AutonomousOpMode extends OpMode {
      * <p>
      * Below is an example state manager with explanations on what each case does, and how to modify it to fit your own routine.
      */
-    public void autonomousPathUpdate() {
+    public void autonomousPathUpdate(Telemetry telemetry) {
         switch (pathState) {
             case SCORE_PRELOADED:
-                if (!follower.isBusy()) {
-                    //follower.followPath(path1);
-                    setNextPathState(PathState.INTAKE_ROW3);
+                case SCORE:
+                {
+                    if (!follower.isBusy()) {
+                        //follower.followPath(path1);
+                        robotBase.getShooter().startFlywheel(telemetryMirror, -0.825);
+
+
+                        if (pathTimer.getElapsedTime() == 500 && !firstFired) {
+                            firstFired = true;
+                            robotBase.getShooter().fire(telemetryMirror);
+                        }
+                        if (pathTimer.getElapsedTime() == 1000 && !secondFired) {
+                            secondFired = true;
+                            robotBase.getShooter().fire(telemetryMirror);
+                        }
+                        if (pathTimer.getElapsedTime() == 1500 && !thirdFired) {
+                            thirdFired = true;
+                            robotBase.getShooter().fire(telemetryMirror);
+                            robotBase.getShooter().stop(telemetryMirror);
+                        }
+
+
+                        setNextPathState(PathState.INTAKE_ROW3);
+                    }
+                    break;
                 }
-                break;
             case INTAKE_ROW3:
 
             /* You could check for
@@ -162,7 +218,7 @@ public class AutonomousOpMode extends OpMode {
                     /* Score Preload */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
 
-                    //follower.followPath(path2, true);
+                    follower.followPath(getRow3ThenReturnToStartTop1, 0.5,true);
                     setNextPathState(PathState.SCORE);
                 }
                 break;
@@ -188,18 +244,6 @@ public class AutonomousOpMode extends OpMode {
                     setNextPathState(PathState.SCORE);
                 }
                 break;
-            case SCORE:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup2Pose's position */
-
-                if (!follower.isBusy()) {
-                    /* Grab Sample */
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    //follower.followPath(path5, true);
-                    // TODO: SCORE state can lead to more than one next state, including SCORE_LEAVE_POINTS
-                    // How should this handle those cases?
-                    setNextPathState(PathState.INTAKE_ROW2);
-                }
-                break;
             case SCORE_LEAVE_POINTS:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if (!follower.isBusy()) {
@@ -221,7 +265,6 @@ public class AutonomousOpMode extends OpMode {
     /**
      * These change the states of the paths and actions. It will also reset the timers of the individual switches
      **/
-
     public void setNextPathState(PathState pState) {
         pathState = pState;
         pathTimer.resetTimer();
@@ -237,5 +280,18 @@ public class AutonomousOpMode extends OpMode {
         SCORE,
         SCORE_LEAVE_POINTS,
         AUTO_DONE
+    }
+
+    public void drawOnlyCurrent() {
+        try {
+            Drawing.drawRobot(follower.getPose());
+            Drawing.sendPacket();
+        } catch (Exception e) {
+            throw new RuntimeException("Drawing failed " + e);
+        }
+    }
+
+    public void draw() {
+        Drawing.drawDebug(follower);
     }
 }

@@ -1,14 +1,13 @@
-package com.pedropathing.telemetry;
+package org.firstinspires.ftc.teamcode.pedroPathing;
 
 import com.bylazar.gamepad.PanelsGamepad;
-import com.bylazar.telemetry.PanelsTelemetry;
-import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.telemetry.SelectScope;
 import com.pedropathing.telemetry.Selector;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.utils.DButton;
+import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -20,7 +19,7 @@ import java.util.function.Supplier;
  */
 public abstract class PanelsSelectableOpMode extends OpMode {
     private final Selector<Supplier<OpMode>> selector;
-    private final TelemetryManager telemetryM;
+    private final TelemetryMirror telemetryMirror;
     private OpMode selectedOpMode;
 
     DButton rBumper = new DButton();
@@ -35,7 +34,7 @@ public abstract class PanelsSelectableOpMode extends OpMode {
     };
 
     public PanelsSelectableOpMode(String name, Consumer<SelectScope<Supplier<OpMode>>> opModes) {
-        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+        telemetryMirror = new TelemetryMirror(telemetry, true);
         selector = Selector.create(name, opModes, MESSAGE);
         selector.onSelect(opModeSupplier -> {
             onSelect();
@@ -79,10 +78,10 @@ public abstract class PanelsSelectableOpMode extends OpMode {
 
             List<String> lines = selector.getLines();
             for (String line : lines) {
-                telemetryM.addLine(line);
+                telemetryMirror.addLine(line);
             }
             onLog(lines);
-            telemetryM.update(telemetry);
+            telemetryMirror.update();
         } else selectedOpMode.init_loop();
     }
 

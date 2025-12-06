@@ -1,44 +1,52 @@
 package org.firstinspires.ftc.teamcode;
-import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.telemetry.PanelsTelemetry;
-import com.bylazar.telemetry.TelemetryManager;
+
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
-import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.pedroPathing.Alliance;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robot.Poses;
+import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
 
 import java.util.function.Supplier;
 
-@Autonomous
-public class LessSimpleAutonomous extends OpMode {
+public abstract class LessSimpleAutonomous extends OpMode {
+    public static final boolean USE_PANELS = true;
     private Follower follower;
-    public static Pose startingPose = new Pose(108, 132, Math.toRadians(0)); //See ExampleAuto to understand how to use this
-    private boolean automatedDrive;
+    protected Alliance alliance;
     private Supplier<PathChain> pathChain;
-    private TelemetryManager telemetryM;
     private boolean slowMode = false;
     private double slowModeMultiplier = 0.5;
 
+    private Poses.AlliancePoses poses;
+
     boolean running = false;
+    private TelemetryMirror telemetryMirror;
+
+    protected LessSimpleAutonomous() {
+
+    }
+
+    public LessSimpleAutonomous(Alliance alliance) {
+        this.alliance = alliance;
+    }
 
     @Override
     public void init() {
+        poses = Poses.forAlliance(alliance);
+
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(startingPose == null ? new Pose() : startingPose);
+        follower.setStartingPose(poses.get(Poses.NamedPose.STARTING_TOP_2));
         follower.update();
-        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+        telemetryMirror = new TelemetryMirror(telemetry, USE_PANELS);
 
         pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
-                .addPath(new Path(new BezierLine(follower::getPose, Poses.redTopLeavePose)))
-                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(45), 0.8))
+                .addPath(new Path(new BezierLine(follower::getPose, poses.get(Poses.NamedPose.LEAVE_TOP))))
+                .setHeadingInterpolation(HeadingInterpolator.constant(Math.toRadians(38)))
                 .build();
     }
 
@@ -46,14 +54,13 @@ public class LessSimpleAutonomous extends OpMode {
     public void loop() {
         //Call this once per loop
         follower.update();
-        telemetryM.update();
+        telemetryMirror.update();
         if (!running) {
-            follower.followPath(pathChain.get());
-            running = true;
+            follower.followPath(pathChain.get(), 0.5, USE_PANELS);
+            running = USE_PANELS;
         }
 
-        telemetryM.debug("position", follower.getPose());
-        telemetryM.debug("velocity", follower.getVelocity());
-        telemetryM.debug("automatedDrive", automatedDrive);
+        telemetryMirror.addData("position", follower.getPose());
+        telemetryMirror.addData("velocity", follower.getVelocity());
     }
 }

@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.robot.RobotConstants;
+import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
 
 import java.util.concurrent.TimeUnit;
 @Autonomous
@@ -21,6 +22,7 @@ public class SimpleAutonomousRed extends OpMode {
     private double startTime = 0;
 
     private boolean running = false;
+    private TelemetryMirror telemetryMirror;
 
     @Override
     public void init() {
@@ -30,16 +32,18 @@ public class SimpleAutonomousRed extends OpMode {
         backRight = hardwareMap.get(DcMotor.class, RobotConstants.Wheel.BACK_RIGHT);
         frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
         backRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        telemetryMirror = new TelemetryMirror(telemetry, false);
     }
 
     @Override
     public void loop() {
+        telemetryMirror.setTelemetry(telemetry);
         if (startTime == 0) {
             stopWatch.startTime();
             startTime = stopWatch.nanoseconds();
-            telemetry.addData("StartTime:", startTime);
+            telemetryMirror.addData("StartTime:", startTime);
         }
-        telemetry.addData("Elapsed: ", stopWatch.nanoseconds());
+        telemetryMirror.addData("Elapsed: ", stopWatch.nanoseconds());
         double elapsedTime = stopWatch.nanoseconds() - startTime;
         if (TimeUnit.NANOSECONDS.toSeconds((long)elapsedTime)<= 5) {
             running = true;
@@ -47,8 +51,8 @@ public class SimpleAutonomousRed extends OpMode {
             frontRight.setPower(0.2);
             backLeft.setPower(0.2);
             backRight.setPower(-0.2);
-            telemetry.addData("Time left until stop: ", elapsedTime);
-            telemetry.addData("Running? ", running);
+            telemetryMirror.addData("Time left until stop: ", elapsedTime);
+            telemetryMirror.addData("Running? ", running);
         }
         else {
             running = false;
@@ -56,8 +60,8 @@ public class SimpleAutonomousRed extends OpMode {
             frontRight.setPower(0);
             backLeft.setPower(0);
             backRight.setPower(0);
-            telemetry.addData("Status: ", "Stopped.");
+            telemetryMirror.addData("Status: ", "Stopped.");
         }
-        telemetry.update();
+        telemetryMirror.update();
     }
 }

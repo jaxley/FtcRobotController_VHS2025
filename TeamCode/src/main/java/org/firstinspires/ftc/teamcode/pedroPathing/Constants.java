@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.pedroPathing;
 
+import com.pedropathing.control.FilteredPIDFCoefficients;
 import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
@@ -43,13 +44,16 @@ public class Constants {
             .forwardZeroPowerAcceleration(-38.72702008081527)
             .lateralZeroPowerAcceleration(-32.344756938835744)
             .translationalPIDFCoefficients(new PIDFCoefficients(0.09,0,0.0015,0.021))
-            .headingPIDFCoefficients(new PIDFCoefficients(0,0,0,0.033));
+         //   .headingPIDFCoefficients(new PIDFCoefficients(0.4,0,0.02,0.021))
+            .headingPIDFCoefficients(new PIDFCoefficients(0.8,0,0.02,0.021))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.03,0,0.00001,0.6,0.03))
+            .centripetalScaling(0.0005); // defaults are 0.025, 0, 0.00001, 0.6, 0.01
 
     public static PathConstraints pathConstraints = new PathConstraints(
             0.99,
             100,
             1.5,
-            1);
+            0.95);
 
     // Note: offsets are in INCHES from the robot CENTER to the CENTER of the odometry wheel.
     // Encoder direction:
@@ -62,13 +66,13 @@ public class Constants {
             .strafeEncoder_HardwareMapName(EncoderWheel.CENTER)
             .leftEncoderDirection(Encoder.REVERSE)
             .rightEncoderDirection(Encoder.REVERSE)
-            .strafeEncoderDirection(Encoder.FORWARD)
+            .strafeEncoderDirection(Encoder.FORWARD) // when this is backwards, rotation draws an arc vs. rotating in place
             .leftPodY(2.625)
             .rightPodY(-3)
             .strafePodX(-7.25)
             .forwardTicksToInches(-0.0020663255536204467)
             .strafeTicksToInches(-0.0019800424427746676)
-            .turnTicksToInches(0.0019798844520130614);
+            .turnTicksToInches(-0.0019798844520130614); // negative value fixes rotation direction
 
     public static Follower createFollower(HardwareMap hardwareMap) {
         ThreeWheelLocalizer localizer = new ThreeWheelLocalizer(hardwareMap, localizerConstants);

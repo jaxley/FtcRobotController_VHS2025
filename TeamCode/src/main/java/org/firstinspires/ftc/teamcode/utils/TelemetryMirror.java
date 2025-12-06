@@ -46,6 +46,14 @@ public class TelemetryMirror {
         }
     }
 
+    public void addLine(String line) {
+        ftcTelemetry.addLine(line);
+
+        if (usePanels()) {
+            panelsTelemetry.addLine(line);
+        }
+    }
+
     public void update() {
         ftcTelemetry.update();
 
