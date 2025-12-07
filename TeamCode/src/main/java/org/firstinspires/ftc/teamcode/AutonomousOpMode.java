@@ -21,6 +21,7 @@ public abstract class AutonomousOpMode extends OpMode {
 
     public static final String AUTONOMOUS_OP_MODE = "AutonomousOpMode";
     public static final String ALLIANCE = "Alliance";
+    public static final double FLYWHEEL_POWER = -0.825;
 
     private AutonomousOpMode() {
     }
@@ -53,20 +54,20 @@ public abstract class AutonomousOpMode extends OpMode {
         getRow3ThenReturnToStartTop1 = follower.pathBuilder()
                 .addPath(new BezierLine(poses.get(Poses.NamedPose.STARTING_TOP_1),
                         poses.get(Poses.NamedPose.INTAKE_ROW_3_START)))
-                .addPoseCallback(poses.get(Poses.NamedPose.INTAKE_ROW_3_START), new Runnable() {
+                .addParametricCallback(0.9, new Runnable() {
                     @Override
                     public void run() {
                         robotBase.getIntake().loadBallToShooter(telemetryMirror);
                     }
-                }, 0.5)
+                })
                 .addPath(new BezierLine(poses.get(Poses.NamedPose.INTAKE_ROW_3_START),
                         poses.get(Poses.NamedPose.INTAKE_ROW_3_END)))
-                .addPoseCallback(poses.get(Poses.NamedPose.INTAKE_ROW_3_END), new Runnable() {
+                .addParametricCallback(1, new Runnable() {
                     @Override
                     public void run() {
                         robotBase.getIntake().stop(telemetryMirror);
                     }
-                }, 0.5)
+                })
                 .addPath(new BezierLine(poses.get(Poses.NamedPose.INTAKE_ROW_3_END),
                         poses.get(Poses.NamedPose.STARTING_TOP_1)))
                 .setGlobalConstantHeadingInterpolation(poses.get(Poses.NamedPose.STARTING_TOP_1).getHeading())
@@ -165,26 +166,26 @@ public abstract class AutonomousOpMode extends OpMode {
         switch (pathState) {
             case SCORE_PRELOADED: {
                 if (!follower.isBusy()) {
-                    //follower.followPath(path1);
-                    robotBase.getShooter().startFlywheel(telemetryMirror, -0.825);
-
+                    robotBase.getShooter().startFlywheel(telemetryMirror, FLYWHEEL_POWER);
 
                     if (pathTimer.getElapsedTime() <= 500 && !firstFired) {
                         firstFired = true;
                         telemetryMirror.addData("Fired", 1);
                         robotBase.getShooter().fire(telemetryMirror);
+                        robotBase.getShooter().reset(telemetryMirror);
                     }
                     if (pathTimer.getElapsedTime() <= 1000 && pathTimer.getElapsedTime() > 500 && !secondFired) {
                         secondFired = true;
                         telemetryMirror.addData("Fired", 2);
                         robotBase.getShooter().fire(telemetryMirror);
+                        robotBase.getShooter().reset(telemetryMirror);
                     }
                     if (pathTimer.getElapsedTime() <= 1500 && pathTimer.getElapsedTime() > 1000 && !thirdFired) {
                         thirdFired = true;
                         telemetryMirror.addData("Fired", 3);
                         robotBase.getShooter().fire(telemetryMirror);
                         robotBase.getShooter().stop(telemetryMirror);
-                        setNextPathState(PathState.INTAKE_ROW3);
+                        setNextPathState(PathState.AUTO_DONE);
                         firstFired = secondFired = thirdFired = false;
                     }
 
@@ -195,7 +196,7 @@ public abstract class AutonomousOpMode extends OpMode {
             case SCORE_ROW_3:
                 if (!follower.isBusy()) {
                     //follower.followPath(path1);
-                    robotBase.getShooter().startFlywheel(telemetryMirror, -0.825);
+                    robotBase.getShooter().startFlywheel(telemetryMirror, FLYWHEEL_POWER);
 
 
                     if (pathTimer.getElapsedTime() <= 500 && !firstFired) {
@@ -221,7 +222,7 @@ public abstract class AutonomousOpMode extends OpMode {
             case SCORE_ROW_2:
                 if (!follower.isBusy()) {
                     //follower.followPath(path1);
-                    robotBase.getShooter().startFlywheel(telemetryMirror, -0.825);
+                    robotBase.getShooter().startFlywheel(telemetryMirror, FLYWHEEL_POWER);
 
 
                     if (pathTimer.getElapsedTime() <= 500 && !firstFired) {
