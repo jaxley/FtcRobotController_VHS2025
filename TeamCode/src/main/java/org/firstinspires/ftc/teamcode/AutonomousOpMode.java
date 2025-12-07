@@ -7,7 +7,6 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.pedroPathing.Alliance;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.pedroPathing.Drawing;
@@ -104,7 +103,7 @@ public abstract class AutonomousOpMode extends OpMode {
 
         // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();
-        autonomousPathUpdate(telemetry);
+        autonomousPathUpdate(telemetryMirror);
 
         // Feedback to Driver Hub for debugging
         telemetryMirror.addData("path state", pathState);
@@ -161,7 +160,7 @@ public abstract class AutonomousOpMode extends OpMode {
         opmodeTimer.resetTimer();
         setNextPathState(PathState.SCORE_PRELOADED);
 
-        robotBase = RobotBaseAutonomous.getInstance(hardwareMap, telemetry);
+        robotBase = RobotBaseAutonomous.getInstance(hardwareMap, telemetryMirror);
 
         telemetryMirror.addData(ALLIANCE, alliance.name());
         telemetryMirror.addData(AUTONOMOUS_OP_MODE, "started");
@@ -182,7 +181,7 @@ public abstract class AutonomousOpMode extends OpMode {
      * <p>
      * Below is an example state manager with explanations on what each case does, and how to modify it to fit your own routine.
      */
-    public void autonomousPathUpdate(Telemetry telemetry) {
+    public void autonomousPathUpdate(TelemetryMirror telemetryMirror) {
         switch (pathState) {
             case SCORE_PRELOADED:
                 {
