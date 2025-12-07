@@ -71,7 +71,6 @@ public abstract class AutonomousOpMode extends OpMode {
         getRow3ThenReturnToStartTop1 = follower.pathBuilder()
                 .addPath(new BezierLine(poses.get(Poses.NamedPose.STARTING_TOP_1),
                         poses.get(Poses.NamedPose.INTAKE_ROW_3_START)))
-                .setConstantHeadingInterpolation(poses.get(Poses.NamedPose.INTAKE_ROW_3_START).getHeading())
                 .addPoseCallback(poses.get(Poses.NamedPose.INTAKE_ROW_3_START), new Runnable() {
                     @Override
                     public void run() {
@@ -80,7 +79,6 @@ public abstract class AutonomousOpMode extends OpMode {
                 }, 0.5)
                 .addPath(new BezierLine(poses.get(Poses.NamedPose.INTAKE_ROW_3_START),
                         poses.get(Poses.NamedPose.INTAKE_ROW_3_END)))
-                .setConstantHeadingInterpolation(poses.get(Poses.NamedPose.INTAKE_ROW_3_END).getHeading())
                 .addPoseCallback(poses.get(Poses.NamedPose.INTAKE_ROW_3_END), new Runnable() {
                     @Override
                     public void run() {
@@ -89,7 +87,7 @@ public abstract class AutonomousOpMode extends OpMode {
                 }, 0.5)
                 .addPath(new BezierLine(poses.get(Poses.NamedPose.INTAKE_ROW_3_END),
                         poses.get(Poses.NamedPose.STARTING_TOP_1)))
-                .setConstantHeadingInterpolation(poses.get(Poses.NamedPose.STARTING_TOP_1).getHeading())
+                .setGlobalConstantHeadingInterpolation(poses.get(Poses.NamedPose.STARTING_TOP_1).getHeading())
                 .build();
 
         // TODO - we are missing paths to collect balls from each of the rows...
