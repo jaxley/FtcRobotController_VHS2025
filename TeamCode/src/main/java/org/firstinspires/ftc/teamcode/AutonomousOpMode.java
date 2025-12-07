@@ -5,7 +5,6 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Alliance;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -22,9 +21,10 @@ public abstract class AutonomousOpMode extends OpMode {
 
     public static final String AUTONOMOUS_OP_MODE = "AutonomousOpMode";
     public static final String ALLIANCE = "Alliance";
-    private PathChain getRow3ThenReturnToStartTop1;
 
-    private AutonomousOpMode() {}
+    private AutonomousOpMode() {
+    }
+
     protected AutonomousOpMode(Alliance alliance) {
         this.alliance = alliance;
     }
@@ -38,11 +38,10 @@ public abstract class AutonomousOpMode extends OpMode {
 
     private PathState pathState;
 
-    // Pedro paths
-    private PathChain hitAndRun;
-    private PathChain lowStartThenLeave;
     private TelemetryMirror telemetryMirror;
-    private static ElapsedTime stopWatch = new ElapsedTime();
+
+    // Pedro paths
+    private PathChain getRow3ThenReturnToStartTop1;
     boolean firstFired = false;
     boolean secondFired = false;
     boolean thirdFired = false;
@@ -51,23 +50,6 @@ public abstract class AutonomousOpMode extends OpMode {
 
         Poses.AlliancePoses poses = Poses.forAlliance(alliance);
         // TODO: build our pedro paths here
-        // hit and run is designed to move from starting to shooting position, then to leave position
-        // TODO: this probably needs to be separate path segments to allow for shooting inbetween movement
-        hitAndRun = follower.pathBuilder()
-                .addPath(new BezierLine(poses.get(Poses.NamedPose.SHOOTING_GOAL_TOP_2),
-                        poses.get(Poses.NamedPose.SHOOTING_GOAL_TOP_2)))
-                .setConstantHeadingInterpolation(poses.get(Poses.NamedPose.SHOOTING_GOAL_TOP_2).getHeading())
-                .addPath(new BezierLine(poses.get(Poses.NamedPose.SHOOTING_GOAL_TOP_2),
-                        poses.get(Poses.NamedPose.LEAVE_TOP)))
-                .build();
-
-//        // TODO - rename these - these are minimal paths to exit the lower launch zone to get leave points ONLY
-        lowStartThenLeave = follower.pathBuilder()
-                .addPath(new BezierLine(poses.get(Poses.NamedPose.STARTING_LOW),
-                        poses.get(Poses.NamedPose.LEAVE_LOW)))
-                .setConstantHeadingInterpolation(poses.get(Poses.NamedPose.STARTING_LOW).getHeading())
-                .build();
-
         getRow3ThenReturnToStartTop1 = follower.pathBuilder()
                 .addPath(new BezierLine(poses.get(Poses.NamedPose.STARTING_TOP_1),
                         poses.get(Poses.NamedPose.INTAKE_ROW_3_START)))
@@ -181,36 +163,35 @@ public abstract class AutonomousOpMode extends OpMode {
      */
     public void autonomousPathUpdate(TelemetryMirror telemetryMirror) {
         switch (pathState) {
-            case SCORE_PRELOADED:
-                {
-                    if (!follower.isBusy()) {
-                        //follower.followPath(path1);
-                        robotBase.getShooter().startFlywheel(telemetryMirror, -0.825);
+            case SCORE_PRELOADED: {
+                if (!follower.isBusy()) {
+                    //follower.followPath(path1);
+                    robotBase.getShooter().startFlywheel(telemetryMirror, -0.825);
 
 
-                        if (pathTimer.getElapsedTime() <= 500 && !firstFired) {
-                            firstFired = true;
-                            telemetryMirror.addData("Fired", 1);
-                            robotBase.getShooter().fire(telemetryMirror);
-                        }
-                        if (pathTimer.getElapsedTime() <= 1000 && pathTimer.getElapsedTime() > 500 && !secondFired) {
-                            secondFired = true;
-                            telemetryMirror.addData("Fired", 2);
-                            robotBase.getShooter().fire(telemetryMirror);
-                        }
-                        if (pathTimer.getElapsedTime() <= 1500 && pathTimer.getElapsedTime() > 1000 && !thirdFired) {
-                            thirdFired = true;
-                            telemetryMirror.addData("Fired", 3);
-                            robotBase.getShooter().fire(telemetryMirror);
-                            robotBase.getShooter().stop(telemetryMirror);
-                            setNextPathState(PathState.INTAKE_ROW3);
-                            firstFired = secondFired = thirdFired = false;
-                        }
-
-
+                    if (pathTimer.getElapsedTime() <= 500 && !firstFired) {
+                        firstFired = true;
+                        telemetryMirror.addData("Fired", 1);
+                        robotBase.getShooter().fire(telemetryMirror);
                     }
-                    break;
+                    if (pathTimer.getElapsedTime() <= 1000 && pathTimer.getElapsedTime() > 500 && !secondFired) {
+                        secondFired = true;
+                        telemetryMirror.addData("Fired", 2);
+                        robotBase.getShooter().fire(telemetryMirror);
+                    }
+                    if (pathTimer.getElapsedTime() <= 1500 && pathTimer.getElapsedTime() > 1000 && !thirdFired) {
+                        thirdFired = true;
+                        telemetryMirror.addData("Fired", 3);
+                        robotBase.getShooter().fire(telemetryMirror);
+                        robotBase.getShooter().stop(telemetryMirror);
+                        setNextPathState(PathState.INTAKE_ROW3);
+                        firstFired = secondFired = thirdFired = false;
+                    }
+
+
                 }
+                break;
+            }
             case SCORE_ROW_3:
                 if (!follower.isBusy()) {
                     //follower.followPath(path1);
@@ -238,28 +219,28 @@ public abstract class AutonomousOpMode extends OpMode {
             case SCORE_ROW_1:
                 break;
             case SCORE_ROW_2:
-                    if (!follower.isBusy()) {
-                        //follower.followPath(path1);
-                        robotBase.getShooter().startFlywheel(telemetryMirror, -0.825);
+                if (!follower.isBusy()) {
+                    //follower.followPath(path1);
+                    robotBase.getShooter().startFlywheel(telemetryMirror, -0.825);
 
 
-                        if (pathTimer.getElapsedTime() <= 500 && !firstFired) {
-                            firstFired = true;
-                            robotBase.getShooter().fire(telemetryMirror);
-                        }
-                        if (pathTimer.getElapsedTime() <= 1000 && !secondFired) {
-                            secondFired = true;
-                            robotBase.getShooter().fire(telemetryMirror);
-                        }
-                        if (pathTimer.getElapsedTime() <= 1500 && !thirdFired) {
-                            thirdFired = true;
-                            robotBase.getShooter().fire(telemetryMirror);
-                            robotBase.getShooter().stop(telemetryMirror);
-                            setNextPathState(PathState.SCORE_LEAVE_POINTS);
-                        }
-
-
+                    if (pathTimer.getElapsedTime() <= 500 && !firstFired) {
+                        firstFired = true;
+                        robotBase.getShooter().fire(telemetryMirror);
                     }
+                    if (pathTimer.getElapsedTime() <= 1000 && !secondFired) {
+                        secondFired = true;
+                        robotBase.getShooter().fire(telemetryMirror);
+                    }
+                    if (pathTimer.getElapsedTime() <= 1500 && !thirdFired) {
+                        thirdFired = true;
+                        robotBase.getShooter().fire(telemetryMirror);
+                        robotBase.getShooter().stop(telemetryMirror);
+                        setNextPathState(PathState.SCORE_LEAVE_POINTS);
+                    }
+
+
+                }
                 break;
             case INTAKE_ROW3:
 
@@ -273,7 +254,7 @@ public abstract class AutonomousOpMode extends OpMode {
                     /* Score Preload */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
 
-                    follower.followPath(getRow3ThenReturnToStartTop1, 0.5,true);
+                    follower.followPath(getRow3ThenReturnToStartTop1, 0.5, true);
                 }
                 if (follower.atParametricEnd()) {
                     setNextPathState(PathState.SCORE_ROW_3);
