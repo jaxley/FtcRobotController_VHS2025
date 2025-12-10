@@ -62,6 +62,8 @@ public abstract class AutonomousOpMode extends OpMode {
                 })
                 .addPath(new BezierLine(poses.get(Poses.NamedPose.INTAKE_ROW_3_START),
                         poses.get(Poses.NamedPose.INTAKE_ROW_3_END)))
+                /* TODO: this callback doesn't seem to be triggered. Maybe move it to the path below and
+                 trigger it at 10 or 20% of that path completion */
                 .addParametricCallback(1, new Runnable() {
                     @Override
                     public void run() {
@@ -165,31 +167,28 @@ public abstract class AutonomousOpMode extends OpMode {
     public void autonomousPathUpdate(TelemetryMirror telemetryMirror) {
         switch (pathState) {
             case SCORE_PRELOADED: {
-                if (!follower.isBusy()) {
-                    robotBase.getShooter().startFlywheel(telemetryMirror, FLYWHEEL_POWER);
+                robotBase.getShooter().startFlywheel(telemetryMirror, FLYWHEEL_POWER);
+                telemetryMirror.addData("Fired", firstFired ? 1 : secondFired ? 2 : thirdFired ? 3 : 0);
 
-                    if (pathTimer.getElapsedTime() <= 500 && !firstFired) {
+                telemetryMirror.addData("Ready to Fire", robotBase.getShooter().readyToFire(telemetryMirror));
+
+                if (pathTimer.getElapsedTime() <= 500 && !firstFired) {
+                    if (robotBase.getShooter().readyToFire(telemetryMirror)) {
                         firstFired = true;
-                        telemetryMirror.addData("Fired", 1);
                         robotBase.getShooter().fire(telemetryMirror);
-                        robotBase.getShooter().reset(telemetryMirror);
                     }
-                    if (pathTimer.getElapsedTime() <= 1000 && pathTimer.getElapsedTime() > 500 && !secondFired) {
-                        secondFired = true;
-                        telemetryMirror.addData("Fired", 2);
-                        robotBase.getShooter().fire(telemetryMirror);
-                        robotBase.getShooter().reset(telemetryMirror);
-                    }
-                    if (pathTimer.getElapsedTime() <= 1500 && pathTimer.getElapsedTime() > 1000 && !thirdFired) {
-                        thirdFired = true;
-                        telemetryMirror.addData("Fired", 3);
-                        robotBase.getShooter().fire(telemetryMirror);
-                        robotBase.getShooter().stop(telemetryMirror);
-                        setNextPathState(PathState.AUTO_DONE);
-                        firstFired = secondFired = thirdFired = false;
-                    }
-
-
+                }
+                if (pathTimer.getElapsedTime() <= 1000 && pathTimer.getElapsedTime() > 500 && !secondFired) {
+                    secondFired = true;
+                    robotBase.getShooter().fire(telemetryMirror);
+                    robotBase.getShooter().reset(telemetryMirror);
+                }
+                if (pathTimer.getElapsedTime() <= 1500 && pathTimer.getElapsedTime() > 1000 && !thirdFired) {
+                    thirdFired = true;
+                    robotBase.getShooter().fire(telemetryMirror);
+                    robotBase.getShooter().stop(telemetryMirror);
+                    setNextPathState(PathState.AUTO_DONE);
+                    firstFired = secondFired = thirdFired = false;
                 }
                 break;
             }
@@ -198,10 +197,14 @@ public abstract class AutonomousOpMode extends OpMode {
                     //follower.followPath(path1);
                     robotBase.getShooter().startFlywheel(telemetryMirror, FLYWHEEL_POWER);
 
+                    telemetryMirror.addData("Ready to Fire",
+                            robotBase.getShooter().readyToFire(telemetryMirror));
 
                     if (pathTimer.getElapsedTime() <= 500 && !firstFired) {
-                        firstFired = true;
-                        robotBase.getShooter().fire(telemetryMirror);
+                        if (robotBase.getShooter().readyToFire(telemetryMirror)) {
+                            firstFired = true;
+                            robotBase.getShooter().fire(telemetryMirror);
+                        }
                     }
                     if (pathTimer.getElapsedTime() <= 1000 && !secondFired) {
                         secondFired = true;
