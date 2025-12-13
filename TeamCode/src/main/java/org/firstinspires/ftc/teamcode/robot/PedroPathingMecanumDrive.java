@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
  */
 public class PedroPathingMecanumDrive implements IMecanumDrive {
     public static final String SUBSYSTEM_NAME = "PedroMecanumDrive";
-    public static final double TURN_MAX_SPEED = 0.5;
+    public static final double TURN_MAX_SPEED = 1.0;
     private static final String STOPPED = "Stopped";
     private final Follower follower;
     private final DcMotor frontLeft;
@@ -31,6 +31,7 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
     private final DButton dpadRight = new DButton();
     private final DButton dpadDown = new DButton();
     private final DButton dpadLeft = new DButton();
+    private final DButton yButton = new DButton();
 
     private double driveSpeedModifier = 1.0;
 
@@ -87,6 +88,14 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
         follower.update();
 
         double driveSpeed = getDriveSpeed(driveGamepad);
+
+        // Robot Centric Drive Toggle Button
+        yButton.update(driveGamepad.y);
+        if (yButton.released()) {
+            ROBOT_CENTRIC_DRIVE = !ROBOT_CENTRIC_DRIVE;
+        }
+
+        telemetryMirror.addData("Drive Mode", ROBOT_CENTRIC_DRIVE ? "Robot" : "Field");
 
         double forwardSpeed = -driveGamepad.left_stick_y * driveSpeed;
         double strafeSpeed = -driveGamepad.left_stick_x * driveSpeed;
