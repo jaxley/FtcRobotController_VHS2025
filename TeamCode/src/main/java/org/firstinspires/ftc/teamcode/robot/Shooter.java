@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.utils.DButton;
 import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
@@ -26,19 +27,21 @@ public class Shooter {
 
     double flywheelPower = -0.8;
     final double FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION = (double) 28 /60;
+    private double targetVelocity = flywheelPower * flywheelSpeedRpm
+            * FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION;
 
     @Configurable
     public static class FiringServo {
         static double fireDownPos = 0.15;
     }
 
-    final double fireUpPos= 0.5;
+    final double fireUpPos = 0.35;
+
     final double firePeriodMs = 800; // ms
+    double fireTime = 0;
+    private static ElapsedTime stopWatch = new ElapsedTime();
 
     final double triggerDZ = 0.25;
-
-    double fireTime = 0;
-
     //control vars
     boolean flywheelRunning = false;
 
@@ -65,7 +68,7 @@ public class Shooter {
     }
     @Configurable
     public static class PID {
-        static double P = 16;
+        static double P = 22;
         static double I = 3;
         static double D = 0;
         static double F = 0;
@@ -75,10 +78,6 @@ public class Shooter {
             init(telemetryMirror);
         }
         flywheel.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(PID.P, PID.I, PID.D, PID.F));
-        telemetryMirror.addData("P ", defaultPidCoefficients.p);
-        telemetryMirror.addData("I ", defaultPidCoefficients.i);
-        telemetryMirror.addData("D ", defaultPidCoefficients.d);
-        telemetryMirror.addData("F ", defaultPidCoefficients.f);
 
         telemetryMirror.addData(SUBSYSTEM_NAME, STARTED);
         //double lastMillis = getRuntime();
@@ -121,6 +120,13 @@ public class Shooter {
         stopFlywheel(telemetry);
     }
 
+    public boolean readyToFire(TelemetryMirror telemetryMirror) {
+        // Compare targetVelocity to current velocity - when within tolerance, it's up to expected speed
+        double error = Math.abs((targetVelocity - flywheel.getVelocity())/ targetVelocity);
+        telemetryMirror.addData("Flywheel error", error);
+        return error <= 0.1;
+    }
+
     public void stopFlywheel(TelemetryMirror telemetryMirror) {
         telemetryMirror.addData(FLYWHEEL, STOPPED);
         flywheel.setVelocity(0);
@@ -129,9 +135,9 @@ public class Shooter {
 
     public void startFlywheel(TelemetryMirror telemetryMirror, double power) {
         telemetryMirror.addData(FLYWHEEL, power);
-        //flywheel.setPower(power);
-        telemetryMirror.addData("Speed Command: ", power * flywheelSpeedRpm * FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION);
-        flywheel.setVelocity(power * flywheelSpeedRpm * FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION);
+        this.targetVelocity = power * flywheelSpeedRpm * FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION;
+        telemetryMirror.addData("Target Velocity: ", targetVelocity);
+        flywheel.setVelocity(targetVelocity);
     }
 
     public void fire(TelemetryMirror telemetryMirror) {

@@ -5,9 +5,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.pedroPathing.Alliance;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.pedroPathing.Drawing;
@@ -23,9 +21,12 @@ public abstract class AutonomousOpMode extends OpMode {
 
     public static final String AUTONOMOUS_OP_MODE = "AutonomousOpMode";
     public static final String ALLIANCE = "Alliance";
-    private PathChain getRow3ThenReturnToStartTop1;
+    public static final double FLYWHEEL_POWER = -0.825;
+    private boolean reset = true;
 
-    private AutonomousOpMode() {}
+    private AutonomousOpMode() {
+    }
+
     protected AutonomousOpMode(Alliance alliance) {
         this.alliance = alliance;
     }
@@ -39,57 +40,41 @@ public abstract class AutonomousOpMode extends OpMode {
 
     private PathState pathState;
 
-    // Pedro paths
-    private PathChain hitAndRun;
-    private PathChain lowStartThenLeave;
     private TelemetryMirror telemetryMirror;
-    private static ElapsedTime stopWatch = new ElapsedTime();
+
+    // Pedro paths
+    private PathChain getRow3ThenReturnToStartTop1;
     boolean firstFired = false;
     boolean secondFired = false;
     boolean thirdFired = false;
+    int shotCount = 0;
+    double lastFiringTimeMs;
+    double lastResetTimeMs;
 
     private void buildPaths() {
 
         Poses.AlliancePoses poses = Poses.forAlliance(alliance);
         // TODO: build our pedro paths here
-        // hit and run is designed to move from starting to shooting position, then to leave position
-        // TODO: this probably needs to be separate path segments to allow for shooting inbetween movement
-        hitAndRun = follower.pathBuilder()
-                .addPath(new BezierLine(poses.get(Poses.NamedPose.SHOOTING_GOAL_TOP_2),
-                        poses.get(Poses.NamedPose.SHOOTING_GOAL_TOP_2)))
-                .setConstantHeadingInterpolation(poses.get(Poses.NamedPose.SHOOTING_GOAL_TOP_2).getHeading())
-                .addPath(new BezierLine(poses.get(Poses.NamedPose.SHOOTING_GOAL_TOP_2),
-                        poses.get(Poses.NamedPose.LEAVE_TOP)))
-                .build();
-
-//        // TODO - rename these - these are minimal paths to exit the lower launch zone to get leave points ONLY
-        lowStartThenLeave = follower.pathBuilder()
-                .addPath(new BezierLine(poses.get(Poses.NamedPose.STARTING_LOW),
-                        poses.get(Poses.NamedPose.LEAVE_LOW)))
-                .setConstantHeadingInterpolation(poses.get(Poses.NamedPose.STARTING_LOW).getHeading())
-                .build();
-
         getRow3ThenReturnToStartTop1 = follower.pathBuilder()
                 .addPath(new BezierLine(poses.get(Poses.NamedPose.STARTING_TOP_1),
                         poses.get(Poses.NamedPose.INTAKE_ROW_3_START)))
-                .setConstantHeadingInterpolation(poses.get(Poses.NamedPose.INTAKE_ROW_3_START).getHeading())
-                .addPoseCallback(poses.get(Poses.NamedPose.INTAKE_ROW_3_START), new Runnable() {
+                .addParametricCallback(0.9, new Runnable() {
                     @Override
                     public void run() {
                         robotBase.getIntake().loadBallToShooter(telemetryMirror);
                     }
-                }, 0.5)
+                })
                 .addPath(new BezierLine(poses.get(Poses.NamedPose.INTAKE_ROW_3_START),
                         poses.get(Poses.NamedPose.INTAKE_ROW_3_END)))
-                .addPoseCallback(poses.get(Poses.NamedPose.INTAKE_ROW_3_END), new Runnable() {
+                .addPath(new BezierLine(poses.get(Poses.NamedPose.INTAKE_ROW_3_END),
+                        poses.get(Poses.NamedPose.STARTING_TOP_1)))
+                .addParametricCallback(0.2, new Runnable() {
                     @Override
                     public void run() {
                         robotBase.getIntake().stop(telemetryMirror);
                     }
-                }, 0.5)
-                .setConstantHeadingInterpolation(poses.get(Poses.NamedPose.STARTING_TOP_1).getHeading())
-                .addPath(new BezierLine(poses.get(Poses.NamedPose.INTAKE_ROW_3_END),
-                        poses.get(Poses.NamedPose.STARTING_TOP_1)))
+                })
+                .setGlobalConstantHeadingInterpolation(poses.get(Poses.NamedPose.STARTING_TOP_1).getHeading())
                 .build();
 
         // TODO - we are missing paths to collect balls from each of the rows...
@@ -103,7 +88,7 @@ public abstract class AutonomousOpMode extends OpMode {
 
         // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();
-        autonomousPathUpdate(telemetry);
+        autonomousPathUpdate(telemetryMirror);
 
         // Feedback to Driver Hub for debugging
         telemetryMirror.addData("path state", pathState);
@@ -120,6 +105,8 @@ public abstract class AutonomousOpMode extends OpMode {
     @Override
     public void init() {
 
+        Drawing.init();
+
         telemetryMirror = new TelemetryMirror(telemetry, USE_PANELS);
         pathTimer = new Timer();
         opmodeTimer = new Timer();
@@ -127,7 +114,7 @@ public abstract class AutonomousOpMode extends OpMode {
 
         Poses.AlliancePoses poses = Poses.forAlliance(alliance);
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(poses.get(Poses.NamedPose.STARTING_TOP_2));
+        follower.setStartingPose(poses.get(Poses.NamedPose.STARTING_TOP_1));
         buildPaths();
         drawOnlyCurrent();
     }
@@ -141,6 +128,8 @@ public abstract class AutonomousOpMode extends OpMode {
         telemetryMirror.addData("Code Build Time", BuildConfig.APP_BUILD_TIME);
         telemetryMirror.addData(ALLIANCE, alliance.name());
         telemetryMirror.addData(AUTONOMOUS_OP_MODE, "initialized");
+        telemetryMirror.addData("Starting X ", follower.getPose().getX());
+        telemetryMirror.addData("Starting Y ", follower.getPose().getY());
         telemetryMirror.update();
 
         follower.update();
@@ -156,7 +145,7 @@ public abstract class AutonomousOpMode extends OpMode {
         opmodeTimer.resetTimer();
         setNextPathState(PathState.SCORE_PRELOADED);
 
-        robotBase = RobotBaseAutonomous.getInstance(hardwareMap, telemetry);
+        robotBase = RobotBaseAutonomous.getInstance(hardwareMap, telemetryMirror);
 
         telemetryMirror.addData(ALLIANCE, alliance.name());
         telemetryMirror.addData(AUTONOMOUS_OP_MODE, "started");
@@ -177,35 +166,96 @@ public abstract class AutonomousOpMode extends OpMode {
      * <p>
      * Below is an example state manager with explanations on what each case does, and how to modify it to fit your own routine.
      */
-    public void autonomousPathUpdate(Telemetry telemetry) {
+    public void autonomousPathUpdate(TelemetryMirror telemetryMirror) {
         switch (pathState) {
-            case SCORE_PRELOADED:
-                case SCORE:
-                {
-                    if (!follower.isBusy()) {
-                        //follower.followPath(path1);
-                        robotBase.getShooter().startFlywheel(telemetryMirror, -0.825);
+            case SCORE_PRELOADED: {
+                robotBase.getShooter().startFlywheel(telemetryMirror, FLYWHEEL_POWER);
+                telemetryMirror.addData("Fired", shotCount);
 
+                telemetryMirror.addData("Last Time Fired", lastFiringTimeMs);
+                telemetryMirror.addData("Last Time Reset", lastResetTimeMs);
+                telemetryMirror.addData("Ready to Fire", robotBase.getShooter().readyToFire(telemetryMirror));
 
-                        if (pathTimer.getElapsedTime() == 500 && !firstFired) {
+                if (pathTimer.getElapsedTime() >= (lastResetTimeMs + 500)) {
+                    if (robotBase.getShooter().readyToFire(telemetryMirror) && reset) {
+                        shotCount+=1;
+                        robotBase.getShooter().fire(telemetryMirror);
+                        lastFiringTimeMs = pathTimer.getElapsedTime();
+                        reset = false;
+                    }
+                }
+                if (shotCount == 2) {
+                    robotBase.getIntake().loadBallToShooter(telemetryMirror);
+                }
+                if (pathTimer.getElapsedTime() >= (lastFiringTimeMs + 800) && !reset) {
+                    robotBase.getShooter().reset(telemetryMirror);
+                    lastResetTimeMs = pathTimer.getElapsedTime();
+                    reset = true;
+                }
+
+                if (shotCount == 3 && reset && pathTimer.getElapsedTime() >= (lastResetTimeMs + 100)) {
+                    robotBase.getShooter().reset(telemetryMirror);
+                    robotBase.getShooter().stop(telemetryMirror);
+                    setNextPathState(PathState.INTAKE_ROW3);
+                    robotBase.getIntake().stop(telemetryMirror);
+                    shotCount = 0;
+                }
+                break;
+            }
+            case SCORE_ROW_3:
+                if (!follower.isBusy()) {
+                    //follower.followPath(path1);
+                    robotBase.getShooter().startFlywheel(telemetryMirror, FLYWHEEL_POWER);
+
+                    telemetryMirror.addData("Ready to Fire",
+                            robotBase.getShooter().readyToFire(telemetryMirror));
+
+                    if (pathTimer.getElapsedTime() <= 500 && !firstFired) {
+                        if (robotBase.getShooter().readyToFire(telemetryMirror)) {
                             firstFired = true;
                             robotBase.getShooter().fire(telemetryMirror);
                         }
-                        if (pathTimer.getElapsedTime() == 1000 && !secondFired) {
-                            secondFired = true;
-                            robotBase.getShooter().fire(telemetryMirror);
-                        }
-                        if (pathTimer.getElapsedTime() == 1500 && !thirdFired) {
-                            thirdFired = true;
-                            robotBase.getShooter().fire(telemetryMirror);
-                            robotBase.getShooter().stop(telemetryMirror);
-                        }
-
-
-                        setNextPathState(PathState.INTAKE_ROW3);
                     }
-                    break;
+                    if (pathTimer.getElapsedTime() <= 1000 && !secondFired) {
+                        secondFired = true;
+                        robotBase.getShooter().fire(telemetryMirror);
+                    }
+                    if (pathTimer.getElapsedTime() <= 1500 && !thirdFired) {
+                        thirdFired = true;
+                        robotBase.getShooter().fire(telemetryMirror);
+                        robotBase.getShooter().stop(telemetryMirror);
+                        setNextPathState(PathState.SCORE_LEAVE_POINTS);
+                    }
+
+
                 }
+                break;
+            case SCORE_ROW_1:
+                break;
+            case SCORE_ROW_2:
+                if (!follower.isBusy()) {
+                    //follower.followPath(path1);
+                    robotBase.getShooter().startFlywheel(telemetryMirror, FLYWHEEL_POWER);
+
+
+                    if (pathTimer.getElapsedTime() <= 500 && !firstFired) {
+                        firstFired = true;
+                        robotBase.getShooter().fire(telemetryMirror);
+                    }
+                    if (pathTimer.getElapsedTime() <= 1000 && !secondFired) {
+                        secondFired = true;
+                        robotBase.getShooter().fire(telemetryMirror);
+                    }
+                    if (pathTimer.getElapsedTime() <= 1500 && !thirdFired) {
+                        thirdFired = true;
+                        robotBase.getShooter().fire(telemetryMirror);
+                        robotBase.getShooter().stop(telemetryMirror);
+                        setNextPathState(PathState.SCORE_LEAVE_POINTS);
+                    }
+
+
+                }
+                break;
             case INTAKE_ROW3:
 
             /* You could check for
@@ -218,8 +268,10 @@ public abstract class AutonomousOpMode extends OpMode {
                     /* Score Preload */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
 
-                    follower.followPath(getRow3ThenReturnToStartTop1, 0.5,true);
-                    setNextPathState(PathState.SCORE);
+                    follower.followPath(getRow3ThenReturnToStartTop1, 0.5, true);
+                }
+                if (follower.atParametricEnd()) {
+                    setNextPathState(PathState.SCORE_ROW_3);
                 }
                 break;
             case INTAKE_ROW2:
@@ -230,7 +282,7 @@ public abstract class AutonomousOpMode extends OpMode {
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
 
                     //follower.followPath(path3, true);
-                    setNextPathState(PathState.SCORE);
+                    setNextPathState(PathState.SCORE_ROW_1);
                 }
                 break;
             case INTAKE_ROW1:
@@ -241,7 +293,7 @@ public abstract class AutonomousOpMode extends OpMode {
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
 
                     //follower.followPath(path4, true);
-                    setNextPathState(PathState.SCORE);
+                    setNextPathState(PathState.SCORE_ROW_1);
                 }
                 break;
             case SCORE_LEAVE_POINTS:
@@ -277,7 +329,9 @@ public abstract class AutonomousOpMode extends OpMode {
         INTAKE_ROW1,
         INTAKE_ROW2,
         INTAKE_ROW3,
-        SCORE,
+        SCORE_ROW_1,
+        SCORE_ROW_2,
+        SCORE_ROW_3,
         SCORE_LEAVE_POINTS,
         AUTO_DONE
     }
