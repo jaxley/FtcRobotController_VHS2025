@@ -22,6 +22,7 @@ public abstract class AutonomousOpMode extends OpMode {
     public static final String AUTONOMOUS_OP_MODE = "AutonomousOpMode";
     public static final String ALLIANCE = "Alliance";
     public static final double FLYWHEEL_POWER = -0.825;
+    private boolean reset = true;
 
     private AutonomousOpMode() {
     }
@@ -46,6 +47,9 @@ public abstract class AutonomousOpMode extends OpMode {
     boolean firstFired = false;
     boolean secondFired = false;
     boolean thirdFired = false;
+    int shotCount = 0;
+    double lastFiringTimeMs;
+    double lastResetTimeMs;
 
     private void buildPaths() {
 
@@ -62,16 +66,14 @@ public abstract class AutonomousOpMode extends OpMode {
                 })
                 .addPath(new BezierLine(poses.get(Poses.NamedPose.INTAKE_ROW_3_START),
                         poses.get(Poses.NamedPose.INTAKE_ROW_3_END)))
-                /* TODO: this callback doesn't seem to be triggered. Maybe move it to the path below and
-                 trigger it at 10 or 20% of that path completion */
-                .addParametricCallback(1, new Runnable() {
+                .addPath(new BezierLine(poses.get(Poses.NamedPose.INTAKE_ROW_3_END),
+                        poses.get(Poses.NamedPose.STARTING_TOP_1)))
+                .addParametricCallback(0.2, new Runnable() {
                     @Override
                     public void run() {
                         robotBase.getIntake().stop(telemetryMirror);
                     }
                 })
-                .addPath(new BezierLine(poses.get(Poses.NamedPose.INTAKE_ROW_3_END),
-                        poses.get(Poses.NamedPose.STARTING_TOP_1)))
                 .setGlobalConstantHeadingInterpolation(poses.get(Poses.NamedPose.STARTING_TOP_1).getHeading())
                 .build();
 
@@ -168,27 +170,35 @@ public abstract class AutonomousOpMode extends OpMode {
         switch (pathState) {
             case SCORE_PRELOADED: {
                 robotBase.getShooter().startFlywheel(telemetryMirror, FLYWHEEL_POWER);
-                telemetryMirror.addData("Fired", firstFired ? 1 : secondFired ? 2 : thirdFired ? 3 : 0);
+                telemetryMirror.addData("Fired", shotCount);
 
+                telemetryMirror.addData("Last Time Fired", lastFiringTimeMs);
+                telemetryMirror.addData("Last Time Reset", lastResetTimeMs);
                 telemetryMirror.addData("Ready to Fire", robotBase.getShooter().readyToFire(telemetryMirror));
 
-                if (pathTimer.getElapsedTime() <= 500 && !firstFired) {
-                    if (robotBase.getShooter().readyToFire(telemetryMirror)) {
-                        firstFired = true;
+                if (pathTimer.getElapsedTime() >= (lastResetTimeMs + 500)) {
+                    if (robotBase.getShooter().readyToFire(telemetryMirror) && reset) {
+                        shotCount+=1;
                         robotBase.getShooter().fire(telemetryMirror);
+                        lastFiringTimeMs = pathTimer.getElapsedTime();
+                        reset = false;
                     }
                 }
-                if (pathTimer.getElapsedTime() <= 1000 && pathTimer.getElapsedTime() > 500 && !secondFired) {
-                    secondFired = true;
-                    robotBase.getShooter().fire(telemetryMirror);
-                    robotBase.getShooter().reset(telemetryMirror);
+                if (shotCount == 2) {
+                    robotBase.getIntake().loadBallToShooter(telemetryMirror);
                 }
-                if (pathTimer.getElapsedTime() <= 1500 && pathTimer.getElapsedTime() > 1000 && !thirdFired) {
-                    thirdFired = true;
-                    robotBase.getShooter().fire(telemetryMirror);
+                if (pathTimer.getElapsedTime() >= (lastFiringTimeMs + 800) && !reset) {
+                    robotBase.getShooter().reset(telemetryMirror);
+                    lastResetTimeMs = pathTimer.getElapsedTime();
+                    reset = true;
+                }
+
+                if (shotCount == 3 && reset && pathTimer.getElapsedTime() >= (lastResetTimeMs + 100)) {
+                    robotBase.getShooter().reset(telemetryMirror);
                     robotBase.getShooter().stop(telemetryMirror);
-                    setNextPathState(PathState.AUTO_DONE);
-                    firstFired = secondFired = thirdFired = false;
+                    setNextPathState(PathState.INTAKE_ROW3);
+                    robotBase.getIntake().stop(telemetryMirror);
+                    shotCount = 0;
                 }
                 break;
             }

@@ -14,7 +14,7 @@ public class MecanumDriveTeleOp extends LinearOpMode {
     public static final String TELE_OP = "TeleOp";
 
     private RobotBase robotBase;
-    private boolean usePanels = false;
+    private boolean usePanels = true;
     private TelemetryMirror telemetryMirror;
 
     @Override

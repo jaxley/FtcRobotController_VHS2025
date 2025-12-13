@@ -35,7 +35,7 @@ public class Shooter {
         static double fireDownPos = 0.15;
     }
 
-    final double fireUpPos= 0.5;
+    final double fireUpPos = 0.35;
 
     final double firePeriodMs = 800; // ms
     double fireTime = 0;
@@ -68,7 +68,7 @@ public class Shooter {
     }
     @Configurable
     public static class PID {
-        static double P = 16;
+        static double P = 22;
         static double I = 3;
         static double D = 0;
         static double F = 0;
@@ -122,9 +122,9 @@ public class Shooter {
 
     public boolean readyToFire(TelemetryMirror telemetryMirror) {
         // Compare targetVelocity to current velocity - when within tolerance, it's up to expected speed
-        double error = Math.abs(targetVelocity - flywheel.getVelocity() / targetVelocity);
+        double error = Math.abs((targetVelocity - flywheel.getVelocity())/ targetVelocity);
         telemetryMirror.addData("Flywheel error", error);
-        return error <= 0.05;
+        return error <= 0.1;
     }
 
     public void stopFlywheel(TelemetryMirror telemetryMirror) {
