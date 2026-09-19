@@ -69,25 +69,6 @@ android {
     }
 }
 
-//tasks.register('createJar', Copy) {
-//    from('build/intermediates/javac/debug/compileDebugJavaWithJavac')
-//    into('build/outputs/libs/')
-//}
-//
-//build.dependsOn(createJar)
-
-//tasks.register('uberJar', Jar) {
-//    archiveClassifier = 'uber'
-//
-//    from('build/intermediates/javac/debug/compileDebugJavaWithJavac')
-//
-//    from {
-//        findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
-//    }
-//}
-//
-//build.dependsOn('uberJar')
-
 dependencies {
     implementation project(':FtcRobotController')
     // If you would like to use the hardware module
