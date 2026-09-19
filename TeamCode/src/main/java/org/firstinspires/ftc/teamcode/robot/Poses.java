@@ -1,8 +1,9 @@
+/*
 package org.firstinspires.ftc.teamcode.robot;
 
 import com.pedropathing.geometry.Pose;
 
-import org.firstinspires.ftc.teamcode.pedroPathing.Alliance;
+import org.firstinspires.ftc.teamcode.Alliance;
 
 import java.security.InvalidParameterException;
 import java.util.EnumMap;
@@ -10,11 +11,13 @@ import java.util.Map;
 
 public class Poses {
 
-    /**
+    */
+/**
      * Get poses for a specific alliance
      * @param alliance What alliance our team is on for this match
      * @return the poses appropriate for the alliance
-     */
+     *//*
+
     public static AlliancePoses forAlliance(Alliance alliance) {
         switch(alliance) {
             case RED:
@@ -156,3 +159,4 @@ public class Poses {
     // 3.TODO - we need poses for auto-parking after teleop (red and blue bases)
     // 4. ?
 }
+*/

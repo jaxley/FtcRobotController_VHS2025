@@ -1,3 +1,4 @@
+/*
 package org.firstinspires.ftc.teamcode;
 
 import com.pedropathing.follower.Follower;
@@ -7,7 +8,7 @@ import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.pedroPathing.Alliance;
+import org.firstinspires.ftc.teamcode.Alliance;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robot.Poses;
 import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
@@ -63,4 +64,4 @@ public abstract class LessSimpleAutonomous extends OpMode {
         telemetryMirror.addData("position", follower.getPose());
         telemetryMirror.addData("velocity", follower.getVelocity());
     }
-}
+}*/

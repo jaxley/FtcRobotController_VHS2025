@@ -1,3 +1,4 @@
+/*
 package org.firstinspires.ftc.teamcode.robot;
 
 import com.pedropathing.follower.Follower;
@@ -9,12 +10,14 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.utils.DButton;
 import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
 
+*/
 /**
  * This class implements a mecanum drive but uses Pedro Pathing's drive API
  * This allows the code to have hybrid teleop and autonomous functionality without conflicting
  * instructions that would happen if we used a different mecanum implementation
  * plus Pedro pathing for hybrid teleop and autonomous
- */
+ *//*
+
 public class PedroPathingMecanumDrive implements IMecanumDrive {
     public static final String SUBSYSTEM_NAME = "PedroMecanumDrive";
     public static final double TURN_MAX_SPEED = 0.5;
@@ -71,13 +74,15 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
         telemetryMirror.addData(SUBSYSTEM_NAME, "Initialized");
     }
 
-    /**
+    */
+/**
      *
      * @param driveGamepad The gamepad used by the driver on the drive team
      * @param telemetryMirror Telemetry instance for logging useful info
      * @param startingPose The robot starting pose. This is used to ensure the robot knows where
      *                     it is on the field so that it can follow any autonomous paths properly
-     */
+     *//*
+
     public void run(Gamepad driveGamepad, TelemetryMirror telemetryMirror, Pose startingPose) {
         if (!initialized) {
             init(telemetryMirror, startingPose);
@@ -125,13 +130,15 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
         return driveSpeedModifier * Constants.TELEOP_MOTOR_MAX_POWER;
     }
 
-    /**
+    */
+/**
      * This run() method doesn't set a starting pose so the drive won't be able to use
      * autonomous path following (since it won't know where it is on the field)
      * Use {@link #run(Gamepad, TelemetryMirror, Pose)} instead.
      * @param driveGamepad The gamepad used by the driver on the drive team
      * @param telemetryMirror Telemetry instance for logging useful info
-     */
+     *//*
+
     @Override
     public void run(Gamepad driveGamepad, TelemetryMirror telemetryMirror) {
         run(driveGamepad, telemetryMirror, null);
@@ -148,3 +155,4 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
         follower.holdPoint(follower.getPose());
     }
 }
+*/

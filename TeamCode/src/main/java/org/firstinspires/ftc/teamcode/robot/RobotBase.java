@@ -37,9 +37,11 @@ public class RobotBase {
         DcMotor backRight = hardwareMap.get(DcMotor.class, RobotConstants.Wheel.BACK_RIGHT);
 
         if (TELEOP_MODE) {
-            Follower follower = org.firstinspires.ftc.teamcode.pedroPathing.Constants.createFollower(hardwareMap);
+            // TODO: add back when updated to pp3
+        //    Follower follower = org.firstinspires.ftc.teamcode.pedroPathing.Constants.createFollower(hardwareMap);
    //         mecanumDrive = new SimpleMecanumDrive(frontLeft, frontRight, backLeft, backRight, follower);
-            mecanumDrive = new PedroPathingMecanumDrive(frontLeft, frontRight, backLeft, backRight, follower);
+            // TODO: add back when updated to pp3
+            //      mecanumDrive = new PedroPathingMecanumDrive(frontLeft, frontRight, backLeft, backRight, follower);
         }
 
         intake = new Intake(hardwareMap.get(DcMotor.class, RobotConstants.Motor.INTAKE_BASE),
