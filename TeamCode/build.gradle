@@ -1,3 +1,5 @@
+apply plugin: 'com.android.application'
+
 import java.text.SimpleDateFormat
 
 //
@@ -10,7 +12,6 @@ import java.text.SimpleDateFormat
 // please think carefully as to whether such customizations are really necessary
 // before doing so.
 
-
 // Custom definitions may go here
 
 // Include common definitions from above.
@@ -19,36 +20,26 @@ apply from: '../build.dependencies.gradle'
 apply plugin: 'org.jetbrains.kotlin.android'
 
 def getCommitCount = { ->
-    def stdout = new ByteArrayOutputStream()
-    exec {
+    // FIXED: Uses the providers.exec service container block required for Gradle 9+
+    return providers.exec {
         commandLine 'git', 'rev-list', '--count', 'HEAD'
-        standardOutput = stdout
-    }
-    return stdout.toString().trim().toInteger()
+    }.standardOutput.asText.get().trim().toInteger()
 }
 
 def getBranchName = { ->
-    def stdout = new ByteArrayOutputStream()
-    exec {
-        commandLine 'git', 'symbolic-ref', '--short', '-q', 'HEAD'
-        standardOutput = stdout
-    }
-    return stdout.toString().trim()
+    // FIXED: Uses the providers.exec service container block required for Gradle 9+
+    return providers.exec {
+        commandLine 'git', 'symbolic-ref', '--short', 'HEAD'
+    }.standardOutput.asText.get().trim()
 }
 
 def getShortGitCommitSha = { ->
-    try {
-        def stdout = new ByteArrayOutputStream()
-        exec {
-            commandLine 'git', 'rev-parse', '--verify', '--short', 'HEAD'
-            standardOutput = stdout
-        }
-        return stdout.toString().trim()
-    }
-    catch (ignored) {
-        return null;
-    }
+    // FIXED: Uses the providers.exec service container block required for Gradle 9+
+    return providers.exec {
+        commandLine 'git', 'rev-parse', '--short', 'HEAD'
+    }.standardOutput.asText.get().trim()
 }
+
 
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
