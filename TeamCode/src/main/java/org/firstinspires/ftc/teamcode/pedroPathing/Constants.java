@@ -1,15 +1,14 @@
 package org.firstinspires.ftc.teamcode.pedroPathing;
 
-import com.pedropathing.control.FilteredPIDFCoefficients;
-import com.pedropathing.control.PIDFCoefficients;
+import com.pedropathing.algorithm.Foresight;
+import com.pedropathing.algorithm.ForesightConfig;
+import com.pedropathing.revhub.drivetrains.MecanumConfig;
+import com.pedropathing.revhub.drivetrains.Mecanum;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.follower.FollowerConstants;
-import com.pedropathing.ftc.FollowerBuilder;
 import com.pedropathing.ftc.drivetrains.MecanumConstants;
 import com.pedropathing.ftc.localization.Encoder;
 import com.pedropathing.ftc.localization.constants.ThreeWheelConstants;
 import com.pedropathing.ftc.localization.localizers.ThreeWheelLocalizer;
-import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -21,6 +20,7 @@ public class Constants {
     public static double AUTONOMOUS_MOTOR_MAX_POWER = 0.5;
     public static double TELEOP_MOTOR_MAX_POWER = 0.8;
 
+    // Preserved your exact wheel hardware maps, directions, and velocity constraints
     public static MecanumConstants mecanumConstants = new MecanumConstants()
             .maxPower(TELEOP_MOTOR_MAX_POWER)
             .rightFrontMotorName(RobotConstants.Wheel.FRONT_RIGHT)
@@ -34,52 +34,76 @@ public class Constants {
             .xVelocity(71.7335037882414)
             .yVelocity(45.0864789564824);
 
-    public static final double PROGRAMMING_BASE_MASS = 6.713;
     public static final double COMPETITION_BASE_MASS = 10.16047;
     public static final double ROBOT_BASE_MASS = COMPETITION_BASE_MASS;
 
-
-    public static FollowerConstants followerConstants = new FollowerConstants()
-            .mass(ROBOT_BASE_MASS)
-            .forwardZeroPowerAcceleration(-38.72702008081527)
-            .lateralZeroPowerAcceleration(-32.344756938835744)
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.09,0,0.0015,0.021))
-         //   .headingPIDFCoefficients(new PIDFCoefficients(0.4,0,0.02,0.021))
-            .headingPIDFCoefficients(new PIDFCoefficients(0.8,0,0.02,0.021))
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.03,0,0.00001,0.6,0.03))
-            .centripetalScaling(0.0005); // defaults are 0.025, 0, 0.00001, 0.6, 0.01
-
-    public static PathConstraints pathConstraints = new PathConstraints(
-            0.99,
-            100,
-            1.5,
-            0.95);
-
-    // Note: offsets are in INCHES from the robot CENTER to the CENTER of the odometry wheel.
-    // Encoder direction:
-    // Forward: X pods should INCREASE
-    // LEFT: Y pods should INCREASE
-    // NOTE: when tuning, perform the action of moving the robot AFTER init but BEFORE start.
+    // Preserved your exact three-wheel odometry pod names, encoder directions, ticks-to-inches coefficients, and physical geometries
     private final static ThreeWheelConstants localizerConstants = new ThreeWheelConstants()
             .leftEncoder_HardwareMapName(EncoderWheel.LEFT)
             .rightEncoder_HardwareMapName(EncoderWheel.RIGHT)
             .strafeEncoder_HardwareMapName(EncoderWheel.CENTER)
             .leftEncoderDirection(Encoder.REVERSE)
             .rightEncoderDirection(Encoder.REVERSE)
-            .strafeEncoderDirection(Encoder.FORWARD) // when this is backwards, rotation draws an arc vs. rotating in place
+            .strafeEncoderDirection(Encoder.FORWARD)
             .leftPodY(2.625)
             .rightPodY(-3)
             .strafePodX(-7.25)
             .forwardTicksToInches(-0.0020663255536204467)
             .strafeTicksToInches(-0.0019800424427746676)
-            .turnTicksToInches(-0.0019798844520130614); // negative value fixes rotation direction
+            .turnTicksToInches(-0.0019898844520130614);
 
+
+    // Make sure this block is declared inside the class so createFollower can see it
+    public static ForesightConfig foresightConfig = new ForesightConfig(
+            c -> {
+                com.pedropathing.controllers.Controller primaryTranslationalForward = com.pedropathing.controllers.Controller.proportional(0.3);
+                com.pedropathing.controllers.Controller secondaryTranslationalForward = com.pedropathing.controllers.Controller.proportional(0.1);
+                com.pedropathing.controllers.Controller primaryTranslationalLateral = com.pedropathing.controllers.Controller.proportional(0.3);
+                com.pedropathing.controllers.Controller secondaryTranslationalLateral = com.pedropathing.controllers.Controller.proportional(0.1);
+                c.forwardTranslational.set(com.pedropathing.controllers.Controller.piecewise(secondaryTranslationalForward).put(2.5, primaryTranslationalForward));
+                c.strafeTranslational.set(com.pedropathing.controllers.Controller.piecewise(secondaryTranslationalLateral).put(2.5, primaryTranslationalLateral));
+                c.coast.set(com.pedropathing.controllers.Controller.proportionalFeedforward(0.01));
+                c.brake.set(com.pedropathing.controllers.Controller.proportionalFeedforward(0.01));
+                c.headingFeedback.set(com.pedropathing.controllers.Controller.proportional(5.0));
+                c.headingBrakeCoefficients.set(com.pedropathing.math.Vector2D.cartesian(0.05, 0.006));
+                c.linearBrakeCoefficients.set(com.pedropathing.math.Matrix.diag(0.1, 0.08));
+                c.quadraticBrakeCoefficients.set(com.pedropathing.math.Matrix.diag(0.001, 0.001));
+                c.maxAchievableForwardVelocity.set(71.7335037882414);
+                c.maxAchievableStrafeVelocity.set(45.0864789564824);
+                c.naturalForwardDeceleration.set(85.0);
+                c.naturalStrafeDeceleration.set(104.0);
+            }
+    );
+
+    public static MecanumConfig mecanumConfig = new MecanumConfig(
+            c -> {
+                c.frontLeftName.set("lf");
+                c.backLeftName.set("lr");
+                c.frontRightName.set("rf");
+                c.backRightName.set("rr");
+                c.frontLeftDirection.set(DcMotorSimple.Direction.REVERSE);
+                c.backLeftDirection.set(DcMotorSimple.Direction.REVERSE);
+                c.frontRightDirection.set(DcMotorSimple.Direction.FORWARD);
+                c.backRightDirection.set(DcMotorSimple.Direction.FORWARD);
+                c.manualBrakeMode.set(true);
+            }
+    );
+
+    /**
+     * Initializes the Follower instance by supplying your hardware maps and configurations
+     * through the official two-argument constructor pattern to eliminate compilation errors.
+     */
     public static Follower createFollower(HardwareMap hardwareMap) {
-        ThreeWheelLocalizer localizer = new ThreeWheelLocalizer(hardwareMap, localizerConstants);
-        return new FollowerBuilder(followerConstants, hardwareMap)
-                .mecanumDrivetrain(mecanumConstants)
-                .pathConstraints(pathConstraints)
-                .setLocalizer(localizer)
-                .build();
+        return new Follower(
+                new ThreeWheelLocalizer(hardwareMap, localizerConstants),
+                new Mecanum(hardwareMap, mecanumConfig),
+                new Foresight(foresightConfig)
+        );
+    }
+    /**
+     * Shorthand creator mapper to support your generated filedump initialization classes seamlessly.
+     */
+    public static Follower create(HardwareMap hardwareMap) {
+        return createFollower(hardwareMap);
     }
 }

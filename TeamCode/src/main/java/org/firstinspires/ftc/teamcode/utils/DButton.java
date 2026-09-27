@@ -22,6 +22,10 @@ public class DButton {
         released = false;
     }
 
+    public boolean isPressed() {
+        return state;
+    }
+
     public boolean pressed() {
         return pressed;
     }

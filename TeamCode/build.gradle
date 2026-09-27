@@ -45,6 +45,7 @@ android {
     namespace = 'org.firstinspires.ftc.teamcode'
     kotlinOptions {
         jvmTarget = '1.8'
+        freeCompilerArgs += ["-language-version", "1.9", "-api-version", "1.9"]
     }
 
     packagingOptions {
@@ -87,7 +88,41 @@ dependencies {
     implementation project(':FtcRobotController')
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
     androidTestImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+<<<<<<< Updated upstream
     implementation 'com.pedropathing:core:2.0.4'
     implementation 'com.pedropathing:ftc:2.0.4'
     implementation 'com.pedropathing:telemetry:1.0.0'
+=======
+
+    implementation 'com.pedropathing:revhub:3.0.1'
+    implementation 'com.pedropathing:tuning:1.0.0'
+
+    implementation("org.jetbrains.kotlin:kotlin-stdlib") {
+        version {
+            strictly("2.1.21")
+        }
+    }
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8") {
+        version {
+            strictly("2.1.21")
+        }
+    }
+}
+
+task compilePedroPaths(type: Exec) {
+    group = 'pedro'
+    description = 'Compiles custom exported .pp visual files into clean Java autonomous layouts natively.'
+
+    outputs.upToDateWhen { false }
+
+    if (System.getProperty('os.name').toLowerCase().contains('windows')) {
+        commandLine 'cmd', '/c', "java src/main/java/org/firstinspires/ftc/teamcode/InitializeAutonomousFiles.java"
+    } else {
+        commandLine 'java', 'src/main/java/org/firstinspires/ftc/teamcode/InitializeAutonomousFiles.java'
+    }
+}
+
+afterEvaluate {
+    tasks.findByName('preBuild')?.dependsOn compilePedroPaths
+>>>>>>> Stashed changes
 }

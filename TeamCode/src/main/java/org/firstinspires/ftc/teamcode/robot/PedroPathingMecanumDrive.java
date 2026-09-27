@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.robot;
 
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.Pose;
+import com.pedropathing.math.Pose;
+import com.pedropathing.drivetrain.DrivePowers;
+import com.pedropathing.follower.ManualDrive;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
@@ -36,9 +38,12 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
 
     private boolean initialized = false;
 
-    private boolean ROBOT_CENTRIC_DRIVE = true;
+    // Added final keyword to clear Android Studio warnings
+    private final boolean ROBOT_CENTRIC_DRIVE = true;
+
+
     public PedroPathingMecanumDrive(DcMotor frontLeft, DcMotor frontRight,
-                DcMotor backLeft, DcMotor backRight, Follower follower) {
+                                    DcMotor backLeft, DcMotor backRight, Follower follower) {
         this.follower = follower;
         this.frontLeft = frontLeft;
         this.frontRight = frontRight;
@@ -63,13 +68,14 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
     }
 
     public void init(TelemetryMirror telemetryMirror, Pose startingPose) {
-        follower.startTeleOpDrive();
         if (startingPose != null) {
-        follower.setStartingPose(startingPose);
+            follower.setPose(startingPose);
         }
+
         this.initialized = true;
         telemetryMirror.addData(SUBSYSTEM_NAME, "Initialized");
     }
+
 
     /**
      *
@@ -91,15 +97,21 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
         double forwardSpeed = -driveGamepad.left_stick_y * driveSpeed;
         double strafeSpeed = -driveGamepad.left_stick_x * driveSpeed;
         double turnSpeed = TURN_MAX_SPEED * -driveGamepad.right_stick_x * driveSpeed;
-        follower.setTeleOpDrive(forwardSpeed, strafeSpeed, turnSpeed, ROBOT_CENTRIC_DRIVE); // TODO - allow selecting mode at runtime
 
         holdButton.update(driveGamepad.left_trigger != 0);
-        if (holdButton.pressed()) {
-            hold();
-        } else if (holdButton.released()) {
-            follower.startTeleOpDrive(); // go back to manual mode
-            follower.setTeleOpDrive(forwardSpeed, strafeSpeed, turnSpeed, ROBOT_CENTRIC_DRIVE);
+
+        if (holdButton.isPressed()) {
+            this.hold();
+        } else {
+            // Only update manual powers if the user isn't actively locking position
+            if (ROBOT_CENTRIC_DRIVE) {
+                follower.manual(forwardSpeed, strafeSpeed, turnSpeed);
+            } else {
+                DrivePowers powers = ManualDrive.fieldCentric(forwardSpeed, strafeSpeed, turnSpeed, follower.pose().heading());
+                follower.manual(powers);
+            }
         }
+
 
         telemetryMirror.addData(SUBSYSTEM_NAME + " FWD speed", forwardSpeed);
         telemetryMirror.addData(SUBSYSTEM_NAME + " STRAFE speed", strafeSpeed);
@@ -139,12 +151,11 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
 
     @Override
     public void stop(TelemetryMirror telemetryMirror) {
-        follower.startTeleopDrive(true);
-        follower.setTeleOpDrive(0,0,0,true);
+        follower.manual(0, 0, 0);
         telemetryMirror.addData(SUBSYSTEM_NAME, STOPPED);
     }
 
     public void hold() {
-        follower.holdPoint(follower.getPose());
+        follower.hold(follower.pose());
     }
 }

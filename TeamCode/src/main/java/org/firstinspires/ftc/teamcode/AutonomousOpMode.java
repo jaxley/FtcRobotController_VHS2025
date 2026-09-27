@@ -1,22 +1,18 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierLine;
-import com.pedropathing.paths.PathChain;
-import com.pedropathing.util.Timer;
+import com.pedropathing.paths.Path;
+import com.pedropathing.api.PoseFactory;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Alliance;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.pedroPathing.Drawing;
-import org.firstinspires.ftc.teamcode.robot.Poses;
 import org.firstinspires.ftc.teamcode.robot.RobotBaseAutonomous;
 import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
 
-/**
- * Based on https://pedropathing.com/docs/pathing/examples/auto
- */
-
+@SuppressWarnings("SpellCheckingInspection")
 public abstract class AutonomousOpMode extends OpMode {
 
     public static final String AUTONOMOUS_OP_MODE = "AutonomousOpMode";
@@ -24,7 +20,7 @@ public abstract class AutonomousOpMode extends OpMode {
     public static final double FLYWHEEL_POWER = -0.825;
     private boolean reset = true;
 
-    private AutonomousOpMode() {
+    protected AutonomousOpMode() {
     }
 
     protected AutonomousOpMode(Alliance alliance) {
@@ -32,320 +28,122 @@ public abstract class AutonomousOpMode extends OpMode {
     }
 
     public static final boolean USE_PANELS = true;
-    private Follower follower;
-    private Timer pathTimer, actionTimer, opmodeTimer;
+    protected Follower follower;
+    protected final PoseFactory p = PoseFactory.degrees();
+
     private RobotBaseAutonomous robotBase;
-
     private Alliance alliance;
-
     private PathState pathState;
-
     private TelemetryMirror telemetryMirror;
 
-    // Pedro paths
-    private PathChain getRow3ThenReturnToStartTop1;
-    boolean firstFired = false;
-    boolean secondFired = false;
-    boolean thirdFired = false;
+    protected Path autoPaths;
     int shotCount = 0;
     double lastFiringTimeMs;
     double lastResetTimeMs;
 
-    private void buildPaths() {
+    protected ElapsedTime pathTimer;
 
-        Poses.AlliancePoses poses = Poses.forAlliance(alliance);
-        // TODO: build our pedro paths here
-        getRow3ThenReturnToStartTop1 = follower.pathBuilder()
-                .addPath(new BezierLine(poses.get(Poses.NamedPose.STARTING_TOP_1),
-                        poses.get(Poses.NamedPose.INTAKE_ROW_3_START)))
-                .addParametricCallback(0.9, new Runnable() {
-                    @Override
-                    public void run() {
-                        robotBase.getIntake().loadBallToShooter(telemetryMirror);
-                    }
-                })
-                .addPath(new BezierLine(poses.get(Poses.NamedPose.INTAKE_ROW_3_START),
-                        poses.get(Poses.NamedPose.INTAKE_ROW_3_END)))
-                .addPath(new BezierLine(poses.get(Poses.NamedPose.INTAKE_ROW_3_END),
-                        poses.get(Poses.NamedPose.STARTING_TOP_1)))
-                .addParametricCallback(0.2, new Runnable() {
-                    @Override
-                    public void run() {
-                        robotBase.getIntake().stop(telemetryMirror);
-                    }
-                })
-                .setGlobalConstantHeadingInterpolation(poses.get(Poses.NamedPose.STARTING_TOP_1).getHeading())
-                .build();
-
-        // TODO - we are missing paths to collect balls from each of the rows...
-    }
-
-    /**
-     * This is the main loop of the OpMode, it will run repeatedly after clicking "Play".
-     **/
     @Override
     public void loop() {
-
-        // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();
         autonomousPathUpdate(telemetryMirror);
 
-        // Feedback to Driver Hub for debugging
         telemetryMirror.addData("path state", pathState);
-        telemetryMirror.addData("x", follower.getPose().getX());
-        telemetryMirror.addData("y", follower.getPose().getY());
-        telemetryMirror.addData("heading", follower.getPose().getHeading());
+        telemetryMirror.addData("x", follower.pose().x());
+        telemetryMirror.addData("y", follower.pose().y());
+        telemetryMirror.addData("heading", Math.toDegrees(follower.pose().heading()));
         telemetryMirror.update();
         draw();
     }
 
-    /**
-     * This method is called once at the init of the OpMode.
-     **/
     @Override
     public void init() {
-
         Drawing.init();
 
         telemetryMirror = new TelemetryMirror(telemetry, USE_PANELS);
-        pathTimer = new Timer();
-        opmodeTimer = new Timer();
-        opmodeTimer.resetTimer();
+        pathTimer = new ElapsedTime();
 
-        Poses.AlliancePoses poses = Poses.forAlliance(alliance);
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(poses.get(Poses.NamedPose.STARTING_TOP_1));
-        buildPaths();
         drawOnlyCurrent();
     }
 
-    /**
-     * This method is called continuously after Init while waiting for "play".
-     **/
     @Override
     public void init_loop() {
         telemetryMirror.addData("Code Version", BuildConfig.VERSION_NAME);
         telemetryMirror.addData("Code Build Time", BuildConfig.APP_BUILD_TIME);
         telemetryMirror.addData(ALLIANCE, alliance.name());
         telemetryMirror.addData(AUTONOMOUS_OP_MODE, "initialized");
-        telemetryMirror.addData("Starting X ", follower.getPose().getX());
-        telemetryMirror.addData("Starting Y ", follower.getPose().getY());
+
+        telemetryMirror.addData("Starting X ", follower.pose().x());
+        telemetryMirror.addData("Starting Y ", follower.pose().y());
         telemetryMirror.update();
 
         follower.update();
         drawOnlyCurrent();
     }
 
-    /**
-     * This method is called once at the start of the OpMode.
-     * It runs all the setup actions, including building paths and starting the path system
-     **/
     @Override
     public void start() {
-        opmodeTimer.resetTimer();
         setNextPathState(PathState.SCORE_PRELOADED);
-
         robotBase = RobotBaseAutonomous.getInstance(hardwareMap, telemetryMirror);
 
         telemetryMirror.addData(ALLIANCE, alliance.name());
         telemetryMirror.addData(AUTONOMOUS_OP_MODE, "started");
         telemetryMirror.update();
+
+        if (autoPaths != null) {
+            follower.follow(autoPaths);
+        }
+
         follower.update();
     }
-
-    /**
-     * We do not use this because everything should automatically disable
-     **/
 
     @Override
     public void stop() {
     }
 
-    /**
-     * The switch is called continuously and runs the pathing, at certain points, it triggers the action state. The pathState variable in the switch statement will track the robot's movement throughout the autonomous. Every time the switch changes case, it will reset the timer. The followPath() function sets the follower to run the specific path, but does NOT wait for it to finish before moving on. Rather, the robot will transition between path states based on a specified condition in the if statement (known as a Finite State Machine, or FSM).
-     * <p>
-     * Below is an example state manager with explanations on what each case does, and how to modify it to fit your own routine.
-     */
     public void autonomousPathUpdate(TelemetryMirror telemetryMirror) {
-        switch (pathState) {
-            case SCORE_PRELOADED: {
-                robotBase.getShooter().startFlywheel(telemetryMirror, FLYWHEEL_POWER);
-                telemetryMirror.addData("Fired", shotCount);
+        if (pathState == PathState.SCORE_PRELOADED) {
+            robotBase.getShooter().startFlywheel(telemetryMirror, FLYWHEEL_POWER);
+            telemetryMirror.addData("Fired", shotCount);
 
-                telemetryMirror.addData("Last Time Fired", lastFiringTimeMs);
-                telemetryMirror.addData("Last Time Reset", lastResetTimeMs);
-                telemetryMirror.addData("Ready to Fire", robotBase.getShooter().readyToFire(telemetryMirror));
+            telemetryMirror.addData("Last Time Fired", lastFiringTimeMs);
+            telemetryMirror.addData("Last Time Reset", lastResetTimeMs);
+            telemetryMirror.addData("Ready to Fire", robotBase.getShooter().readyToFire(telemetryMirror));
 
-                if (pathTimer.getElapsedTime() >= (lastResetTimeMs + 500)) {
-                    if (robotBase.getShooter().readyToFire(telemetryMirror) && reset) {
-                        shotCount+=1;
-                        robotBase.getShooter().fire(telemetryMirror);
-                        lastFiringTimeMs = pathTimer.getElapsedTime();
-                        reset = false;
-                    }
+            if (pathTimer.milliseconds() >= (lastResetTimeMs + 500)) {
+                if (robotBase.getShooter().readyToFire(telemetryMirror) && reset) {
+                    shotCount += 1;
+                    robotBase.getShooter().fire(telemetryMirror);
+                    lastFiringTimeMs = pathTimer.milliseconds();
+                    reset = false;
                 }
-                if (shotCount == 2) {
-                    robotBase.getIntake().loadBallToShooter(telemetryMirror);
-                }
-                if (pathTimer.getElapsedTime() >= (lastFiringTimeMs + 800) && !reset) {
-                    robotBase.getShooter().reset(telemetryMirror);
-                    lastResetTimeMs = pathTimer.getElapsedTime();
-                    reset = true;
-                }
-
-                if (shotCount == 3 && reset && pathTimer.getElapsedTime() >= (lastResetTimeMs + 100)) {
-                    robotBase.getShooter().reset(telemetryMirror);
-                    robotBase.getShooter().stop(telemetryMirror);
-                    setNextPathState(PathState.INTAKE_ROW3);
-                    robotBase.getIntake().stop(telemetryMirror);
-                    shotCount = 0;
-                }
-                break;
             }
-            case SCORE_ROW_3:
-                if (!follower.isBusy()) {
-                    //follower.followPath(path1);
-                    robotBase.getShooter().startFlywheel(telemetryMirror, FLYWHEEL_POWER);
+            if (shotCount == 2) {
+                robotBase.getIntake().loadBallToShooter(telemetryMirror);
+            }
+            if (pathTimer.milliseconds() >= (lastFiringTimeMs + 800) && !reset) {
+                robotBase.getShooter().reset(telemetryMirror);
+                lastResetTimeMs = pathTimer.milliseconds();
+                reset = true;
+            }
 
-                    telemetryMirror.addData("Ready to Fire",
-                            robotBase.getShooter().readyToFire(telemetryMirror));
-
-                    if (pathTimer.getElapsedTime() <= 500 && !firstFired) {
-                        if (robotBase.getShooter().readyToFire(telemetryMirror)) {
-                            firstFired = true;
-                            robotBase.getShooter().fire(telemetryMirror);
-                        }
-                    }
-                    if (pathTimer.getElapsedTime() <= 1000 && !secondFired) {
-                        secondFired = true;
-                        robotBase.getShooter().fire(telemetryMirror);
-                    }
-                    if (pathTimer.getElapsedTime() <= 1500 && !thirdFired) {
-                        thirdFired = true;
-                        robotBase.getShooter().fire(telemetryMirror);
-                        robotBase.getShooter().stop(telemetryMirror);
-                        setNextPathState(PathState.SCORE_LEAVE_POINTS);
-                    }
-
-
-                }
-                break;
-            case SCORE_ROW_1:
-                break;
-            case SCORE_ROW_2:
-                if (!follower.isBusy()) {
-                    //follower.followPath(path1);
-                    robotBase.getShooter().startFlywheel(telemetryMirror, FLYWHEEL_POWER);
-
-
-                    if (pathTimer.getElapsedTime() <= 500 && !firstFired) {
-                        firstFired = true;
-                        robotBase.getShooter().fire(telemetryMirror);
-                    }
-                    if (pathTimer.getElapsedTime() <= 1000 && !secondFired) {
-                        secondFired = true;
-                        robotBase.getShooter().fire(telemetryMirror);
-                    }
-                    if (pathTimer.getElapsedTime() <= 1500 && !thirdFired) {
-                        thirdFired = true;
-                        robotBase.getShooter().fire(telemetryMirror);
-                        robotBase.getShooter().stop(telemetryMirror);
-                        setNextPathState(PathState.SCORE_LEAVE_POINTS);
-                    }
-
-
-                }
-                break;
-            case INTAKE_ROW3:
-
-            /* You could check for
-            - Follower State: "if(!follower.isBusy()) {}"
-            - Time: "if(pathTimer.getElapsedTimeSeconds() > 1) {}"
-            - Robot Position: "if(follower.getPose().getX() > 36) {}"
-            */
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
-                if (!follower.isBusy()) {
-                    /* Score Preload */
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-
-                    follower.followPath(getRow3ThenReturnToStartTop1, 0.5, true);
-                }
-                if (follower.atParametricEnd()) {
-                    setNextPathState(PathState.SCORE_ROW_3);
-                }
-                break;
-            case INTAKE_ROW2:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup1Pose's position */
-
-                if (!follower.isBusy()) {
-                    /* Grab Sample */
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-
-                    //follower.followPath(path3, true);
-                    setNextPathState(PathState.SCORE_ROW_1);
-                }
-                break;
-            case INTAKE_ROW1:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
-
-                if (!follower.isBusy()) {
-                    /* Score Sample */
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-
-                    //follower.followPath(path4, true);
-                    setNextPathState(PathState.SCORE_ROW_1);
-                }
-                break;
-            case SCORE_LEAVE_POINTS:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
-                if (!follower.isBusy()) {
-                    /* Score Sample */
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    // follower.followPath(grabPickup3, true);
-                    // TODO - do we want to consider a timer-based trigger to enter this state so we do it before auto ends?
-                    setNextPathState(PathState.AUTO_DONE);
-                }
-                break;
-            case AUTO_DONE:
-                // terminal state
-                // Stop robot
-                robotBase.stop(telemetryMirror);
-                break;
+            if (shotCount == 3 && reset && pathTimer.milliseconds() >= (lastResetTimeMs + 100)) {
+                robotBase.getShooter().reset(telemetryMirror);
+                robotBase.getShooter().stop(telemetryMirror);
+                setNextPathState(PathState.INTAKE_ROW3);
+                robotBase.getIntake().stop(telemetryMirror);
+                shotCount = 0;
+            }
         }
     }
 
-    /**
-     * These change the states of the paths and actions. It will also reset the timers of the individual switches
-     **/
-    public void setNextPathState(PathState pState) {
-        pathState = pState;
-        pathTimer.resetTimer();
+    protected void setNextPathState(PathState state) {
+        this.pathState = state;
+        if (pathTimer != null) pathTimer.reset();
     }
 
-    // Use an enum to use *named states* for the path follower. integers vs. names aren't good
-    // for human comprehension. These are suggestions
-    public enum PathState {
-        SCORE_PRELOADED,
-        INTAKE_ROW1,
-        INTAKE_ROW2,
-        INTAKE_ROW3,
-        SCORE_ROW_1,
-        SCORE_ROW_2,
-        SCORE_ROW_3,
-        SCORE_LEAVE_POINTS,
-        AUTO_DONE
-    }
-
-    public void drawOnlyCurrent() {
-        try {
-            Drawing.drawRobot(follower.getPose());
-            Drawing.sendPacket();
-        } catch (Exception e) {
-            throw new RuntimeException("Drawing failed " + e);
-        }
-    }
-
-    public void draw() {
-        Drawing.drawDebug(follower);
-    }
+    protected enum PathState { SCORE_PRELOADED, INTAKE_ROW3 }
+    protected void draw() { }
+    protected void drawOnlyCurrent() { draw(); }
 }
