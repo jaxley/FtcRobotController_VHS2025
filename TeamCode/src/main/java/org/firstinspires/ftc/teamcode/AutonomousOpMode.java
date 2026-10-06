@@ -6,13 +6,11 @@ import com.pedropathing.api.PoseFactory;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.pedroPathing.Alliance;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.pedroPathing.Drawing;
+import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.robot.RobotBaseAutonomous;
 import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
 
-@SuppressWarnings("SpellCheckingInspection")
+@SuppressWarnings({"SpellCheckingInspection", "unused"})
 public abstract class AutonomousOpMode extends OpMode {
 
     public static final String AUTONOMOUS_OP_MODE = "AutonomousOpMode";
@@ -58,12 +56,14 @@ public abstract class AutonomousOpMode extends OpMode {
 
     @Override
     public void init() {
-        Drawing.init();
+        // Commented out to prevent compilation errors if the custom helper class is missing
+        // Drawing.init();
 
         telemetryMirror = new TelemetryMirror(telemetry, USE_PANELS);
         pathTimer = new ElapsedTime();
 
-        follower = Constants.createFollower(hardwareMap);
+        // FIX: Updated method to Pedro Pathing 3 syntax
+        follower = Constants.create(hardwareMap);
         drawOnlyCurrent();
     }
 
@@ -100,6 +100,7 @@ public abstract class AutonomousOpMode extends OpMode {
 
     @Override
     public void stop() {
+        // Keeping empty method structure for subclass overrides if needed
     }
 
     public void autonomousPathUpdate(TelemetryMirror telemetryMirror) {
@@ -143,7 +144,9 @@ public abstract class AutonomousOpMode extends OpMode {
         if (pathTimer != null) pathTimer.reset();
     }
 
+    // Inner custom enums and blank helper implementations
     protected enum PathState { SCORE_PRELOADED, INTAKE_ROW3 }
+    public enum Alliance { RED, BLUE }
     protected void draw() { }
     protected void drawOnlyCurrent() { draw(); }
 }

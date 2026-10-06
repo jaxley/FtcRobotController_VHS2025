@@ -1,7 +1,8 @@
 package org.firstinspires.ftc.teamcode.robot;
 
 import com.pedropathing.api.PoseFactory; // Pedro Pathing 3 pose factory import
-import org.firstinspires.ftc.teamcode.pedroPathing.Alliance;
+// FIX: Pointing to the new package location of your custom Alliance enum
+import org.firstinspires.ftc.teamcode.AutonomousOpMode.Alliance;
 
 @SuppressWarnings("unused") // Silences the "never used" warnings until your auto script references them
 public class Poses {

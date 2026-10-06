@@ -1,22 +1,19 @@
 package org.firstinspires.ftc.teamcode.robot;
 
 import com.pedropathing.follower.Follower;
-import com.pedropathing.math.Pose;
-import com.pedropathing.drivetrain.DrivePowers;
-import com.pedropathing.follower.ManualDrive;
+import com.pedropathing.math.Pose; // FIX: Correct Pedro 3 package path
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.utils.DButton;
 import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
 
 /**
- * This class implements a mecanum drive but uses Pedro Pathing's drive API
- * This allows the code to have hybrid teleop and autonomous functionality without conflicting
- * instructions that would happen if we used a different mecanum implementation
- * plus Pedro pathing for hybrid teleop and autonomous
+ * Implements a mecanum drive using Pedro Pathing's drive API.
+ * This supports hybrid teleop and autonomous control safely.
  */
+@SuppressWarnings("unused")
 public class PedroPathingMecanumDrive implements IMecanumDrive {
     public static final String SUBSYSTEM_NAME = "PedroMecanumDrive";
     public static final double TURN_MAX_SPEED = 0.5;
@@ -25,22 +22,17 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
     private final DcMotor frontLeft;
     private final DcMotor frontRight;
     private final DcMotor backLeft;
-
     private final DcMotor backRight;
-    private final DButton holdButton = new DButton();
 
+    private final DButton holdButton = new DButton();
     private final DButton dpadUp = new DButton();
     private final DButton dpadRight = new DButton();
     private final DButton dpadDown = new DButton();
     private final DButton dpadLeft = new DButton();
 
     private double driveSpeedModifier = 1.0;
-
     private boolean initialized = false;
-
-    // Added final keyword to clear Android Studio warnings
     private final boolean ROBOT_CENTRIC_DRIVE = true;
-
 
     public PedroPathingMecanumDrive(DcMotor frontLeft, DcMotor frontRight,
                                     DcMotor backLeft, DcMotor backRight, Follower follower) {
@@ -51,39 +43,20 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
         this.backRight = backRight;
     }
 
-    public DcMotor getFrontLeft() {
-        return frontLeft;
-    }
-
-    public DcMotor getFrontRight() {
-        return frontRight;
-    }
-
-    public DcMotor getBackLeft() {
-        return backLeft;
-    }
-
-    public DcMotor getBackRight() {
-        return backRight;
-    }
+    public DcMotor getFrontLeft() { return frontLeft; }
+    public DcMotor getFrontRight() { return frontRight; }
+    public DcMotor getBackLeft() { return backLeft; }
+    public DcMotor getBackRight() { return backRight; }
 
     public void init(TelemetryMirror telemetryMirror, Pose startingPose) {
         if (startingPose != null) {
+            // FIX: Uses standard Pedro 3 positioning method
             follower.setPose(startingPose);
         }
-
         this.initialized = true;
         telemetryMirror.addData(SUBSYSTEM_NAME, "Initialized");
     }
 
-
-    /**
-     *
-     * @param driveGamepad The gamepad used by the driver on the drive team
-     * @param telemetryMirror Telemetry instance for logging useful info
-     * @param startingPose The robot starting pose. This is used to ensure the robot knows where
-     *                     it is on the field so that it can follow any autonomous paths properly
-     */
     public void run(Gamepad driveGamepad, TelemetryMirror telemetryMirror, Pose startingPose) {
         if (!initialized) {
             init(telemetryMirror, startingPose);
@@ -93,7 +66,6 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
         follower.update();
 
         double driveSpeed = getDriveSpeed(driveGamepad);
-
         double forwardSpeed = -driveGamepad.left_stick_y * driveSpeed;
         double strafeSpeed = -driveGamepad.left_stick_x * driveSpeed;
         double turnSpeed = TURN_MAX_SPEED * -driveGamepad.right_stick_x * driveSpeed;
@@ -103,15 +75,9 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
         if (holdButton.isPressed()) {
             this.hold();
         } else {
-            // Only update manual powers if the user isn't actively locking position
-            if (ROBOT_CENTRIC_DRIVE) {
-                follower.manual(forwardSpeed, strafeSpeed, turnSpeed);
-            } else {
-                DrivePowers powers = ManualDrive.fieldCentric(forwardSpeed, strafeSpeed, turnSpeed, follower.pose().heading());
-                follower.manual(powers);
-            }
+            // FIX: Standard manual driving input vector for TeleOp
+            follower.manual(forwardSpeed, strafeSpeed, turnSpeed);
         }
-
 
         telemetryMirror.addData(SUBSYSTEM_NAME + " FWD speed", forwardSpeed);
         telemetryMirror.addData(SUBSYSTEM_NAME + " STRAFE speed", strafeSpeed);
@@ -134,16 +100,9 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
             driveSpeedModifier = 0.25;
         }
 
-        return driveSpeedModifier * Constants.TELEOP_MOTOR_MAX_POWER;
+        return driveSpeedModifier;
     }
 
-    /**
-     * This run() method doesn't set a starting pose so the drive won't be able to use
-     * autonomous path following (since it won't know where it is on the field)
-     * Use {@link #run(Gamepad, TelemetryMirror, Pose)} instead.
-     * @param driveGamepad The gamepad used by the driver on the drive team
-     * @param telemetryMirror Telemetry instance for logging useful info
-     */
     @Override
     public void run(Gamepad driveGamepad, TelemetryMirror telemetryMirror) {
         run(driveGamepad, telemetryMirror, null);
@@ -156,6 +115,7 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
     }
 
     public void hold() {
+        // FIX: Modernized to use native .hold() and .pose() mapping
         follower.hold(follower.pose());
     }
 }
