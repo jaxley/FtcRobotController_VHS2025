@@ -15,6 +15,7 @@ public class RobotBase {
     protected IMecanumDrive mecanumDrive;
     protected Intake intake;
     protected Shooter shooter;
+    protected Limelight limelight;
 
     /**
      * Singleton accessor
@@ -38,7 +39,6 @@ public class RobotBase {
 
         if (TELEOP_MODE) {
             Follower follower = org.firstinspires.ftc.teamcode.pedroPathing.Constants.createFollower(hardwareMap);
-   //         mecanumDrive = new SimpleMecanumDrive(frontLeft, frontRight, backLeft, backRight, follower);
             mecanumDrive = new PedroPathingMecanumDrive(frontLeft, frontRight, backLeft, backRight, follower);
         }
 
@@ -47,34 +47,36 @@ public class RobotBase {
 
         shooter = new Shooter(hardwareMap.get(DcMotorEx.class, RobotConstants.Motor.FLYWHEEL),
                 hardwareMap.get(Servo.class, RobotConstants.Motor.LAUNCH_SERVO));
+
+        this.limelight = new Limelight(hardwareMap);
     }
 
     protected RobotBase(HardwareMap hardwareMap) {
         this(hardwareMap, true);
     }
 
-    public Shooter getShooter() {
-        return shooter;
-    }
-
-    public Intake getIntake() {
-        return intake;
-    }
-
-    public IMecanumDrive getMecanumDrive() {
-        return mecanumDrive;
-    }
-
-    public void takeAShot(TelemetryMirror telemetry) {
-        // TODO: verify this logic
-        //intake.loadBallToShooter(telemetry);
-        shooter.fire(telemetry);
-    }
+    public Shooter getShooter() { return shooter; }
+    public Intake getIntake() { return intake; }
+    public IMecanumDrive getMecanumDrive() { return mecanumDrive; }
 
     public void run(Gamepad driverGamepad, Gamepad subsystemGamepad, TelemetryMirror telemetry) {
+        // Process camera tracking algorithms and button edges cleanly
         if (TELEOP_MODE) {
-            mecanumDrive.run(driverGamepad, telemetry);
+            limelight.run(subsystemGamepad, telemetry);
         }
+
+        // Delegate control loops smoothly without modifying active hardware gamepad variables
+        if (TELEOP_MODE) {
+            if (limelight.isTargetingActive()) {
+                // Route the custom tracking gamepad to Pedro Pathing to safely execute rotation commands
+                mecanumDrive.run(limelight.getTrackingGamepad(), telemetry);
+                telemetry.addData("Drive Mode", "Auto-Targeting Overrides Engaged");
+            } else {
+                // Hand total standard layout stick control back to the driver normally
+                mecanumDrive.run(driverGamepad, telemetry);
+            }
+        }
+
         intake.run(subsystemGamepad, telemetry);
         shooter.run(subsystemGamepad, telemetry);
     }
@@ -82,6 +84,8 @@ public class RobotBase {
     public void stop(TelemetryMirror telemetry) {
         if (TELEOP_MODE) {
             mecanumDrive.stop(telemetry);
+            limelight.stop(telemetry);
+            limelight.shutdownCamera();
         }
         intake.stop(telemetry);
         shooter.stop(telemetry);

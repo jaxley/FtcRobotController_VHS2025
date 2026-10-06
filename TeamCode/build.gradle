@@ -1,45 +1,19 @@
 apply plugin: 'com.android.application'
-
 import java.text.SimpleDateFormat
 
-//
-// build.gradle in TeamCode
-//
-// Most of the definitions for building your module reside in a common, shared
-// file 'build.common.gradle'. Being factored in this way makes it easier to
-// integrate updates to the FTC into your code. If you really need to customize
-// the build definitions, you can place those customizations in this file, but
-// please think carefully as to whether such customizations are really necessary
-// before doing so.
-
-// Custom definitions may go here
-
-// Include common definitions from above.
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
 apply plugin: 'org.jetbrains.kotlin.android'
 
 def getCommitCount = { ->
-    // FIXED: Uses the providers.exec service container block required for Gradle 9+
-    return providers.exec {
-        commandLine 'git', 'rev-list', '--count', 'HEAD'
-    }.standardOutput.asText.get().trim().toInteger()
+    return providers.exec { commandLine 'git', 'rev-list', '--count', 'HEAD' }.standardOutput.asText.get().trim().toInteger()
 }
-
 def getBranchName = { ->
-    // FIXED: Uses the providers.exec service container block required for Gradle 9+
-    return providers.exec {
-        commandLine 'git', 'symbolic-ref', '--short', 'HEAD'
-    }.standardOutput.asText.get().trim()
+    return providers.exec { commandLine 'git', 'symbolic-ref', '--short', 'HEAD' }.standardOutput.asText.get().trim()
 }
-
 def getShortGitCommitSha = { ->
-    // FIXED: Uses the providers.exec service container block required for Gradle 9+
-    return providers.exec {
-        commandLine 'git', 'rev-parse', '--short', 'HEAD'
-    }.standardOutput.asText.get().trim()
+    return providers.exec { commandLine 'git', 'rev-parse', '--short', 'HEAD' }.standardOutput.asText.get().trim()
 }
-
 
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
@@ -47,82 +21,41 @@ android {
         jvmTarget = '1.8'
         freeCompilerArgs += ["-language-version", "1.9", "-api-version", "1.9"]
     }
-
-    packagingOptions {
-        jniLibs.useLegacyPackaging true
-    }
+    packagingOptions { jniLibs.useLegacyPackaging true }
     buildFeatures.buildConfig true
 
     defaultConfig {
         versionName getBranchName() + "_" + getCommitCount() + "_" + getShortGitCommitSha()
         buildConfigField "String", "APP_BUILD_TIME", '"' + (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.ROOT).format(new Date())) + '"'
-        // define whether this build is a production build
         buildConfigField "boolean", "IS_PRODUCTION", "false"
     }
 }
 
-//tasks.register('createJar', Copy) {
-//    from('build/intermediates/javac/debug/compileDebugJavaWithJavac')
-//    into('build/outputs/libs/')
-//}
-//
-//build.dependsOn(createJar)
-
-//tasks.register('uberJar', Jar) {
-//    archiveClassifier = 'uber'
-//
-//    from('build/intermediates/javac/debug/compileDebugJavaWithJavac')
-//
-//    from {
-//        findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
-//    }
-//}
-//
-//build.dependsOn('uberJar')
-
 dependencies {
     implementation project(':FtcRobotController')
-    // If you would like to use the hardware module
     implementation 'com.bylazar:fullpanels:1.0.9'
     implementation 'androidx.core:core-ktx:1.8.0'
-    implementation project(':FtcRobotController')
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
     androidTestImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
-<<<<<<< Updated upstream
+
+    // Combined PedroPathing dependencies
     implementation 'com.pedropathing:core:2.0.4'
     implementation 'com.pedropathing:ftc:2.0.4'
     implementation 'com.pedropathing:telemetry:1.0.0'
-=======
-
     implementation 'com.pedropathing:revhub:3.0.1'
     implementation 'com.pedropathing:tuning:1.0.0'
 
-    implementation("org.jetbrains.kotlin:kotlin-stdlib") {
-        version {
-            strictly("2.1.21")
-        }
-    }
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8") {
-        version {
-            strictly("2.1.21")
-        }
-    }
+    implementation("org.jetbrains.kotlin:kotlin-stdlib") { version { strictly("2.1.21") } }
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8") { version { strictly("2.1.21") } }
 }
 
 task compilePedroPaths(type: Exec) {
     group = 'pedro'
     description = 'Compiles custom exported .pp visual files into clean Java autonomous layouts natively.'
-
     outputs.upToDateWhen { false }
-
-    if (System.getProperty('os.name').toLowerCase().contains('windows')) {
-        commandLine 'cmd', '/c', "java src/main/java/org/firstinspires/ftc/teamcode/InitializeAutonomousFiles.java"
-    } else {
-        commandLine 'java', 'src/main/java/org/firstinspires/ftc/teamcode/InitializeAutonomousFiles.java'
-    }
+    commandLine System.getProperty('os.name').toLowerCase().contains('windows') ? ['cmd', '/c', "java src/main/java/org/firstinspires/ftc/teamcode/InitializeAutonomousFiles.java"] : ['java', 'src/main/java/org/firstinspires/ftc/teamcode/InitializeAutonomousFiles.java']
 }
 
 afterEvaluate {
     tasks.findByName('preBuild')?.dependsOn compilePedroPaths
->>>>>>> Stashed changes
 }

@@ -11,7 +11,10 @@ import java.util.regex.Pattern;
 @SuppressWarnings("SpellCheckingInspection")
 public class InitializeAutonomousFiles {
 
-    // FIXED: Adjusted base folder layouts to target the TeamCode module structure cleanly
+    // TOGGLE: Set to true to delete old files and overwrite.
+    // Set to false when you want to manually edit the generated files.
+    private static final boolean REGENERATE_TOGGLE = true;
+
     private static final String DROP_DIR = "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/filedrop";
     private static final String DUMP_DIR = "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/filedump";
 
@@ -28,10 +31,10 @@ public class InitializeAutonomousFiles {
             File dropFolder = new File(rootPath, DROP_DIR.replace("/", File.separator));
             File dumpFolder = new File(rootPath, DUMP_DIR.replace("/", File.separator));
 
-            // CRITICAL TERMINAL MONITOR REGISTRATION:
             System.out.println("=========================================================");
             System.out.println("[TARGET DROP DIRECTORY]: " + dropFolder.getAbsolutePath());
             System.out.println("[TARGET DUMP DIRECTORY]: " + dumpFolder.getAbsolutePath());
+            System.out.println("[REGENERATE TOGGLE ACTIVE]: " + REGENERATE_TOGGLE);
             System.out.println("=========================================================");
 
             if (!dropFolder.exists()) {
@@ -43,8 +46,21 @@ public class InitializeAutonomousFiles {
                 return;
             }
 
-            if (!dumpFolder.exists() && !dumpFolder.mkdirs()) {
-                System.out.println("--> Warning: System was unable to auto-verify creation patterns for filedump module directory maps.");
+            // Create filedump folder if it doesn't exist
+            if (!dumpFolder.exists()) {
+                if (dumpFolder.mkdirs()) {
+                    System.out.println("--> Success: Created missing filedump folder at: " + dumpFolder.getAbsolutePath());
+                } else {
+                    System.out.println("--> Error: System was unable to create target dump path structural layers.");
+                    return;
+                }
+            }
+
+            // If toggle is OFF, bypass the entire generation to protect custom code changes
+            if (!REGENERATE_TOGGLE) {
+                System.out.println("--> Notice: REGENERATE_TOGGLE is off. Skipping generation to protect manual edits in filedump.");
+                System.out.println("=========================================================");
+                return;
             }
 
             File[] files = dropFolder.listFiles();
@@ -53,11 +69,14 @@ public class InitializeAutonomousFiles {
                 return;
             }
 
+            // Delete old files since toggle is on
             File[] oldFiles = dumpFolder.listFiles();
             if (oldFiles != null) {
                 for (File f : oldFiles) {
                     if (f.getName().endsWith(".java")) {
-                        f.delete();
+                        if (f.delete()) {
+                            System.out.println("--> Deleted old file: " + f.getName());
+                        }
                     }
                 }
             }
@@ -166,10 +185,17 @@ public class InitializeAutonomousFiles {
                 "import org.firstinspires.ftc.teamcode.AutonomousOpMode;\n" +
                 "import org.firstinspires.ftc.teamcode.pedroPathing.Constants;\n" +
                 "import org.firstinspires.ftc.teamcode.pedroPathing.Alliance;\n\n" +
+                "// Subsystem support imports ready for manual customization\n" +
+                "import org.firstinspires.ftc.teamcode.robot.RobotBaseAutonomous;\n" +
+                "import org.firstinspires.ftc.teamcode.robot.Intake;\n" +
+                "import org.firstinspires.ftc.teamcode.robot.Shooter;\n\n" +
                 "@Autonomous(name = \"Auto: " + ppFile.getName().replace(".pp", "") + " (" + alliance + ")\", group = \"PedroGenerated\")\n" +
                 "public class " + className + " extends AutonomousOpMode {\n\n" +
                 "    private PoseFactory p;\n" +
-                "    private Follower follower;\n\n" +
+                "    private Follower follower;\n" +
+                "    private RobotBaseAutonomous robot;\n" +
+                "    private Intake intake;\n" +
+                "    private Shooter shooter;\n\n" +
                 "    public " + className + "() {\n" +
                 "        super(Alliance." + alliance + ");\n" +
                 "    }\n\n" +
@@ -185,7 +211,13 @@ public class InitializeAutonomousFiles {
                 "        follower.setPose(startPose);\n\n" +
                 "        autoPaths = Paths.path(\n" +
                 pathSegmentsCode.toString() + "\n" +
-                "        );\n" +
+                "        );\n\n" +
+                "        // Initialize hardware hook placeholders for later modifications\n" +
+                "        // robot = RobotBaseAutonomous.getInstance(hardwareMap, null);\n" +
+                "        // if (robot != null) {\n" +
+                "        //     intake = robot.getIntake();\n" +
+                "        //     shooter = robot.getShooter();\n" +
+                "        // }\n\n" +
                 "        super.init();\n" +
                 "    }\n" +
                 "}\n";
@@ -200,12 +232,9 @@ public class InitializeAutonomousFiles {
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(rawJson);
         if (matcher.find()) {
-            try
-            {
+            try {
                 return Double.parseDouble(matcher.group(1));
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 return 0.0;
             }
         }
