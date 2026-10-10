@@ -39,11 +39,11 @@ dependencies {
     androidTestImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
 
     // Combined PedroPathing dependencies
-    implementation 'com.pedropathing:core:2.0.4'
-    implementation 'com.pedropathing:ftc:2.0.4'
+    implementation 'com.pedropathing:core:3.0.1'
+    implementation 'com.pedropathing:ftc:2.1.2'
     implementation 'com.pedropathing:telemetry:1.0.0'
     implementation 'com.pedropathing:revhub:3.0.1'
-    implementation 'com.pedropathing:tuning:1.0.0'
+    implementation 'com.pedropathing:tuning:1.0.2'
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib") { version { strictly("2.1.21") } }
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8") { version { strictly("2.1.21") } }
