@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.bylazar.gamepad.PanelsGamepad;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -35,9 +34,7 @@ public class MecanumDriveTeleOp extends LinearOpMode {
         waitForStart();
 
         Gamepad driverGamepad = gamepad1;
-        if (usePanels) {
-            driverGamepad = PanelsGamepad.INSTANCE.getFirstManager().asCombinedFTCGamepad(gamepad1);
-        }
+
 
         // main loop
         while(opModeIsActive()) {

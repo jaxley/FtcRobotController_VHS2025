@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.robot;
 
-import com.bylazar.configurables.annotations.Configurable;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -30,7 +30,7 @@ public class Shooter {
     private double targetVelocity = flywheelPower * flywheelSpeedRpm
             * FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION;
 
-    @Configurable
+
     public static class FiringServo {
         static double fireDownPos = 0.15;
     }
@@ -66,7 +66,7 @@ public class Shooter {
                 (TELEOP_MODE ? "TeleOp Mode" : "Auto Mode"));
         defaultPidCoefficients = flywheel.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
     }
-    @Configurable
+
     public static class PID {
         static double P = 22;
         static double I = 3;

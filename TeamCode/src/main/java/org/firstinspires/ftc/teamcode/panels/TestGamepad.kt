@@ -1,3 +1,4 @@
+/*
 package org.firstinspires.ftc.teamcode.panels
 
 import com.bylazar.gamepad.PanelsGamepad
@@ -47,3 +48,4 @@ class TestGamepad: OpMode() {
         panelsTelemetry.update(telemetry)
     }
 }
+*/
