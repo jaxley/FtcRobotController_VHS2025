@@ -27,10 +27,10 @@ public class Constants {
             .rightRearMotorName(RobotConstants.Wheel.BACK_RIGHT)
             .leftFrontMotorName(RobotConstants.Wheel.FRONT_LEFT)
             .leftRearMotorName(RobotConstants.Wheel.BACK_LEFT)
-            .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .leftFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .xVelocity(71.7335037882414)
             .yVelocity(45.0864789564824);
 

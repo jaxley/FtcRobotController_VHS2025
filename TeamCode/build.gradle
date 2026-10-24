@@ -53,12 +53,15 @@ def getShortGitCommitSha = { ->
 
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
+    packaging {
+    }
     kotlinOptions {
         jvmTarget = '1.8'
     }
 
     packagingOptions {
         jniLibs.useLegacyPackaging true
+        resources.excludes.add("META-INF/*")
     }
     buildFeatures.buildConfig true
 
