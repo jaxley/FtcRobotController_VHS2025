@@ -4,9 +4,9 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.utils.DButton;
 import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
@@ -25,7 +25,7 @@ public class Shooter {
 
     final double flywheelSpeedRpm = -4414; // RPM
 
-    double flywheelPower = -0.8;
+    double flywheelPower = 0.8;
     final double FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION = (double) 28 /60;
     private double targetVelocity = flywheelPower * flywheelSpeedRpm
             * FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION;
@@ -49,7 +49,22 @@ public class Shooter {
 
     DButton dpadUp = new DButton();
     DButton dpadDown = new DButton();
-    private PIDFCoefficients defaultPidCoefficients;
+
+    // Encoder direction is inverted vs power (positive power -> negative encoder
+    // velocity), so the hub velocity PID runs away. We close the loop in software
+    // using the sign-corrected measurement. If the encoder phases ever get swapped,
+    // set this to false (and the hub RUN_USING_ENCODER loop becomes usable again).
+    private static final boolean ENCODER_INVERTED = true;
+
+    // Software velocity controller state
+    private double integrator = 0;
+    private final ElapsedTime controlTimer = new ElapsedTime();
+
+    /** Encoder velocity with the wiring inversion removed (matches commanded target sign). */
+    private double correctedVelocity() {
+        double measured = flywheel.getVelocity();
+        return ENCODER_INVERTED ? -measured : measured;
+    }
 
     public Shooter(DcMotorEx flywheel, Servo fireServo) {
         this.flywheel = flywheel;
@@ -58,26 +73,29 @@ public class Shooter {
 
     private void init(TelemetryMirror telemetryMirror) {
         flywheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        flywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        // Software velocity loop: encoder direction is inverted vs power (positive power
+        // -> negative encoder ticks), which the hub's RUN_USING_ENCODER PID cannot
+        // compensate (it runs away). Read the encoder ourselves and write power directly.
+        flywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         reset(telemetryMirror); // Ensure firing servo at the starting position
         initialized = true;
         telemetryMirror.addData(SUBSYSTEM_NAME, INITIALIZED + ": " +
                 (TELEOP_MODE ? "TeleOp Mode" : "Auto Mode"));
-        defaultPidCoefficients = flywheel.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
     }
     @Configurable
     public static class PID {
-        static double P = 22;
-        static double I = 3;
+        // Gains for the SOFTWARE velocity loop (power per ticks/sec of error).
+        // F = 1/freeSpeedTicksPerSec = 1/2800 for the goBILDA 6000RPM @ 28 PPR.
+        static double P = 0.0005;
+        static double I = 0.0001;
         static double D = 0;
-        static double F = 0;
+        static double F = 0.00036;
     }
     public void run(Gamepad gamepad, TelemetryMirror telemetryMirror) {
         if (!initialized) {
             init(telemetryMirror);
         }
-        flywheel.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(PID.P, PID.I, PID.D, PID.F));
 
         telemetryMirror.addData(SUBSYSTEM_NAME, STARTED);
         //double lastMillis = getRuntime();
@@ -101,7 +119,8 @@ public class Shooter {
             } else {
                 stop(telemetryMirror);
             }
-            telemetryMirror.addData(FLYWHEEL + " velocity", flywheel.getVelocity());
+            telemetryMirror.addData(FLYWHEEL + " velocity", correctedVelocity());
+            telemetryMirror.addData(FLYWHEEL + " velocity (raw encoder)", flywheel.getVelocity());
         }
 
         // Don't bind keys unless in teleop.
@@ -121,23 +140,52 @@ public class Shooter {
     }
 
     public boolean readyToFire(TelemetryMirror telemetryMirror) {
-        // Compare targetVelocity to current velocity - when within tolerance, it's up to expected speed
-        double error = Math.abs((targetVelocity - flywheel.getVelocity())/ targetVelocity);
+        // Compare targetVelocity to corrected velocity - when within tolerance, it's up to expected speed
+        if (targetVelocity == 0) {
+            telemetryMirror.addData("Flywheel error", 1.0);
+            return false;
+        }
+        double error = Math.abs((targetVelocity - correctedVelocity()) / targetVelocity);
         telemetryMirror.addData("Flywheel error", error);
         return error <= 0.1;
     }
 
     public void stopFlywheel(TelemetryMirror telemetryMirror) {
         telemetryMirror.addData(FLYWHEEL, STOPPED);
-        flywheel.setVelocity(0);
-        //flywheel.setPower(0);
+        flywheel.setPower(0);
+        integrator = 0;
+        controlTimer.reset();
+        //flywheel.setVelocity(0);
     }
 
     public void startFlywheel(TelemetryMirror telemetryMirror, double power) {
-        telemetryMirror.addData(FLYWHEEL, power);
         this.targetVelocity = power * flywheelSpeedRpm * FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION;
+        updateVelocityControl(telemetryMirror);
+    }
+
+    /**
+     * One iteration of the software velocity PID. Must be called every loop while the
+     * flywheel is running (startFlywheel does this for both teleop and autonomous).
+     */
+    private void updateVelocityControl(TelemetryMirror telemetryMirror) {
+        double dt = controlTimer.seconds();
+        controlTimer.reset();
+        dt = Range.clip(dt, 0, 0.1); // ignore huge gaps (e.g. first call after stop)
+
+        double error = targetVelocity - correctedVelocity();
+
+        double feedforward = PID.F * targetVelocity;
+        double proportional = PID.P * error;
+        // simple anti-windup: only integrate when the P+F output isn't saturated
+        if (Math.abs(feedforward + proportional) < 1.0) {
+            integrator += PID.I * error * dt;
+            integrator = Range.clip(integrator, -1.0, 1.0);
+        }
+        double out = Range.clip(feedforward + proportional + integrator, -1.0, 1.0);
+        flywheel.setPower(out);
+
+        telemetryMirror.addData(FLYWHEEL, out);
         telemetryMirror.addData("Target Velocity: ", targetVelocity);
-        flywheel.setVelocity(targetVelocity);
     }
 
     public void fire(TelemetryMirror telemetryMirror) {
