@@ -70,7 +70,7 @@ public class Poses {
                 Map.entry(NamedPose.STARTING_LOW, blueStartingPoseLow_C1),
                 Map.entry(NamedPose.BASE, new Pose()),
                 Map.entry(NamedPose.STARTING_POSE_TOP, new Pose(106.7, 133, Math.toRadians(270))),
-                Map.entry(NamedPose.STARTING_POSE_BOTTOM, new Pose(80.2, 8.7, Math.toRadians(90))), // TODO - add control point when making line
+                Map.entry(NamedPose.STARTING_POSE_BOTTOM, new Pose(110.1, 8.7, Math.toRadians(90))),
                 Map.entry(NamedPose.PARK_POSE_TOP, new Pose(130.6, 46.6, Math.toRadians(180))),
                 Map.entry(NamedPose.PARK_POSE_BOTTOM, new Pose(130.6, 24.8, Math.toRadians(180)))
         ));
@@ -112,7 +112,7 @@ public class Poses {
                 Map.entry(NamedPose.LEAVE_LOW, new Pose(108 ,8.5, Math.toRadians(90))),
                 Map.entry(NamedPose.STARTING_LOW, new Pose()),
                 Map.entry(NamedPose.BASE, new Pose()),
-                Map.entry(NamedPose.STARTING_POSE_TOP, new Pose(61.7, 133, Math.toRadians(270))), // TODO - add control point when making line
+                Map.entry(NamedPose.STARTING_POSE_TOP, new Pose(31.8, 133, Math.toRadians(270))),
                 Map.entry(NamedPose.STARTING_POSE_BOTTOM, new Pose(34.8, 8.7, Math.toRadians(90))),
                 Map.entry(NamedPose.PARK_POSE_TOP, new Pose(11.3, 116.4, Math.toRadians(0))),
                 Map.entry(NamedPose.PARK_POSE_BOTTOM, new Pose(11.3, 95.7, Math.toRadians(0)))
