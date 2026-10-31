@@ -32,7 +32,9 @@ public class Poses {
     public static class BluePoses extends AlliancePoses {
         private static BluePoses INSTANCE;
 
-        public BluePoses() {
+        private BluePoses() {
+            // Aliases must be applied after posesByName is constructed. Calling this.get()
+            // from the EnumMap field initializer runs while posesByName is still null.
             posesByName.put(NamedPose.SHOOTING_GOAL_TOP_1,
                     this.get(NamedPose.STARTING_TOP_1)); // alias for the same pose
             posesByName.put(NamedPose.SHOOTING_GOAL_TOP_2,
@@ -49,15 +51,9 @@ public class Poses {
         }
 
         private final EnumMap<NamedPose,Pose> posesByName = new EnumMap<>(Map.ofEntries(
-                Map.entry(NamedPose.STARTING_TOP_1, new Pose()),
-                Map.entry(NamedPose.STARTING_TOP_2, new Pose()),
+                Map.entry(NamedPose.STARTING_TOP_1, blueStartingPoseTop_B6),
+                Map.entry(NamedPose.STARTING_TOP_2, blueStartingPoseTop_C6),
                 Map.entry(NamedPose.STARTING_SIDE_1, new Pose()),
-                Map.entry(NamedPose.SHOOTING_GOAL_TOP_1,
-                        this.get(NamedPose.STARTING_TOP_1)), // alias for the same pose
-                Map.entry(NamedPose.SHOOTING_GOAL_TOP_2,
-                        this.get(NamedPose.STARTING_TOP_2)), // alias for the same pose
-                Map.entry(NamedPose.SHOOTING_GOAL_SIDE_1,
-                        this.get(NamedPose.STARTING_SIDE_1)), // alias for the same pose
                 Map.entry(NamedPose.INTAKE_ROW_1_START, new Pose(40, 37, Math.toRadians(180))),
                 Map.entry(NamedPose.INTAKE_ROW_2_START, new Pose(40, 61, Math.toRadians(180))),
                 Map.entry(NamedPose.INTAKE_ROW_3_START, new Pose(40, 82.625, Math.toRadians(180))),
@@ -67,7 +63,7 @@ public class Poses {
                 Map.entry(NamedPose.LOADING, new Pose(15, 10, Math.toRadians(0))),
                 Map.entry(NamedPose.LEAVE_TOP, new Pose()),
                 Map.entry(NamedPose.LEAVE_LOW, new Pose(36, 8.5, Math.toRadians(90))),
-                Map.entry(NamedPose.STARTING_LOW, new Pose()),
+                Map.entry(NamedPose.STARTING_LOW, blueStartingPoseLow_C1),
                 Map.entry(NamedPose.BASE, new Pose())
         ));
 

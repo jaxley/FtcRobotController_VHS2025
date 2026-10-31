@@ -71,6 +71,12 @@ android {
         // define whether this build is a production build
         buildConfigField "boolean", "IS_PRODUCTION", "false"
     }
+
+    testOptions {
+        unitTests.all {
+            useJUnitPlatform()
+        }
+    }
 }
 
 //tasks.register('createJar', Copy) {
