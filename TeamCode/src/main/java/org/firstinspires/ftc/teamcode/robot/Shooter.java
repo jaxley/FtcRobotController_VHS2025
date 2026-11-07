@@ -23,7 +23,7 @@ public class Shooter {
 
     private boolean initialized = false;
 
-    final double flywheelSpeedRpm = -4414; // RPM
+    final double flywheelSpeedRpm = -2500; // RPM
 
     double flywheelPower = -0.8;
     final double FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION = (double) 28 /60;
