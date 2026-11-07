@@ -2,7 +2,11 @@ package org.firstinspires.ftc.teamcode.pedro;
 
 import com.pedropathing.algorithm.Foresight;
 import com.pedropathing.algorithm.ForesightConfig;
+import com.pedropathing.config.Configuration;
+import com.pedropathing.controllers.Controller;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.math.Matrix;
+import com.pedropathing.math.Vector2D;
 import com.pedropathing.revhub.drivetrains.Mecanum;
 import com.pedropathing.revhub.drivetrains.MecanumConfig;
 import com.pedropathing.revhub.localizers.Encoder;
@@ -18,32 +22,58 @@ public class Constants {
         c.frontRightName.set("frontRight");
         c.backLeftName.set("backLeft");
         c.backRightName.set("backRight");
-        c.frontLeftDirection.set(DcMotorSimple.Direction.REVERSE);
-        c.frontRightDirection.set(DcMotorSimple.Direction.FORWARD);
-        c.backLeftDirection.set(DcMotorSimple.Direction.REVERSE);
-        c.backRightDirection.set(DcMotorSimple.Direction.FORWARD);
+        c.frontLeftDirection.set(DcMotorSimple.Direction.FORWARD);
+        c.frontRightDirection.set(DcMotorSimple.Direction.REVERSE);
+        c.backLeftDirection.set(DcMotorSimple.Direction.FORWARD);
+        c.backRightDirection.set(DcMotorSimple.Direction.REVERSE);
     });
     public static final ThreeWheelConfig LOCALIZER_CONFIG = new ThreeWheelConfig(c -> {
         c.leftEncoderName.set("frontLeft");
         c.rightEncoderName.set("frontRight");
         c.strafeEncoderName.set("backLeft");
-        c.leftPodY.set(1.6654660355967688);
-        c.rightPodY.set(-4.035092871445847);
-        c.strafePodX.set(-0.010641253490732056);
-        c.forwardTicksToInches.set(0.0019751664259094496);
-        c.strafeTicksToInches.set(6.857142857142857);
-        c.turnTicksToRadians.set(0.0024763321327047625);
-        c.leftEncoderDirection.set(Encoder.FORWARD);
-        c.rightEncoderDirection.set(Encoder.FORWARD);
-        c.strafeEncoderDirection.set(Encoder.REVERSE);
+        c.leftPodY.set(2.625);
+        c.rightPodY.set(-3.0);
+        c.strafePodX.set(-7.25);
+        c.forwardTicksToInches.set(0.0019179912279850189);
+        c.strafeTicksToInches.set(-0.00198);
+        c.turnTicksToRadians.set(0.0023111587484619923);
+        c.leftEncoderDirection.set(Encoder.REVERSE);
+        c.rightEncoderDirection.set(Encoder.REVERSE);
+        c.strafeEncoderDirection.set(Encoder.FORWARD);
     });
 
+    public static ForesightConfig FORESIGHT_CONFIG = new ForesightConfig(
+            c -> {
+                Controller primaryTranslationalForward = Controller.proportional(0.29045322951002);
+                Controller secondaryTranslationalForward = Controller.proportional(0.10731470725072254);
+                Controller primaryTranslationalLateral = Controller.proportional(1.5288827609437323);
+                Controller secondaryTranslationalLateral = Controller.proportional(0.5648813276689453);
+
+                c.forwardTranslational.set(Controller.piecewise(secondaryTranslationalForward).put(2.5, primaryTranslationalForward));
+                c.strafeTranslational.set(Controller.piecewise(secondaryTranslationalLateral).put(2.5, primaryTranslationalLateral));
+
+                c.coast.set(Controller.proportionalFeedforward(0.01622539416515143));
+                c.brake.set(Controller.proportionalFeedforward(0.013791585040378716));
+
+                c.headingFeedback.set(Controller.proportional(3.8324365674526284));
+                c.headingBrakeCoefficients.set(Vector2D.cartesian(0.06055424695733336, 0.01343716271217678));
+
+                c.linearBrakeCoefficients.set(Matrix.diag(0.05873012126447079, 0.07580736505734514));
+                c.quadraticBrakeCoefficients.set(Matrix.diag(0.003993049831582597, 0.0029256752426710386));
+
+                c.maxAchievableForwardVelocity.set(59.37039510186936);
+                c.maxAchievableStrafeVelocity.set(60.505292675616644);
+                c.naturalForwardDeceleration.set(19.62400987197542);
+                c.naturalStrafeDeceleration.set(37.46025346907823);
+            }
+    );
+
     public static Follower create(HardwareMap h) {
-   /*     return new Follower(
+        return new Follower(
                 new ThreeWheelLocalizer(h, LOCALIZER_CONFIG),
                 new Mecanum(h, DRIVETRAIN_CONFIG),
                 new Foresight(FORESIGHT_CONFIG)
-        );*/
-return null;
+        );
+        //return null;
     }
 }
