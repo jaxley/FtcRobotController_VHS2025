@@ -34,27 +34,11 @@ android {
 dependencies {
     implementation project(':FtcRobotController')
     implementation 'androidx.core:core-ktx:1.8.0'
+    implementation 'com.pedropathing:tuning:1.0.0'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
     androidTestImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
 
-    // Combined PedroPathing dependencies
-    implementation 'com.pedropathing:core:3.0.1'
-    implementation 'com.pedropathing:ftc:2.1.2'
-    implementation 'com.pedropathing:telemetry:1.0.0'
-    implementation 'com.pedropathing:revhub:3.0.1'
-    implementation 'com.pedropathing:tuning:1.0.2'
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib") { version { strictly("2.1.21") } }
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8") { version { strictly("2.1.21") } }
-}
-
-task compilePedroPaths(type: Exec) {
-    group = 'pedro'
-    description = 'Compiles custom exported .pp visual files into clean Java autonomous layouts natively.'
-    outputs.upToDateWhen { false }
-    commandLine System.getProperty('os.name').toLowerCase().contains('windows') ? ['cmd', '/c', "java src/main/java/org/firstinspires/ftc/teamcode/InitializeAutonomousFiles.java"] : ['java', 'src/main/java/org/firstinspires/ftc/teamcode/InitializeAutonomousFiles.java']
-}
-
-afterEvaluate {
-    tasks.findByName('preBuild')?.dependsOn compilePedroPaths
 }

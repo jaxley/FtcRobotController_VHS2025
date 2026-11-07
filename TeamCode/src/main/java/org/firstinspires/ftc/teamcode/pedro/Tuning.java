@@ -1,5 +1,33 @@
 package org.firstinspires.ftc.teamcode.pedro;
 
+import com.pedropathing.revhub.drivetrains.Mecanum;
+import com.pedropathing.revhub.localizers.ThreeWheelLocalizer;
+import com.pedropathing.tuning.autotune.Tuner;
+import com.pedropathing.tuning.autotune.Procedure;
+
+import org.firstinspires.ftc.teamcode.pedro.procedures.ForesightTuner;
+import org.firstinspires.ftc.teamcode.pedro.procedures.MecanumTuner;
+import org.firstinspires.ftc.teamcode.pedro.procedures.Tests;
+import org.firstinspires.ftc.teamcode.pedro.procedures.ThreeWheelTuner;
+
 public class Tuning {
-    // Tuners go here
+    @Tuner
+    public static Procedure threeWheelTuner() {
+        return new ThreeWheelTuner();
+    }
+
+    @Tuner
+    public static Procedure mecanumTuner() {
+        return new MecanumTuner();
+    }
+
+    @Tuner
+    public static Procedure foresightTuner() {
+        return new ForesightTuner((hardwareMap) -> new ThreeWheelLocalizer(hardwareMap, Constants.LOCALIZER_CONFIG), (hardwareMap) -> new Mecanum(hardwareMap, Constants.DRIVETRAIN_CONFIG));
+    }
+
+    @Tuner
+    public static Procedure tests() {
+        return new Tests(hardwareMap -> new Mecanum(hardwareMap, Constants.DRIVETRAIN_CONFIG), (hardwareMap -> new ThreeWheelLocalizer(hardwareMap, Constants.LOCALIZER_CONFIG)), null /*  () -> new Foresight(Constants.FORESIGHT_CONFIG) */);
+    }
 }

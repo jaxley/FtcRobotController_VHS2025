@@ -1,243 +1,230 @@
 package org.firstinspires.ftc.teamcode;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@SuppressWarnings("SpellCheckingInspection")
 public class InitializeAutonomousFiles {
 
-    // TOGGLE: Set to true to delete old files and overwrite.
-    // Set to false when you want to manually edit the generated files.
-    private static final boolean REGENERATE_TOGGLE = true;
-
-    private static final String DROP_DIR = "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/filedrop";
-    private static final String DUMP_DIR = "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/filedump";
-
-    public static void main(String[] args) {
-        System.out.println("Starting Native Java Multi-File Generation System for Pedro 3...");
-        generateOpModes();
+    // Public wrapper to make the engine usable from your OpModes and clear IDE "never used" warnings
+    public static List<String> parseAndValidateArray(String arrayJson) throws IOException {
+        return extractObjects(arrayJson);
     }
 
-    public static void generateOpModes() {
-        try {
-            String rootPath = new File("").getAbsolutePath();
+    public static void validateFileStructure(String json, String fileName) throws IOException {
+        validateJsonObject(json, fileName);
+    }
 
-            // Standardize path structures using environment safe separators
-            File dropFolder = new File(rootPath, DROP_DIR.replace("/", File.separator));
-            File dumpFolder = new File(rootPath, DUMP_DIR.replace("/", File.separator));
+    public static String processClassName(String input) {
+        return sanitizeClassName(input);
+    }
 
-            System.out.println("=========================================================");
-            System.out.println("[TARGET DROP DIRECTORY]: " + dropFolder.getAbsolutePath());
-            System.out.println("[TARGET DUMP DIRECTORY]: " + dumpFolder.getAbsolutePath());
-            System.out.println("[REGENERATE TOGGLE ACTIVE]: " + REGENERATE_TOGGLE);
-            System.out.println("=========================================================");
+    public static String loadPathFile(File file) throws IOException {
+        return readUtf8(file);
+    }
 
-            if (!dropFolder.exists()) {
-                if (dropFolder.mkdirs()) {
-                    System.out.println("--> Success: Created filedrop folder. Place your .pp files inside: " + dropFolder.getAbsolutePath());
-                } else {
-                    System.out.println("--> Error: System was unable to create target drop path structural layers.");
-                }
-                return;
-            }
+    public static void saveFile(File target, String content) throws IOException {
+        writeAtomically(target, content);
+    }
 
-            // Create filedump folder if it doesn't exist
-            if (!dumpFolder.exists()) {
-                if (dumpFolder.mkdirs()) {
-                    System.out.println("--> Success: Created missing filedump folder at: " + dumpFolder.getAbsolutePath());
-                } else {
-                    System.out.println("--> Error: System was unable to create target dump path structural layers.");
-                    return;
-                }
-            }
-
-            // If toggle is OFF, bypass the entire generation to protect custom code changes
-            if (!REGENERATE_TOGGLE) {
-                System.out.println("--> Notice: REGENERATE_TOGGLE is off. Skipping generation to protect manual edits in filedump.");
-                System.out.println("=========================================================");
-                return;
-            }
-
-            File[] files = dropFolder.listFiles();
-            if (files == null || files.length == 0) {
-                System.out.println("--> Notice: No path configuration data (.pp) discovered inside: " + dropFolder.getAbsolutePath());
-                return;
-            }
-
-            // Delete old files since toggle is on
-            File[] oldFiles = dumpFolder.listFiles();
-            if (oldFiles != null) {
-                for (File f : oldFiles) {
-                    if (f.getName().endsWith(".java")) {
-                        if (f.delete()) {
-                            System.out.println("--> Deleted old file: " + f.getName());
-                        }
-                    }
-                }
-            }
-
-            int generatedCount = 0;
-            for (File file : files) {
-                if (file.getName().endsWith(".pp")) {
-                    String rawName = file.getName().replace(".pp", "");
-                    String cleanJavaName = sanitizeClassName(rawName);
-
-                    System.out.println(" -> Compiling Trajectories For: " + file.getName());
-                    compilePath(file, dumpFolder, cleanJavaName, "RED");
-                    compilePath(file, dumpFolder, cleanJavaName, "BLUE");
-                    generatedCount += 2;
-                }
-            }
-            System.out.println("=========================================================");
-            System.out.println("BUILD SUCCESSFUL: Generated " + generatedCount + " autonomous files inside the dump folder!");
-            System.out.println("=========================================================");
-
-        } catch (Exception e) {
-            System.out.println("Critical Generation Failure: " + e.getMessage());
-            e.printStackTrace();
+    private static List<String> extractObjects(String array) throws IOException {
+        List<String> list = new ArrayList<>();
+        if (array == null) return list;
+        String s = array.trim();
+        if (!s.startsWith("[") || !s.endsWith("]")) {
+            throw new IOException("Invalid JSON array structure.");
         }
+        s = s.substring(1, s.length() - 1).trim();
+        if (s.isEmpty()) return list;
+
+        int braceCount = 0;
+        int bracketCount = 0;
+        boolean inString = false;
+        int start = 0;
+
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (inString) {
+                if (c == '\\') {
+                    i++;
+                } else if (c == '"') {
+                    inString = false;
+                }
+            } else {
+                if (c == '"') {
+                    inString = true;
+                } else if (c == '{') {
+                    if (braceCount == 0 && bracketCount == 0) start = i;
+                    braceCount++;
+                } else if (c == '}') {
+                    braceCount--;
+                    if (braceCount < 0) throw new IOException("Mismatched closing brace at character " + i);
+                    if (braceCount == 0 && bracketCount == 0) {
+                        list.add(s.substring(start, i + 1));
+                    }
+                } else if (c == '[') {
+                    bracketCount++;
+                } else if (c == ']') {
+                    bracketCount--;
+                    if (bracketCount < 0) throw new IOException("Mismatched closing bracket at character " + i);
+                }
+            }
+        }
+        if (braceCount != 0 || bracketCount != 0 || inString) {
+            throw new IOException("Unclosed JSON structure within array.");
+        }
+        return list;
+    }
+
+    public static double requiredNumber(String json, String key, String description) throws IOException {
+        // FIXED: Removed redundant backslash escaping inside character classes to clean up IDE warnings
+        Matcher m = Pattern.compile("\"" + Pattern.quote(key) + "\"\\s*:\\s*(-?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?)").matcher(json);
+        if (!m.find()) throw new IOException("Missing numeric value " + description);
+        String group = m.group(1);
+        if (group == null) throw new IOException("Missing numeric payload matching group for " + description);
+        try {
+            return Double.parseDouble(group);
+        } catch (NumberFormatException e) {
+            throw new IOException("Invalid number for " + description, e);
+        }
+    }
+
+    public static String stringValue(String json, String key) {
+        // FIXED: Removed redundant backslash escapes from the JSON key regex matching block
+        Matcher m = Pattern.compile("\"" + Pattern.quote(key) + "\"\\s*:\\s*\"((?:\\\\.|[^\"\\\\])*)\"").matcher(json);
+        if (m.find()) {
+            String val = m.group(1);
+            // FIXED: Added defensive null-check guard preventing NullPointerExceptions
+            return val != null ? val.replace("\\\"", "\"").replace("\\\\", "\\") : null;
+        }
+        return null;
+    }
+
+    private static void validateJsonObject(String json, String fileName) throws IOException {
+        String trimmed = json.trim();
+        if (!trimmed.startsWith("{") || !trimmed.endsWith("}"))
+            throw new IOException(fileName + " is not a JSON object.");
+        findStructureForKey(json, "startPoint", '{', '}');
+        findStructureForKey(json, "lines", '[', ']');
+        findStructureForKey(json, "sequence", '[', ']');
+    }
+
+    private static void findStructureForKey(String json, String key, char openSymbol, char closeSymbol) throws IOException {
+        String symbolRegex = openSymbol == '{' ? "\\{" : "\\[";
+        Matcher m = Pattern.compile("\"" + Pattern.quote(key) + "\"\\s*:\\s*" + symbolRegex).matcher(json);
+        if (!m.find()) {
+            throw new IOException("Missing required structural key: " + key);
+        }
+        int start = m.end() - 1;
+        int depthCount = 0;
+        boolean inString = false;
+        for (int i = start; i < json.length(); i++) {
+            char c = json.charAt(i);
+            if (inString) {
+                if (c == '\\') i++;
+                else if (c == '"') inString = false;
+            } else {
+                if (c == '"') inString = true;
+                else if (c == openSymbol) depthCount++;
+                else if (c == closeSymbol) {
+                    depthCount--;
+                    if (depthCount == 0) return; // Closed cleanly
+                }
+            }
+        }
+        throw new IOException("Unclosed JSON structure starting at character " + start);
     }
 
     private static String sanitizeClassName(String input) {
-        String clean = input.replaceAll("[\\s.-_]", "");
-        if (!clean.isEmpty() && Character.isDigit(clean.charAt(0))) {
-            clean = "Auto" + clean;
-        }
-        return clean;
-    }
+        String clean = input.replaceAll("[^A-Za-z0-9_$]", "_");
+        if (clean.isEmpty() || !Character.isJavaIdentifierStart(clean.charAt(0)))
+            clean = "Auto_" + clean;
 
-    private static void compilePath(File ppFile, File targetDir, String cleanJavaName, String alliance) throws IOException {
-        String className = cleanJavaName + "_" + alliance;
-        File javaFile = new File(targetDir, className + ".java");
-
-        StringBuilder contentBuilder = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new FileReader(ppFile))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                contentBuilder.append(line.trim());
-            }
-        }
-        String json = contentBuilder.toString();
-
-        double startX = getJsonValue(json, "\"startPoint\"\\s*:\\s*\\{[^}]*\"x\"\\s*:\\s*([\\d.-]+)");
-        double startY = getJsonValue(json, "\"startPoint\"\\s*:\\s*\\{[^}]*\"y\"\\s*:\\s*([\\d.-]+)");
-        double startH = getJsonValue(json, "\"startPoint\"\\s*:\\s*\\{[^}]*\"headingDeg\"\\s*:\\s*([\\d.-]+)");
-
-        StringBuilder pathSegmentsCode = new StringBuilder();
-
-        double currentX = startX;
-        double currentY = startY;
-        double currentH = startH;
-
-        Pattern lineBlockPattern = Pattern.compile("\\{\\s*\"id\"\\s*:\\s*\"line-[^\"]+\".*?\"heading\"\\s*:\\s*\\{[^}]*\\}\\s*\\}");
-        Matcher lineMatcher = lineBlockPattern.matcher(json);
-
-        boolean firstSegment = true;
-        while (lineMatcher.find()) {
-            String lineBlock = lineMatcher.group();
-
-            double endX = getJsonValue(lineBlock, "\"endPoint\"\\s*:\\s*\\{[^}]*\"x\"\\s*:\\s*([\\d.-]+)");
-            double endY = getJsonValue(lineBlock, "\"endPoint\"\\s*:\\s*\\{[^}]*\"y\"\\s*:\\s*([\\d.-]+)");
-            double endDeg = getJsonValue(lineBlock, "\"endDeg\"\\s*:\\s*([\\d.-]+)");
-
-            if (!firstSegment) {
-                pathSegmentsCode.append(",\n");
-            }
-
-            if (lineBlock.contains("\"controlPoints\"\\s*:\\s*\\[\\s*\\{")) {
-                double controlX = getJsonValue(lineBlock, "\"controlPoints\"\\s*:\\s*\\[\\s*\\{[^}]*\"x\"\\s*:\\s*([\\d.-]+)");
-                double controlY = getJsonValue(lineBlock, "\"controlPoints\"\\s*:\\s*\\[\\s*\\{[^}]*\"y\"\\s*:\\s*([\\d.-]+)");
-
-                pathSegmentsCode.append("            Paths.curve(p.of(")
-                        .append(currentX).append(", ").append(currentY).append(", ").append(currentH).append("), p.of(")
-                        .append(controlX).append(", ").append(controlY).append("), p.of(")
-                        .append(endX).append(", ").append(endY).append(", ").append(endDeg).append("))");
-            } else {
-                pathSegmentsCode.append("            Paths.line(p.of(")
-                        .append(currentX).append(", ").append(currentY).append(", ").append(currentH).append("), p.of(")
-                        .append(endX).append(", ").append(endY).append(", ").append(endDeg).append("))");
-            }
-
-            currentX = endX;
-            currentY = endY;
-            currentH = endDeg;
-            firstSegment = false;
-        }
-
-        if (firstSegment) {
-            pathSegmentsCode.append("            Paths.line(p.of(")
-                    .append(startX).append(", ").append(startY).append(", ").append(startH).append("), p.of(")
-                    .append(startX).append(", ").append(startY).append(", ").append(startH).append("))");
-        }
-
-        String sourceCode = "package org.firstinspires.ftc.teamcode.filedump;\n\n" +
-                "import com.qualcomm.robotcore.eventloop.opmode.Autonomous;\n" +
-                "import com.pedropathing.follower.Follower;\n" +
-                "import com.pedropathing.math.Pose;\n" +
-                "import com.pedropathing.paths.Path;\n" +
-                "import com.pedropathing.api.PoseFactory;\n" +
-                "import com.pedropathing.api.Paths;\n" +
-                "import org.firstinspires.ftc.teamcode.AutonomousOpMode;\n" +
-                "import org.firstinspires.ftc.teamcode.pedroPathing.Constants;\n" +
-                "import org.firstinspires.ftc.teamcode.pedroPathing.Alliance;\n\n" +
-                "// Subsystem support imports ready for manual customization\n" +
-                "import org.firstinspires.ftc.teamcode.robot.RobotBaseAutonomous;\n" +
-                "import org.firstinspires.ftc.teamcode.robot.Intake;\n" +
-                "import org.firstinspires.ftc.teamcode.robot.Shooter;\n\n" +
-                "@Autonomous(name = \"Auto: " + ppFile.getName().replace(".pp", "") + " (" + alliance + ")\", group = \"PedroGenerated\")\n" +
-                "public class " + className + " extends AutonomousOpMode {\n\n" +
-                "    private PoseFactory p;\n" +
-                "    private Follower follower;\n" +
-                "    private RobotBaseAutonomous robot;\n" +
-                "    private Intake intake;\n" +
-                "    private Shooter shooter;\n\n" +
-                "    public " + className + "() {\n" +
-                "        super(Alliance." + alliance + ");\n" +
-                "    }\n\n" +
-                "    @Override\n" +
-                "    public void init() {\n" +
-                "        p = PoseFactory.degrees();\n" +
-                "        if (Alliance.RED == Alliance." + alliance + ") {\n" +
-                "            p = p.mirrorX(70.75);\n" +
-                "        }\n\n" +
-                "        follower = Constants.createFollower(hardwareMap);\n" +
-                "        Pose startPose = p.of(" + startX + ", " + startY + ", " + startH + ");\n" +
-                "        this.follower = follower;\n" +
-                "        follower.setPose(startPose);\n\n" +
-                "        autoPaths = Paths.path(\n" +
-                pathSegmentsCode.toString() + "\n" +
-                "        );\n\n" +
-                "        // Initialize hardware hook placeholders for later modifications\n" +
-                "        // robot = RobotBaseAutonomous.getInstance(hardwareMap, null);\n" +
-                "        // if (robot != null) {\n" +
-                "        //     intake = robot.getIntake();\n" +
-                "        //     shooter = robot.getShooter();\n" +
-                "        // }\n\n" +
-                "        super.init();\n" +
-                "    }\n" +
-                "}\n";
-
-        try (FileWriter writer = new FileWriter(javaFile)) {
-            writer.write(sourceCode);
-            System.out.println("    -> Wrote file: " + javaFile.getName());
+        // FIXED: Converted enhanced switch down to standard Java 8 statement structures
+        switch (clean) {
+            case "abstract": case "assert": case "boolean": case "break": case "byte": case "case":
+            case "catch": case "char": case "class": case "const": case "continue": case "default":
+            case "do": case "double": case "else": case "enum": case "extends": case "final":
+            case "finally": case "float": case "for": case "goto": case "if": case "implements":
+            case "import": case "instanceof": case "int": case "interface": case "long": case "native":
+            case "new": case "package": case "private": case "protected": case "public": case "return":
+            case "short": case "static": case "strictfp": case "super": case "switch": case "synchronized":
+            case "this": case "throw": case "throws": case "transient": case "try": case "void":
+            case "volatile": case "while": case "true": case "false": case "null": case "_":
+                return "Auto_" + clean;
+            default:
+                return clean;
         }
     }
 
-    private static double getJsonValue(String rawJson, String regex) {
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(rawJson);
-        if (matcher.find()) {
-            try {
-                return Double.parseDouble(matcher.group(1));
-            } catch (Exception e) {
-                return 0.0;
+    public static String removeExtension(String name) {
+        return name.replaceFirst("(?i)\\.pp$", "");
+    }
+
+    public static String number(double value) {
+        return Double.toString(value);
+    }
+
+    public static String javaStringLiteral(String value) {
+        return value.replace("\\", "\\\\").replace("\"", "\\\"")
+                .replace("\r", "\\r").replace("\n", "\\n").replace("\t", "\\t");
+    }
+
+    // FIXED: Reverted back to Java 8 compatible buffer stream reader ensuring API 24 support
+    private static String readUtf8(File file) throws IOException {
+        FileInputStream input = new FileInputStream(file);
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        try {
+            byte[] buffer = new byte[8192];
+            int count;
+            while ((count = input.read(buffer)) != -1) {
+                output.write(buffer, 0, count);
             }
+        } finally {
+            input.close();
         }
-        return 0.0;
+        return new String(output.toByteArray(), "UTF-8");
+    }
+
+    // FIXED: Atomic file write architecture optimized strictly for old Android API levels
+    private static void writeAtomically(File target, String content) throws IOException {
+        File parent = target.getParentFile();
+        if (parent != null && !parent.exists() && !parent.mkdirs()) {
+            throw new IOException("Failed to create layout directories for target path: " + target.getAbsolutePath());
+        }
+
+        File temp = new File(parent, target.getName() + ".tmp");
+        File backup = new File(parent, target.getName() + ".bak");
+
+        FileOutputStream output = new FileOutputStream(temp);
+        try {
+            output.write(content.getBytes("UTF-8"));
+            output.flush();
+            output.getFD().sync(); // Hard sync on hardware disk to prevent corruption during robot disconnects
+        } finally {
+            output.close();
+        }
+
+        boolean hadOriginal = target.exists();
+        if (backup.exists() && !backup.delete()) {
+            temp.delete();
+            throw new IOException("Could not remove old backup file: " + backup.getAbsolutePath());
+        }
+        if (hadOriginal && !target.renameTo(backup)) {
+            temp.delete();
+            throw new IOException("Could not preserve existing output before replacing it: " + target.getAbsolutePath());
+        }
+        if (!temp.renameTo(target)) {
+            if (hadOriginal) target.createNewFile(); // Attempt structural recovery if execution drops mid-move
+            temp.delete();
+            throw new IOException("Could not move generated file into place: " + target.getAbsolutePath());
+        }
+        if (backup.exists()) backup.delete();
     }
 }
