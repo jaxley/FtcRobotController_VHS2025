@@ -20,7 +20,7 @@ public class Shooter {
     public static final String FLYWHEEL = "Flywheel";
     public static final String STARTED = "started";
     public static final String INITIALIZED = "initialized";
-    private static final int SHOOTER_FLYWHEEL_DIRECTION = -1; // with unspecified motor, negative power moves the wheel clockwise
+    private static final int SHOOTER_FLYWHEEL_DIRECTION = -1; // expected direction is clockwise - use positive power
     private final DcMotorEx flywheel;
     private final Servo fireServo;
 
@@ -41,10 +41,10 @@ public class Shooter {
 
     @Configurable
     public static class FiringServo {
-        static double fireDownPos = 0.15;
+        static double fireDownPos = 0.45;
     }
 
-    final double fireUpPos = 0.35;
+    final double fireUpPos = 0.15;
 
     final double firePeriodMs = 800; // ms
     double fireTime = 0;
@@ -151,9 +151,11 @@ public class Shooter {
         if (!initialized) {
             init(telemetryMirror);
         }
+        telemetryMirror.addData("using encoder",use_encoder);
         if (use_encoder) {
             flywheel.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(PID.P, PID.I, PID.D, PID.F));
         } else if (flywheel.getMode() == DcMotor.RunMode.RUN_USING_ENCODER) {
+            flywheel.setPIDFCoefficients(DcMotor.RunMode.RUN_WITHOUT_ENCODER, new PIDFCoefficients(PID.P, PID.I, PID.D, PID.F));
             flywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
 

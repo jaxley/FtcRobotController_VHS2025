@@ -9,8 +9,8 @@ public class Intake {
     private final DcMotor motor;
     private final DcMotor intakeAssistant;
     private boolean intakeRunning = false;
-    final double intakeFwdPower = -0.8;
-    final double intakeRevPower = 0.2;
+    final double intakeFwdPower = 0.8;
+    final double intakeRevPower = -0.2;
     final double triggerDZ = 0.25;
 
     public Intake(DcMotor intakeBase, DcMotor intakeAssistant) {
@@ -41,12 +41,12 @@ public class Intake {
     }
 
     public void loadBallToShooter(TelemetryMirror telemetryMirror) {
-        intakeAssistant.setPower(-intakeFwdPower);
+        intakeAssistant.setPower(intakeFwdPower);
         motor.setPower(intakeFwdPower);
     }
 
     public void momentaryReverse(TelemetryMirror telemetryMirror) {
-        intakeAssistant.setPower(-intakeRevPower);
+        intakeAssistant.setPower(intakeRevPower);
         motor.setPower(intakeRevPower);
     }
 }
