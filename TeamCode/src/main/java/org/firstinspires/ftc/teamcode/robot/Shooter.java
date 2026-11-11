@@ -129,7 +129,9 @@ public class Shooter {
         telemetryMirror.addData("maxRPM", type.getMaxRPM());
         telemetryMirror.addData("orientation", type.getOrientation());
         telemetryMirror.addData("software direction", flywheel.getDirection());
-        telemetryMirror.addData("active PIDF", flywheel.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER));
+        if (use_encoder) {
+            telemetryMirror.addData("active PIDF", flywheel.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER));
+        }
     }
 
     private void getVelocityUsingEncoder(DcMotorEx flywheel, TelemetryMirror telemetryMirror)
@@ -167,29 +169,16 @@ public class Shooter {
                 flywheelPower = Range.clip(flywheelPower - 0.025, minFlywheelPower, maxFlywheelPower);
             }
 
-
-            if (flywheelFaulted) {
-                // Latched kill. Driver releases the trigger to re-arm.
-                if (gamepad.left_trigger <= triggerDZ) {
-                    flywheelFaulted = false;
-                    flywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    faultTimer.reset();
-                } else {
-                    telemetryMirror.addData(FLYWHEEL, "FAULT - release left trigger to reset");
-                }
+            flywheelRunning = (gamepad.left_trigger > triggerDZ);
+            if (flywheelRunning) {
+                startFlywheel(telemetryMirror, flywheelPower);
+                flywheelFailsafe(telemetryMirror);
             } else {
-                flywheelRunning = (gamepad.left_trigger > triggerDZ);
-                if (flywheelRunning) {
-                    startFlywheel(telemetryMirror, flywheelPower);
-                    flywheelFailsafe(telemetryMirror);
-                } else {
-                    stop(telemetryMirror);
-                    faultTimer.reset();
-                }
+                stop(telemetryMirror);
+                faultTimer.reset();
             }
 
             telemetryMirror.addData("Current Speed: ", flywheel.getPower());
-
         }
 
         // Don't bind keys unless in teleop.
@@ -244,7 +233,6 @@ public class Shooter {
         telemetryMirror.addData(SUBSYSTEM_NAME, "reset");
         fireServo.setPosition(FiringServo.fireDownPos);
     }
-
 
     private boolean TELEOP_MODE = true;
     public Shooter withAutonomousMode(TelemetryMirror telemetryMirror) {

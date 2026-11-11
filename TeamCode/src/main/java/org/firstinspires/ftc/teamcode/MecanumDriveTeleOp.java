@@ -42,5 +42,6 @@ public class MecanumDriveTeleOp extends LinearOpMode {
             robotBase.run(driverGamepad, gamepad2, telemetryMirror);
             telemetryMirror.update();
         }
+        robotBase.stop(telemetryMirror);
     }
 }
