@@ -17,6 +17,7 @@ public class RobotBase {
     protected Shooter shooter;
     protected FlowerCollection flowerCollection;
     protected Limelight limelight;
+    protected Follower follower;
 
     /**
      * Singleton accessor
@@ -40,6 +41,7 @@ public class RobotBase {
 
         if (TELEOP_MODE) {
             Follower follower = org.firstinspires.ftc.teamcode.pedro.Constants.create(hardwareMap);
+            this.follower = follower;
             mecanumDrive = new PedroPathingMecanumDrive(frontLeft, frontRight, backLeft, backRight, follower);
         }
 
@@ -62,6 +64,7 @@ public class RobotBase {
     public Intake getIntake() { return intake; }
     public FlowerCollection getFlowerCollection() { return flowerCollection; }
     public IMecanumDrive getMecanumDrive() { return mecanumDrive; }
+    public Follower getFollower() { return follower; }
 
     public void run(Gamepad driverGamepad, Gamepad subsystemGamepad, TelemetryMirror telemetry) {
         // Process camera tracking algorithms and button edges cleanly

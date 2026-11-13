@@ -1,47 +1,54 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.robot.RobotBase;
 import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
 
 @TeleOp(name= MecanumDriveTeleOp.TELE_OP, group="Iterative Opmode")
-public class MecanumDriveTeleOp extends LinearOpMode {
+public class MecanumDriveTeleOp extends PanelsOpMode {
 
     public static final String TELE_OP = "TeleOp";
 
+    private static final boolean USE_PANELS = true;
+
     private RobotBase robotBase;
-    private boolean usePanels = false;
-    private TelemetryMirror telemetryMirror;
 
     @Override
-    public void waitForStart() {
-        super.waitForStart();
-        robotBase = RobotBase.getInstance(hardwareMap);
-    }
-
-    @Override
-    public void runOpMode() {
-        telemetryMirror = new TelemetryMirror(telemetry, usePanels);
+    public void init() {
+        telemetryMirror = new TelemetryMirror(telemetry, USE_PANELS);
 
         telemetryMirror.addData("Code Version", BuildConfig.VERSION_NAME);
         telemetryMirror.addData("Code Build Time", BuildConfig.APP_BUILD_TIME);
         telemetryMirror.addData(TELE_OP, "initialized");
         telemetryMirror.update();
 
-        waitForStart();
+        robotBase = RobotBase.getInstance(hardwareMap);
+        follower = robotBase.getFollower();
+        super.init();
+    }
 
-        Gamepad driverGamepad = gamepad1;
+    @Override
+    public void start() {
+        telemetryMirror.setTelemetry(telemetry);
+    }
 
+    @Override
+    public void loop() {
+        follower.update();
+        robotBase.run(gamepad1, gamepad2, telemetryMirror);
+        telemetryMirror.addData("x", follower.pose().x());
+        telemetryMirror.addData("y", follower.pose().y());
+        telemetryMirror.addData("heading", Math.toDegrees(follower.pose().heading()));
+        telemetryMirror.update();
+        super.loop();
+    }
 
-        // main loop
-        while(opModeIsActive()) {
-            telemetryMirror.setTelemetry(telemetry);
-            robotBase.run(driverGamepad, gamepad2, telemetryMirror);
-            telemetryMirror.update();
+    @Override
+    public void stop() {
+        if (robotBase != null) {
+            robotBase.stop(telemetryMirror);
         }
-        robotBase.stop(telemetryMirror);
     }
 }
