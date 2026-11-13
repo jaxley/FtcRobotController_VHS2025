@@ -45,6 +45,7 @@ public class Shooter {
     final double fireUpPos = 0.15;
 
     final double firePeriodMs = 800; // ms
+    private final ElapsedTime fireTimer = new ElapsedTime();
     double fireTime = 0;
     private static final double LOOP_LAG_WARN_MS = 100; // loop slower than this can swallow brief fire presses
     private final ElapsedTime loopTimer = new ElapsedTime();
@@ -199,18 +200,16 @@ public class Shooter {
             fireButton.update(gamepad.x);
             telemetryMirror.addData("Fire Button", fireButton.isPressed() ? "held" : "-");
             telemetryMirror.addData("Fire Servo Pos", fireServo.getPosition());
-            if (fireButton.pressed()) {
+            // Hold the fire position the whole time the button is held (re-commanding
+            // it every loop), then keep holding until firePeriodMs has elapsed since
+            // the LAST fire command, using a dedicated timer. Measuring the hold with
+            // time-between-loops breaks when the opmode loop runs slower than the hold
+            // period: the next loop exhausts the budget and immediately resets.
+            if (fireButton.isPressed()) {
                 fire(telemetryMirror);
-                fireTime = firePeriodMs;
-            }
-            // Hold the fire position for the full fire period even after the button is
-            // released, so a slow loop cannot swallow the command.
-            if (fireTime > 0) {
-                fireTime -= loopMs;
-                if (fireTime <= 0) {
-                    fireTime = 0;
-                    reset(telemetryMirror);
-                }
+                fireTimer.reset();
+            } else if (fireTimer.milliseconds() >= firePeriodMs) {
+                reset(telemetryMirror);
             }
         }
        // fireTime -= getRuntime() - lastMillis;
