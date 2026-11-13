@@ -27,9 +27,8 @@ public class FlowerCollection {
     DButton dpadB = new DButton();
 
     public void run(Gamepad gamepad, TelemetryMirror telemetryMirror) {
-        collectServo.setPosition(collectUpPos);
         collectButton.update(gamepad.a);
-        telemetryMirror.addData("collectServo",collectServo.getPosition());
+        telemetryMirror.addData("collectServo", collectServo.getPosition());
         if (collectButton.pressed() && !servoDown) {
             collectServo.setPosition(collectDownPos);
             servoDown = true;
