@@ -39,10 +39,10 @@ public class Shooter {
     private boolean use_encoder = true;
 
     public static class FiringServo {
-        static double fireDownPos = 0.15;
+        static double fireDownPos = 0.45;
     }
 
-    final double fireUpPos = 0.35;
+    final double fireUpPos = 0.15;
 
     final double firePeriodMs = 800; // ms
     double fireTime = 0;

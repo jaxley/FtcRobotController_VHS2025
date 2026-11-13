@@ -15,6 +15,7 @@ public class RobotBase {
     protected IMecanumDrive mecanumDrive;
     protected Intake intake;
     protected Shooter shooter;
+    protected FlowerCollection flowerCollection;
     protected Limelight limelight;
 
     /**
@@ -48,6 +49,8 @@ public class RobotBase {
         shooter = new Shooter(hardwareMap.get(DcMotorEx.class, RobotConstants.Motor.FLYWHEEL),
                 hardwareMap.get(Servo.class, RobotConstants.Motor.LAUNCH_SERVO));
 
+        flowerCollection = new FlowerCollection(hardwareMap.get(Servo.class, RobotConstants.Motor.COLLECT_SERVO));
+
         this.limelight = new Limelight(hardwareMap);
     }
 
@@ -57,6 +60,7 @@ public class RobotBase {
 
     public Shooter getShooter() { return shooter; }
     public Intake getIntake() { return intake; }
+    public FlowerCollection getFlowerCollection() { return flowerCollection; }
     public IMecanumDrive getMecanumDrive() { return mecanumDrive; }
 
     public void run(Gamepad driverGamepad, Gamepad subsystemGamepad, TelemetryMirror telemetry) {
@@ -79,6 +83,7 @@ public class RobotBase {
 
         intake.run(subsystemGamepad, telemetry);
         shooter.run(subsystemGamepad, telemetry);
+        flowerCollection.run(subsystemGamepad, telemetry);
     }
 
     public void stop(TelemetryMirror telemetry) {
@@ -89,5 +94,6 @@ public class RobotBase {
         }
         intake.stop(telemetry);
         shooter.stop(telemetry);
+        flowerCollection.stop(telemetry);
     }
 }
