@@ -101,9 +101,8 @@ public class Constants {
     );
 
     public static Follower create(HardwareMap h) {
-        LOCALIZER_CONFIG = localizerConfigFor(h);
         return new Follower(
-                new ThreeWheelLocalizer(h, LOCALIZER_CONFIG),
+                new ThreeWheelLocalizer(h, localizerConfigFor(h)),
                 new Mecanum(h, DRIVETRAIN_CONFIG),
                 new Foresight(FORESIGHT_CONFIG)
         );

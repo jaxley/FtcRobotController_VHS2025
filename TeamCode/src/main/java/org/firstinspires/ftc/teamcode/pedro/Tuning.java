@@ -23,11 +23,11 @@ public class Tuning {
 
     @Tuner
     public static Procedure foresightTuner() {
-        return new ForesightTuner((hardwareMap) -> new ThreeWheelLocalizer(hardwareMap, Constants.LOCALIZER_CONFIG), (hardwareMap) -> new Mecanum(hardwareMap, Constants.DRIVETRAIN_CONFIG));
+        return new ForesightTuner((hardwareMap) -> new ThreeWheelLocalizer(hardwareMap, Constants.localizerConfigFor(hardwareMap)), (hardwareMap) -> new Mecanum(hardwareMap, Constants.DRIVETRAIN_CONFIG));
     }
 
     @Tuner
     public static Procedure tests() {
-        return new Tests(hardwareMap -> new Mecanum(hardwareMap, Constants.DRIVETRAIN_CONFIG), (hardwareMap -> new ThreeWheelLocalizer(hardwareMap, Constants.LOCALIZER_CONFIG)), null /*  () -> new Foresight(Constants.FORESIGHT_CONFIG) */);
+        return new Tests(hardwareMap -> new Mecanum(hardwareMap, Constants.DRIVETRAIN_CONFIG), (hardwareMap -> new ThreeWheelLocalizer(hardwareMap, Constants.localizerConfigFor(hardwareMap))), null /*  () -> new Foresight(Constants.FORESIGHT_CONFIG) */);
     }
 }
