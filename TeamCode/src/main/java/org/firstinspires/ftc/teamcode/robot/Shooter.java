@@ -72,11 +72,9 @@ public class Shooter {
     public Shooter(DcMotorEx flywheel, Servo fireServo) {
         this.flywheel = flywheel;
         this.fireServo = fireServo;
-        // Servo wiring was corrected on the robot, which mirrored its travel:
-        // the old fireDownPos/fireUpPos values now land on the wrong ends.
-        // REVERSE maps every position to (1 - position), restoring the intended
-        // rest = fireDownPos, fire = fireUpPos without touching the wiring.
-        this.fireServo.setDirection(Servo.Direction.REVERSE);
+        // Keep the config-default direction (FORWARD): verified on the robot
+        // 2026-11-14 via the servo-bench test — 0.15 = open/fire, 0.45 = closed/rest.
+        // A REVERSE override here mirrors both ends and the servo will not hold fire.
     }
 
     private void killFlywheel(TelemetryMirror tm, String reason) {
@@ -136,7 +134,7 @@ public class Shooter {
         telemetryMirror.addData("gearing", type.getGearing());
         telemetryMirror.addData("maxRPM", type.getMaxRPM());
         telemetryMirror.addData("orientation", type.getOrientation());
-        telemetryMirror.addData("software direction", flywheel.getDirection());
+        telemetryMirror.addData("measured direction", flywheel.getDirection());
         if (use_encoder) {
             telemetryMirror.addData("active PIDF", flywheel.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER));
         }
@@ -198,7 +196,7 @@ public class Shooter {
                         "Shooter loop took %.0f ms (>%.0f ms): a quick tap of the fire button can be missed", loopMs, LOOP_LAG_WARN_MS));
             }
             fireButton.update(gamepad.x);
-            telemetryMirror.addData("Fire Button", fireButton.pressed() ? "pressed" : "-");
+            telemetryMirror.addData("Fire Button", fireButton.isPressed() ? "held" : "-");
             telemetryMirror.addData("Fire Servo Pos", fireServo.getPosition());
             // Hold the fire position the whole time the button is held (re-commanding
             // it every loop), then keep holding until firePeriodMs has elapsed since
