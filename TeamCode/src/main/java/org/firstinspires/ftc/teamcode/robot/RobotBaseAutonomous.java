@@ -18,4 +18,13 @@ public class RobotBaseAutonomous extends RobotBase {
         }
         return INSTANCE;
     }
+
+    /**
+     * Discards the singleton so the next OpMode run rebuilds all hardware from a fresh
+     * HardwareMap; see {@link RobotBase#reset()} for why device objects must not be
+     * reused across OpMode runs.
+     */
+    public static void reset() {
+        INSTANCE = null;
+    }
 }

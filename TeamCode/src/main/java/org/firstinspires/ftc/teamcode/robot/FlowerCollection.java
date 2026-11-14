@@ -8,8 +8,8 @@ import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
 public class FlowerCollection {
     private final Servo collectServo;
 
-    double collectUpPos = 0.3;
-    double collectDownPos = 0.8;
+    double collectUpPos = 0.8;
+    double collectDownPos = 0.2;
 
     public FlowerCollection(Servo collectServo) {
         this.collectServo = collectServo;
@@ -19,6 +19,8 @@ public class FlowerCollection {
 
     boolean upServoCalib = true; // Shows whether the servo calibration is on the up or down position
 
+    boolean initialized = false;
+
     DButton collectButton = new DButton();
 
     DButton dpadLeft = new DButton();
@@ -26,7 +28,14 @@ public class FlowerCollection {
 
     DButton dpadB = new DButton();
 
+    private void init(TelemetryMirror telemetryMirror) {
+        collectServo.setPosition(collectUpPos);
+    }
+
     public void run(Gamepad gamepad, TelemetryMirror telemetryMirror) {
+        if (!initialized) {
+            init(telemetryMirror);
+        }
         collectButton.update(gamepad.a);
         telemetryMirror.addData("collectServo", collectServo.getPosition());
         if (collectButton.pressed() && !servoDown) {

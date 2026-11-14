@@ -60,10 +60,6 @@ public class Constants {
         c.strafeEncoderDirection.set(Encoder.FORWARD);
     });
 
-    // Auto-selected per robot by control hub serial number in create().
-    // beta is for betabot and alpha is for alphabot.
-    protected static ThreeWheelConfig LOCALIZER_CONFIG = LOCALIZER_CONFIG_ALPHA;
-
     /**
      * Picks the localizer config from the robot identified by RobotBase so the same
      * build runs on both robots. Unknown robots fall back to alphabot's config.

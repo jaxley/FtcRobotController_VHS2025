@@ -4,8 +4,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.robot.Poses;
 
 @Autonomous
-public class BottomUpAuto_BLUE extends BottomUpAutonomous {
-    public BottomUpAuto_BLUE() {
+public class ShootParkAuto_2026 extends ShootParkAuto {
+    public ShootParkAuto_2026() {
         super(Poses.Alliance.BLUE);
     }
 }
