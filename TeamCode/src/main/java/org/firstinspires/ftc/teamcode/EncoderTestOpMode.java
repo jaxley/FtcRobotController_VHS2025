@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.pedropathing.ftc.localization.Encoder;
+import com.pedropathing.revhub.localizers.Encoder;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
