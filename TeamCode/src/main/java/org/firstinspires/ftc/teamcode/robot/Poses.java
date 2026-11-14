@@ -33,8 +33,8 @@ public class Poses {
                 Map.entry(NamedPose.PARK_UPPER, p.of(10, 118, Math.toRadians(0))),
                 Map.entry(NamedPose.UPPER_FLOWER, p.of(47, 127, Math.toRadians(90))),
                 Map.entry(NamedPose.LOWER_FLOWER, p.of(15, 47, Math.toRadians(180))),
-                Map.entry(NamedPose.UPPER_CORNER_START, p.of(18, 133, Math.toRadians(270))),
-                Map.entry(NamedPose.LOWER_WALL_START, p.of(37, 8, Math.toRadians(90)))
+                Map.entry(NamedPose.UPPER_CORNER_START, p.of(59, 133, Math.toRadians(270))),
+                Map.entry(NamedPose.LOWER_WALL_START, p.of(57, 8, Math.toRadians(90)))
                 ));
 
     }

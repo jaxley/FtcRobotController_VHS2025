@@ -45,7 +45,9 @@ public class Drawing {
         if (follower.currentPath() != null) {
             drawPath(follower.currentPath(), robotLook);
             Pose closestPoint = follower.closestPose();
-            drawRobot(new Pose(closestPoint.x(), closestPoint.y(), follower.currentPath().heading(follower.completion())), robotLook);
+            if (closestPoint != null) {
+                drawRobot(new Pose(closestPoint.x(), closestPoint.y(), follower.currentPath().heading(follower.completion())), robotLook);
+            }
         }
         drawRobot(follower.pose(), historyLook);
 
