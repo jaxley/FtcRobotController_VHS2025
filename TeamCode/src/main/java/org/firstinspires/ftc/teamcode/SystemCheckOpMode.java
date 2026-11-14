@@ -73,15 +73,12 @@ public class SystemCheckOpMode extends LinearOpMode {
         telemetry.addLine("\nRobot identity:");
         RobotBase.RobotId robotId = RobotBase.robotId(hardwareMap);
         String activeConfig = RobotBase.activeConfigName(hardwareMap);
-        String expectedConfig = RobotBase.expectedConfigName(robotId);
         telemetry.addData("robot id", String.valueOf(robotId));
         telemetry.addData("active config", activeConfig);
-        if (expectedConfig == null) {
-            fail("robot UNKNOWN (hub serials " + hardwareMap.getAll(LynxModule.class) + "); cannot check config");
-        } else if (expectedConfig.equals(activeConfig)) {
-            pass("active config '" + activeConfig + "' is the expected one for " + robotId);
+        if (robotId == RobotBase.RobotId.UNKNOWN) {
+            fail("active config '" + activeConfig + "' matches no known robot");
         } else {
-            fail("active config '" + activeConfig + "' but " + robotId + " expects '" + expectedConfig + "'");
+            pass("active config '" + activeConfig + "' -> " + robotId);
         }
 
         telemetry.addLine("\nControl hubs:");

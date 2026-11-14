@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.robot;
 
 import com.pedropathing.follower.Follower;
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -14,79 +13,40 @@ import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
 
 public class RobotBase {
 
-    /** Which robot this build is running on, identified by hub serial numbers. */
+    /** Which robot this build is running on, identified by active config name. */
     public enum RobotId {
         ALPHABOT, BETABOT, UNKNOWN
     }
 
-    /**
-     * Expansion hub serial numbers, one per robot. These are unique per physical hub
-     * (unlike module numbers, which can collide between robots, or the control hub's
-     * serial, which reports as the placeholder "embedded"). Read them from the
-     * RobotLog "hub serial ... -> ..." line on each robot.
-     */
-    private static final String SERIAL_ALPHABOT = "ALPHABOT-SERIAL"; // TODO: set to alphabot's expansion hub serial
-    private static final String SERIAL_BETABOT = "BETABOT-SERIAL";  // TODO: set to betabot's expansion hub serial
-
-    /** Configuration file each robot should have active (they differ per robot). */
+    /** Configuration file each robot runs (unique per robot, so it identifies the bot). */
     private static final String CONFIG_ALPHABOT = "2026 new";
     private static final String CONFIG_BETABOT = "2026-plan-a";
 
     private static RobotId CACHED_ID;
-    private static String CACHED_HUB;
-    private static final java.util.Map<String, RobotId> ROBOT_BY_SERIAL =
-            java.util.Map.of(SERIAL_ALPHABOT, RobotId.ALPHABOT, SERIAL_BETABOT, RobotId.BETABOT);
+    private static final java.util.Map<String, RobotId> ROBOT_BY_CONFIG =
+            java.util.Map.of(CONFIG_ALPHABOT, RobotId.ALPHABOT, CONFIG_BETABOT, RobotId.BETABOT);
 
     /**
-     * Identifies the robot from its expansion hub serial so one build runs on both
-     * robots. Looked up once per process and logged; callers can use it to pick
-     * per-robot constants (e.g. pedro localizer configs).
+     * Identifies the robot from the active configuration file name so one build runs
+     * on both robots. Looked up once per process and logged; callers can use it to
+     * pick per-robot constants (e.g. pedro localizer configs).
      */
     public static RobotId robotId(HardwareMap hardwareMap) {
         if (CACHED_ID == null) {
-            CACHED_ID = RobotId.UNKNOWN;
-            for (LynxModule hub : hardwareMap.getAll(LynxModule.class)) {
-                String serial = hub.getSerialNumber().toString();
-                RobotId id = ROBOT_BY_SERIAL.get(serial);
-                if (id != null) {
-                    CACHED_ID = id;
-                    CACHED_HUB = "Expansion Hub " + hub.getModuleAddress() + " (" + serial + ")";
-                    break;
-                }
-            }
+            String config = activeConfigName(hardwareMap);
+            CACHED_ID = ROBOT_BY_CONFIG.getOrDefault(config, RobotId.UNKNOWN);
             if (CACHED_ID == RobotId.UNKNOWN) {
-                RobotLog.ww("RobotBase", "no expansion hub serial matched " + hubSerials(hardwareMap) + "; robot id UNKNOWN");
+                RobotLog.ww("RobotBase", "active config '" + config + "' matches no robot; id UNKNOWN");
             }
-            RobotLog.ii("RobotBase", "hub " + CACHED_HUB + " -> " + CACHED_ID);
+            RobotLog.ii("RobotBase", "active config '" + config + "' -> " + CACHED_ID);
         }
         return CACHED_ID;
-    }
-
-    /** All hub serials on this robot, for the log line when nothing matched. */
-    private static java.util.List<String> hubSerials(HardwareMap hardwareMap) {
-        return hardwareMap.getAll(LynxModule.class).stream()
-                .map(hub -> hub.getModuleAddress() + ":" + hub.getSerialNumber())
-                .collect(java.util.stream.Collectors.toList());
-    }
-
-    /** Name of the hub that identified the robot (null if unknown or not yet resolved). */
-    public static String lastIdentifyingHub() {
-        return CACHED_HUB;
     }
 
     /** Name of the currently active configuration file, as shown on the Driver Station. */
     public static String activeConfigName(HardwareMap hardwareMap) {
         android.app.Activity activity = (android.app.Activity) hardwareMap.appContext;
         return new RobotConfigFileManager(activity).getActiveConfig().getName();
-    }
-
-    /** The config file that should be active on the given robot (null when unknown). */
-    public static String expectedConfigName(RobotId id) {
-        switch (id) {
-            case ALPHABOT: return CONFIG_ALPHABOT;
-            case BETABOT:  return CONFIG_BETABOT;
-            default:       return null;
-        }
     }
 
     protected boolean TELEOP_MODE = true;
