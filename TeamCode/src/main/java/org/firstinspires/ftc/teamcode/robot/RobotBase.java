@@ -13,51 +13,58 @@ import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
 
 public class RobotBase {
 
-    /** Which robot this build is running on, identified by control hub serial. */
+    /** Which robot this build is running on, identified by hub serial numbers. */
     public enum RobotId {
         ALPHABOT, BETABOT, UNKNOWN
     }
 
-    /** Control hub serial numbers, as shown in the Driver Hub Manage page / RobotLog. */
-    private static final String SERIAL_ALPHABOT = "ALPHABOT-SERIAL"; // TODO: set to alphabot's control hub serial
-    private static final String SERIAL_BETABOT = "BETABOT-SERIAL";  // TODO: set to betabot's control hub serial
+    /**
+     * Expansion hub module addresses, one per robot. The control hub's serial is not
+     * usable ("embedded"), so identity comes from the expansion hub's module number,
+     * which is part of its configured name (e.g. "Expansion Hub 2" -> address 2).
+     */
+    private static final int MODULE_ALPHABOT = 2;
+    private static final int MODULE_BETABOT = -1; // TODO: set to betabot's expansion hub module number
 
     private static RobotId CACHED_ID;
-    private static String CACHED_SERIAL;
-    private static final java.util.Map<String, RobotId> ROBOT_BY_SERIAL =
-            java.util.Map.of(SERIAL_ALPHABOT, RobotId.ALPHABOT, SERIAL_BETABOT, RobotId.BETABOT);
+    private static String CACHED_HUB;
+    private static final java.util.Map<Integer, RobotId> ROBOT_BY_MODULE =
+            java.util.Map.of(MODULE_ALPHABOT, RobotId.ALPHABOT, MODULE_BETABOT, RobotId.BETABOT);
 
     /**
-     * Identifies the robot from the control hub's serial number so one build runs on
-     * both robots. The serial is looked up once per process and logged; callers can
-     * use it to pick per-robot constants (e.g. pedro localizer configs).
+     * Identifies the robot from its expansion hub module number so one build runs on
+     * both robots. Looked up once per process and logged; callers can use it to pick
+     * per-robot constants (e.g. pedro localizer configs).
      */
     public static RobotId robotId(HardwareMap hardwareMap) {
         if (CACHED_ID == null) {
-            CACHED_SERIAL = controlHubSerial(hardwareMap);
-            CACHED_ID = ROBOT_BY_SERIAL.getOrDefault(CACHED_SERIAL, RobotId.UNKNOWN);
-            if (CACHED_ID == RobotId.UNKNOWN) {
-                RobotLog.ww("RobotBase", "unrecognized control hub serial " + CACHED_SERIAL + "; robot id UNKNOWN");
+            CACHED_ID = RobotId.UNKNOWN;
+            for (LynxModule hub : hardwareMap.getAll(LynxModule.class)) {
+                RobotId id = ROBOT_BY_MODULE.get(hub.getModuleAddress());
+                if (id != null && !hub.getSerialNumber().toString().equals("embedded")) {
+                    CACHED_ID = id;
+                    CACHED_HUB = "Expansion Hub " + hub.getModuleAddress();
+                    break;
+                }
             }
-            RobotLog.ii("RobotBase", "control hub serial " + CACHED_SERIAL + " -> " + CACHED_ID);
+            if (CACHED_ID == RobotId.UNKNOWN) {
+                RobotLog.ww("RobotBase", "no expansion hub module matched " + hubModules(hardwareMap) + "; robot id UNKNOWN");
+            }
+            RobotLog.ii("RobotBase", "hub " + CACHED_HUB + " -> " + CACHED_ID);
         }
         return CACHED_ID;
     }
 
-    /** Serial of the "Control Hub" module, falling back to the first hub if unnamed. */
-    private static String controlHubSerial(HardwareMap hardwareMap) {
-        try {
-            return hardwareMap.get(LynxModule.class, "Control Hub").getSerialNumber().toString();
-        } catch (Exception e) {
-            return hardwareMap.getAll(LynxModule.class).stream()
-                    .map(hub -> hub.getSerialNumber().toString())
-                    .findFirst().orElse(null);
-        }
+    /** All hub module numbers on this robot, for the log line when nothing matched. */
+    private static java.util.List<Integer> hubModules(HardwareMap hardwareMap) {
+        return hardwareMap.getAll(LynxModule.class).stream()
+                .map(LynxModule::getModuleAddress)
+                .collect(java.util.stream.Collectors.toList());
     }
 
-    /** Serial of the control hub found by the last {@link #robotId} call (null before it). */
-    public static String lastControlHubSerial() {
-        return CACHED_SERIAL;
+    /** Name of the hub that identified the robot (null if unknown or not yet resolved). */
+    public static String lastIdentifyingHub() {
+        return CACHED_HUB;
     }
 
     protected boolean TELEOP_MODE = true;
