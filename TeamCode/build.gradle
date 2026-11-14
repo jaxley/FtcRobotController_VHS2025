@@ -24,6 +24,25 @@ tasks.withType(JavaCompile).configureEach {
     }
 }
 
+// The errorprone plugin only wires its internal (non-resolvable) `errorprone`
+// configuration into variant compile tasks, not AGP's unit-test compile, which
+// then dies with "plug-in not found: ErrorProne". Give unit-test compiles their
+// own resolvable processor path; applied at projectsEvaluated so AGP's later
+// configuration of the unit-test task cannot reset it.
+configurations {
+    errorproneProcessor {
+        canBeConsumed = false
+        canBeResolved = true
+    }
+}
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile).configureEach { t ->
+        if (t.name.contains('UnitTest')) {
+            options.annotationProcessorPath = configurations.errorproneProcessor
+        }
+    }
+}
+
 def getCommitCount = { ->
     return providers.exec { commandLine 'git', 'rev-list', '--count', 'HEAD' }.standardOutput.asText.get().trim().toInteger()
 }
@@ -67,5 +86,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8") { version { strictly("2.4.0") } }
 
     errorprone 'com.google.errorprone:error_prone_core:2.42.0'
+    errorproneProcessor 'com.google.errorprone:error_prone_core:2.42.0'
     annotationProcessor 'com.google.errorprone:error_prone_core:2.42.0'
 }

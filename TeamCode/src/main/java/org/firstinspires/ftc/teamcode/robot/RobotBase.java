@@ -1,15 +1,72 @@
 package org.firstinspires.ftc.teamcode.robot;
 
 import com.pedropathing.follower.Follower;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
 
 public class RobotBase {
+
+    /** Which robot this build is running on, identified by control hub serial. */
+    public enum RobotId {
+        ALPHABOT, BETABOT, UNKNOWN
+    }
+
+    /** Control hub serial numbers, as shown in the Driver Hub Manage page / RobotLog. */
+    private static final String SERIAL_ALPHABOT = "ALPHABOT-SERIAL"; // TODO: set to alphabot's control hub serial
+    private static final String SERIAL_BETABOT = "BETABOT-SERIAL";  // TODO: set to betabot's control hub serial
+
+    private static RobotId CACHED_ID;
+    private static String CACHED_SERIAL;
+
+    /**
+     * Identifies the robot from the control hub's serial number so one build runs on
+     * both robots. The serial is looked up once per process and logged; callers can
+     * use it to pick per-robot constants (e.g. pedro localizer configs).
+     */
+    public static RobotId robotId(HardwareMap hardwareMap) {
+        if (CACHED_ID != null) {
+            return CACHED_ID;
+        }
+        String serial = null;
+        try {
+            serial = hardwareMap.get(LynxModule.class, "Control Hub").getSerialNumber().toString();
+        } catch (Exception e) {
+            // No module configured under the default name; fall back to the first hub.
+            for (LynxModule hub : hardwareMap.getAll(LynxModule.class)) {
+                serial = hub.getSerialNumber().toString();
+                break;
+            }
+        }
+        CACHED_SERIAL = serial;
+        RobotId id;
+        if (serial == null) {
+            RobotLog.ee("RobotBase", "no hub found; robot id UNKNOWN");
+            id = RobotId.UNKNOWN;
+        } else if (SERIAL_BETABOT.equals(serial)) {
+            id = RobotId.BETABOT;
+        } else if (SERIAL_ALPHABOT.equals(serial)) {
+            id = RobotId.ALPHABOT;
+        } else {
+            RobotLog.ww("RobotBase", "unrecognized control hub serial " + serial + "; robot id UNKNOWN");
+            id = RobotId.UNKNOWN;
+        }
+        RobotLog.ii("RobotBase", "control hub serial " + serial + " -> " + id);
+        CACHED_ID = id;
+        return id;
+    }
+
+    /** Serial of the control hub found by the last {@link #robotId} call (null before it). */
+    public static String lastControlHubSerial() {
+        return CACHED_SERIAL;
+    }
+
     protected boolean TELEOP_MODE = true;
     private static RobotBase INSTANCE;
     protected IMecanumDrive mecanumDrive;

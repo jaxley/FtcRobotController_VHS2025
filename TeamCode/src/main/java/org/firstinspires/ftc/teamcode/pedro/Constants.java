@@ -16,6 +16,8 @@ import com.pedropathing.revhub.localizers.ThreeWheelLocalizer;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.robot.RobotBase;
+
 public class Constants {
     public static final MecanumConfig DRIVETRAIN_CONFIG = new MecanumConfig(c -> {
         c.frontLeftName.set("frontLeft");
@@ -58,8 +60,23 @@ public class Constants {
         c.strafeEncoderDirection.set(Encoder.FORWARD);
     });
 
-    // Change this to match the current bot, beta is for betabot and alpha is for alphabot.
-    protected static final ThreeWheelConfig LOCALIZER_CONFIG = LOCALIZER_CONFIG_ALPHA;
+    // Auto-selected per robot by control hub serial number in create().
+    // beta is for betabot and alpha is for alphabot.
+    protected static ThreeWheelConfig LOCALIZER_CONFIG = LOCALIZER_CONFIG_ALPHA;
+
+    /**
+     * Picks the localizer config from the robot identified by RobotBase so the same
+     * build runs on both robots. Unknown robots fall back to alphabot's config.
+     */
+    protected static ThreeWheelConfig localizerConfigFor(HardwareMap h) {
+        switch (RobotBase.robotId(h)) {
+            case BETABOT:
+                return LOCALIZER_CONFIG_BETA;
+            case ALPHABOT:
+            default:
+                return LOCALIZER_CONFIG_ALPHA;
+        }
+    }
 
     public static ForesightConfig FORESIGHT_CONFIG = new ForesightConfig(
             c -> {
@@ -88,6 +105,7 @@ public class Constants {
     );
 
     public static Follower create(HardwareMap h) {
+        LOCALIZER_CONFIG = localizerConfigFor(h);
         return new Follower(
                 new ThreeWheelLocalizer(h, LOCALIZER_CONFIG),
                 new Mecanum(h, DRIVETRAIN_CONFIG),
