@@ -44,7 +44,7 @@ public class Shooter {
 
     final double fireUpPos = 0.15;
 
-    final double firePeriodMs = 800; // ms
+    final double firePeriodMs = 100; // ms
     private final ElapsedTime fireTimer = new ElapsedTime();
     double fireTime = 0;
     private static final double LOOP_LAG_WARN_MS = 100; // loop slower than this can swallow brief fire presses
@@ -54,6 +54,8 @@ public class Shooter {
     final double triggerDZ = 0.25;
     //control vars
     boolean flywheelRunning = false;
+
+    boolean fireServoOut = false;
 
     DButton fireButton = new DButton();
 
@@ -198,18 +200,20 @@ public class Shooter {
                         "Shooter loop took %.0f ms (>%.0f ms): a quick tap of the fire button can be missed", loopMs, LOOP_LAG_WARN_MS));
             }
             fireButton.update(gamepad.x);
-            telemetryMirror.addData("Fire Button", fireButton.isPressed() ? "held" : "-");
+            telemetryMirror.addData("Fire Button", fireButton.pressed() ? "pressed" : "-");
             telemetryMirror.addData("Fire Servo Pos", fireServo.getPosition());
             // Hold the fire position the whole time the button is held (re-commanding
             // it every loop), then keep holding until firePeriodMs has elapsed since
             // the LAST fire command, using a dedicated timer. Measuring the hold with
             // time-between-loops breaks when the opmode loop runs slower than the hold
             // period: the next loop exhausts the budget and immediately resets.
-            if (fireButton.isPressed()) {
+            if (fireButton.pressed() && !fireServoOut) {
                 fire(telemetryMirror);
-                fireTimer.reset();
+                fireServoOut = true;
             } else if (fireTimer.milliseconds() >= firePeriodMs) {
                 reset(telemetryMirror);
+            } else if (fireButton.pressed() && fireServoOut) {
+                fireTimer.reset();
             }
         }
        // fireTime -= getRuntime() - lastMillis;
@@ -236,12 +240,15 @@ public class Shooter {
         power = Range.clip(power, minFlywheelPower, maxFlywheelPower);  // com.qualcomm.robotcore.util.Range
         telemetryMirror.addData(FLYWHEEL, power);
         this.targetVelocity = power * flywheelSpeedRpm * FLYWHEEL_RPM_2_CLICKS_PER_SECOND_CONVERSION * SHOOTER_FLYWHEEL_DIRECTION;
+        telemetryMirror.addData("use_encoder",use_encoder);
         if (use_encoder) {
             telemetryMirror.addData("Target Velocity: ", targetVelocity);
+            telemetryMirror.addData("Measured Velocity: ", flywheel.getVelocity());
             flywheel.setVelocity(targetVelocity);
         } else {
             telemetryMirror.addData("Target Power: ", power);
             flywheel.setPower(power);
+            telemetryMirror.addData("Measured Power: ", flywheel.getPower());
         }
     }
 
@@ -254,6 +261,7 @@ public class Shooter {
     public void reset(TelemetryMirror telemetryMirror) {
         telemetryMirror.addData(SUBSYSTEM_NAME, "reset");
         fireServo.setPosition(FiringServo.fireDownPos);
+        fireServoOut = false;
     }
 
     private boolean TELEOP_MODE = true;
