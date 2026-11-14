@@ -13,16 +13,13 @@ import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
 import java.util.function.Supplier;
 
 @SuppressWarnings({"unused"})
-public abstract class BottomUpAutonomous extends OpMode {
+public abstract class BottomUpAutonomous extends PanelsOpMode {
     public static final boolean USE_PANELS = true;
-    private Follower follower;
-
     protected Poses.Alliance alliance;
     private Supplier<Path> autonomousPath;
 
     private Poses poses;
     boolean running = false;
-    private TelemetryMirror telemetryMirror;
 
     protected BottomUpAutonomous() {
         // Required for reflection
@@ -47,6 +44,7 @@ public abstract class BottomUpAutonomous extends OpMode {
         autonomousPath = () -> path(
                 line(poses.get(Poses.NamedPose.LOWER_WALL_START), poses.get(Poses.NamedPose.PARK_LOWER))
         ).tangent();
+        super.init();
     }
 
     @Override
@@ -63,5 +61,7 @@ public abstract class BottomUpAutonomous extends OpMode {
         telemetryMirror.addData("position", follower.pose());
         telemetryMirror.addData("velocity", follower.velocity());
         telemetryMirror.addData("heading", follower.pose().heading());
+
+        super.loop();
     }
 }

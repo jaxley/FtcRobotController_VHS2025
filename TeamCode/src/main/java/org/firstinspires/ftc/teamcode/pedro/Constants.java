@@ -59,7 +59,7 @@ public class Constants {
     });
 
     // Change this to match the current bot, beta is for betabot and alpha is for alphabot.
-    protected static final ThreeWheelConfig LOCALIZER_CONFIG = LOCALIZER_CONFIG_ALPHA;
+    protected static final ThreeWheelConfig LOCALIZER_CONFIG = LOCALIZER_CONFIG_BETA;
 
     public static ForesightConfig FORESIGHT_CONFIG = new ForesightConfig(
             c -> {

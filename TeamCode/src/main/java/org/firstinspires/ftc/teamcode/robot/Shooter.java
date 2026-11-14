@@ -27,7 +27,7 @@ public class Shooter {
 
     final double flywheelSpeedRpm = 4414; // RPM
 
-    double flywheelPower = 0.8;
+    double flywheelPower = 0.76;
 
     private static final double minFlywheelPower = 0.1;
     private static final double maxFlywheelPower = 1.0;
@@ -174,9 +174,9 @@ public class Shooter {
             dpadDown.update(gamepad.dpad_down);
             // dpad up and down can change flywheel power by 5% of max power
             if (dpadUp.pressed()) {
-                flywheelPower = Range.clip(flywheelPower + 0.001, minFlywheelPower, maxFlywheelPower);
+                flywheelPower = Range.clip(flywheelPower + 0.01, minFlywheelPower, maxFlywheelPower);
             } else if (dpadDown.pressed()) {
-                flywheelPower = Range.clip(flywheelPower - 0.001, minFlywheelPower, maxFlywheelPower);
+                flywheelPower = Range.clip(flywheelPower - 0.01, minFlywheelPower, maxFlywheelPower);
             }
 
             flywheelRunning = (gamepad.left_trigger > triggerDZ);
