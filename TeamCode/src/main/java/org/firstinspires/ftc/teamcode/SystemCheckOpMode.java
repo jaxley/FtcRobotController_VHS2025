@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
+import org.firstinspires.ftc.teamcode.robot.RobotBase;
 import org.firstinspires.ftc.teamcode.robot.RobotConstants;
 
 import java.util.LinkedHashMap;
@@ -69,12 +70,27 @@ public class SystemCheckOpMode extends LinearOpMode {
             }
         }
 
+        telemetry.addLine("\nRobot identity:");
+        RobotBase.RobotId robotId = RobotBase.robotId(hardwareMap);
+        String activeConfig = RobotBase.activeConfigName(hardwareMap);
+        String expectedConfig = RobotBase.expectedConfigName(robotId);
+        telemetry.addData("robot id", String.valueOf(robotId));
+        telemetry.addData("active config", activeConfig);
+        if (expectedConfig == null) {
+            fail("robot UNKNOWN (hub serials " + hardwareMap.getAll(LynxModule.class) + "); cannot check config");
+        } else if (expectedConfig.equals(activeConfig)) {
+            pass("active config '" + activeConfig + "' is the expected one for " + robotId);
+        } else {
+            fail("active config '" + activeConfig + "' but " + robotId + " expects '" + expectedConfig + "'");
+        }
+
         telemetry.addLine("\nControl hubs:");
         for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
             String label = hardwareMap.getNamesOf(module).stream().findFirst().orElse("hub " + module.getModuleAddress());
             telemetry.addData(label,
-                    String.format("fw=%s voltage=%.2fV current=%.2fA",
+                    String.format("fw=%s serial=%s voltage=%.2fV current=%.2fA",
                             module.getFirmwareVersionString(),
+                            module.getSerialNumber(),
                             module.getInputVoltage(VoltageUnit.VOLTS),
                             module.getCurrent(CurrentUnit.AMPS)));
         }
