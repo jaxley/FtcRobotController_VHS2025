@@ -139,13 +139,27 @@ public class RobotBase {
     }
 
     public void stop(TelemetryMirror telemetry) {
+        // One try/catch per subsystem: a failure in one stop (e.g. mecanumDrive)
+        // must not skip the rest, or callers' RobotBase.reset() chain breaks and a
+        // stale singleton with dead hardware objects survives into the next OpMode.
+        //
+        // Drive failsafe in teleop is mecanumDrive.stop(), which zeroes the wheels.
+        // In autonomous the drive is Follower-owned; OpMode stop() overrides zero it
+        // directly via PanelsOpMode.stopDriveMotors().
         if (TELEOP_MODE) {
-            mecanumDrive.stop(telemetry);
-            limelight.stop(telemetry);
-            limelight.shutdownCamera();
+            try { mecanumDrive.stop(telemetry); }
+            catch (Exception e) { RobotLog.ww("RobotBase", "mecanumDrive stop failed: " + e); }
+            try { limelight.stop(telemetry); }
+            catch (Exception e) { RobotLog.ww("RobotBase", "limelight stop failed: " + e); }
+            try { limelight.shutdownCamera(); }
+            catch (Exception e) { RobotLog.ww("RobotBase", "limelight camera shutdown failed: " + e); }
         }
-        intake.stop(telemetry);
-        shooter.stop(telemetry);
-        flowerCollection.stop(telemetry);
+        try { intake.stop(telemetry); }
+        catch (Exception e) { RobotLog.ww("RobotBase", "intake stop failed: " + e); }
+        try { shooter.stop(telemetry); }
+        catch (Exception e) { RobotLog.ww("RobotBase", "shooter stop failed: " + e); }
+        try { flowerCollection.stop(telemetry); }
+        catch (Exception e) { RobotLog.ww("RobotBase", "flowerCollection stop failed: " + e); }
     }
 }
+

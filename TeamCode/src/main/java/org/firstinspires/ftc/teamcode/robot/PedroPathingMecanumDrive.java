@@ -113,6 +113,7 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
     @Override
     public void stop(TelemetryMirror telemetryMirror) {
         follower.manual(0, 0, 0);
+        stopMotors();
         telemetryMirror.addData(SUBSYSTEM_NAME, STOPPED);
     }
 

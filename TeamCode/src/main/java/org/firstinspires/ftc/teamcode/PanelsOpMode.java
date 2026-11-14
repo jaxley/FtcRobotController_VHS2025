@@ -2,7 +2,10 @@ package org.firstinspires.ftc.teamcode;
 
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.pedro.Drawing;
+import org.firstinspires.ftc.teamcode.robot.IMecanumDrive;
+import org.firstinspires.ftc.teamcode.robot.RobotConstants;
 import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
 
 public abstract class PanelsOpMode extends OpMode {
@@ -27,6 +30,19 @@ public abstract class PanelsOpMode extends OpMode {
     }
 
     public PanelsOpMode() {
+    }
+
+    /**
+     * Zeros the four drive motors directly. In autonomous the drive is owned by the
+     * Follower (no IMecanumDrive instance exists), so OpMode stop() overrides use
+     * this as the drive failsafe for STOP / driver-station crash.
+     */
+    protected void stopDriveMotors() {
+        IMecanumDrive.stopMotors(
+                hardwareMap.get(DcMotor.class, RobotConstants.Wheel.FRONT_LEFT),
+                hardwareMap.get(DcMotor.class, RobotConstants.Wheel.FRONT_RIGHT),
+                hardwareMap.get(DcMotor.class, RobotConstants.Wheel.BACK_LEFT),
+                hardwareMap.get(DcMotor.class, RobotConstants.Wheel.BACK_RIGHT));
     }
 
     protected void draw() {

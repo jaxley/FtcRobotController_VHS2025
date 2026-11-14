@@ -64,22 +64,22 @@ public class SimpleMecanumDrive implements IMecanumDrive {
 
     @Override
     public DcMotor getFrontLeft() {
-        return null;
+        return frontLeft;
     }
 
     @Override
     public DcMotor getFrontRight() {
-        return null;
+        return frontRight;
     }
 
     @Override
     public DcMotor getBackLeft() {
-        return null;
+        return backLeft;
     }
 
     @Override
     public DcMotor getBackRight() {
-        return null;
+        return backRight;
     }
 
     public void run(Gamepad driveGamepad, TelemetryMirror telemetryMirror) {
@@ -132,10 +132,7 @@ public class SimpleMecanumDrive implements IMecanumDrive {
     }
 
     public void stop(TelemetryMirror telemetryMirror) {
-        frontLeft.setPower(0);
-        frontRight.setPower(0);
-        backLeft.setPower(0);
-        backRight.setPower(0);
+        stopMotors();
         telemetryMirror.addData(SUBSYSTEM_NAME, STOPPED);
     }
 }

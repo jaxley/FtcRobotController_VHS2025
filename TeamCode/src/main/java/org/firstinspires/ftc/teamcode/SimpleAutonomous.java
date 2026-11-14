@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Alliance;
+import org.firstinspires.ftc.teamcode.robot.IMecanumDrive;
 import org.firstinspires.ftc.teamcode.robot.RobotConstants;
 import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
 
@@ -45,6 +46,13 @@ public class SimpleAutonomous extends OpMode {
         telemetryMirror = new TelemetryMirror(telemetry, false);
         telemetryMirror.addData("Alliance", alliance);
         telemetryMirror.update();
+    }
+
+    @Override
+    public void stop() {
+        // STOP or a driver-station crash must not leave motors running: zero all four
+        // drive motors this OpMode commands directly.
+        IMecanumDrive.stopMotors(frontLeft, frontRight, backLeft, backRight);
     }
 
     @Override

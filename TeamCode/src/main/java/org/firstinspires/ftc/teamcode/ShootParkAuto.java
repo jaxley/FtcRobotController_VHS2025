@@ -133,6 +133,8 @@ public class ShootParkAuto extends PanelsOpMode {
             intake.stop(telemetryMirror);
             robotBase.stop(telemetryMirror);
         }
+        // Drive is Follower-owned in auto; zero it directly.
+        stopDriveMotors();
         RobotBaseAutonomous.reset();
     }
 }

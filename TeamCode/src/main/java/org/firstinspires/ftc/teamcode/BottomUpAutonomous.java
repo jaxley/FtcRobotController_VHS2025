@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.paths.Path;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-
 import static com.pedropathing.api.Paths.*;
 
 import org.firstinspires.ftc.teamcode.pedro.Constants;
@@ -45,6 +44,13 @@ public abstract class BottomUpAutonomous extends PanelsOpMode {
                 line(poses.get(Poses.NamedPose.LOWER_WALL_START), poses.get(Poses.NamedPose.PARK_LOWER))
         ).tangent();
         super.init();
+    }
+
+    @Override
+    public void stop() {
+        // STOP or a driver-station crash mid-auto: the Follower owns the drive, so
+        // zero the motors directly instead of relying on the path state machine.
+        stopDriveMotors();
     }
 
     @Override

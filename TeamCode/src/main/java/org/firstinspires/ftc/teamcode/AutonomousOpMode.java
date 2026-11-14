@@ -97,7 +97,15 @@ public abstract class AutonomousOpMode extends PanelsOpMode {
 
     @Override
     public void stop() {
-        // Keeping empty method structure for subclass overrides if needed
+        // Failsafe for STOP / driver-station crash mid-auto: robotBase.stop() zeroes
+        // the drive motors (Follower-owned in auto) and stops all subsystems, then we
+        // drop the singleton so the next OpMode run rebuilds from a fresh HardwareMap.
+        if (robotBase != null) {
+            robotBase.stop(telemetryMirror);
+        }
+        // Drive is Follower-owned in auto; zero it directly.
+        stopDriveMotors();
+        RobotBaseAutonomous.reset();
     }
 
     public void autonomousPathUpdate(TelemetryMirror telemetryMirror) {
