@@ -4,6 +4,25 @@ import java.text.SimpleDateFormat
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
 apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'net.ltgt.errorprone'
+
+import net.ltgt.gradle.errorprone.CheckSeverity
+
+// Fail the build when a subclass declares a field that hides a field
+// inherited from a superclass (Error Prone "HidingField").
+// All other Error Prone checks are disabled so this gate covers shadowing only.
+// The errorprone Gradle plugin has no AGP support: for Android compile tasks we
+// must put Error Prone on the processor path and enable it ourselves.
+tasks.withType(JavaCompile).configureEach {
+    options.annotationProcessorPath = configurations.errorprone
+    options.errorprone {
+        enabled = true
+        disableAllChecks = true
+        check('HidingField', CheckSeverity.ERROR)
+        // Vendored Pedro Pathing tuner samples shadow TuningOpMode.name by design.
+        excludedPaths = '.*pedro/procedures/.*'
+    }
+}
 
 def getCommitCount = { ->
     return providers.exec { commandLine 'git', 'rev-list', '--count', 'HEAD' }.standardOutput.asText.get().trim().toInteger()
@@ -46,4 +65,7 @@ dependencies {
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib") { version { strictly("2.4.0") } }
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8") { version { strictly("2.4.0") } }
+
+    errorprone 'com.google.errorprone:error_prone_core:2.42.0'
+    annotationProcessor 'com.google.errorprone:error_prone_core:2.42.0'
 }
