@@ -172,9 +172,9 @@ public class Shooter {
             dpadDown.update(gamepad.dpad_down);
             // dpad up and down can change flywheel power by 5% of max power
             if (dpadUp.pressed()) {
-                flywheelPower = Range.clip(flywheelPower + 0.001, minFlywheelPower, maxFlywheelPower);
+                flywheelPower = Range.clip(flywheelPower + 0.01, minFlywheelPower, maxFlywheelPower);
             } else if (dpadDown.pressed()) {
-                flywheelPower = Range.clip(flywheelPower - 0.001, minFlywheelPower, maxFlywheelPower);
+                flywheelPower = Range.clip(flywheelPower - 0.01, minFlywheelPower, maxFlywheelPower);
             }
 
             flywheelRunning = (gamepad.left_trigger > triggerDZ);
