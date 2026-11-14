@@ -24,6 +24,8 @@ public class RobotBase {
 
     private static RobotId CACHED_ID;
     private static String CACHED_SERIAL;
+    private static final java.util.Map<String, RobotId> ROBOT_BY_SERIAL =
+            java.util.Map.of(SERIAL_ALPHABOT, RobotId.ALPHABOT, SERIAL_BETABOT, RobotId.BETABOT);
 
     /**
      * Identifies the robot from the control hub's serial number so one build runs on
@@ -31,35 +33,26 @@ public class RobotBase {
      * use it to pick per-robot constants (e.g. pedro localizer configs).
      */
     public static RobotId robotId(HardwareMap hardwareMap) {
-        if (CACHED_ID != null) {
-            return CACHED_ID;
-        }
-        String serial = null;
-        try {
-            serial = hardwareMap.get(LynxModule.class, "Control Hub").getSerialNumber().toString();
-        } catch (Exception e) {
-            // No module configured under the default name; fall back to the first hub.
-            for (LynxModule hub : hardwareMap.getAll(LynxModule.class)) {
-                serial = hub.getSerialNumber().toString();
-                break;
+        if (CACHED_ID == null) {
+            CACHED_SERIAL = controlHubSerial(hardwareMap);
+            CACHED_ID = ROBOT_BY_SERIAL.getOrDefault(CACHED_SERIAL, RobotId.UNKNOWN);
+            if (CACHED_ID == RobotId.UNKNOWN) {
+                RobotLog.ww("RobotBase", "unrecognized control hub serial " + CACHED_SERIAL + "; robot id UNKNOWN");
             }
+            RobotLog.ii("RobotBase", "control hub serial " + CACHED_SERIAL + " -> " + CACHED_ID);
         }
-        CACHED_SERIAL = serial;
-        RobotId id;
-        if (serial == null) {
-            RobotLog.ee("RobotBase", "no hub found; robot id UNKNOWN");
-            id = RobotId.UNKNOWN;
-        } else if (SERIAL_BETABOT.equals(serial)) {
-            id = RobotId.BETABOT;
-        } else if (SERIAL_ALPHABOT.equals(serial)) {
-            id = RobotId.ALPHABOT;
-        } else {
-            RobotLog.ww("RobotBase", "unrecognized control hub serial " + serial + "; robot id UNKNOWN");
-            id = RobotId.UNKNOWN;
+        return CACHED_ID;
+    }
+
+    /** Serial of the "Control Hub" module, falling back to the first hub if unnamed. */
+    private static String controlHubSerial(HardwareMap hardwareMap) {
+        try {
+            return hardwareMap.get(LynxModule.class, "Control Hub").getSerialNumber().toString();
+        } catch (Exception e) {
+            return hardwareMap.getAll(LynxModule.class).stream()
+                    .map(hub -> hub.getSerialNumber().toString())
+                    .findFirst().orElse(null);
         }
-        RobotLog.ii("RobotBase", "control hub serial " + serial + " -> " + id);
-        CACHED_ID = id;
-        return id;
     }
 
     /** Serial of the control hub found by the last {@link #robotId} call (null before it). */
