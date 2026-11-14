@@ -8,7 +8,7 @@ package org.firstinspires.ftc.teamcode.utils;
  * this update only):
  *
  * <ul>
- *   <li>{@link #isPressed()} - level: true on every loop while the button is held down.
+ *   <li>{@link #isHeld()} - level: true on every loop while the button is held down.
  *       Use for continuous behavior (e.g. hold-to-slow-drive).
  *   <li>{@link #pressed()} - rising edge: true only on the single loop where the button went
  *       from up to down. Use for one-shot actions so holding the button does not repeat them.
@@ -52,7 +52,7 @@ public class DButton {
      *
      * @return true while the button is currently held
      */
-    public boolean isPressed() {
+    public boolean isHeld() {
         return state;
     }
 
@@ -60,7 +60,7 @@ public class DButton {
      * Rising edge: did the button go from up to down on the most recent {@link #update}?
      *
      * <p>True for exactly one loop per click, then false again while the button stays held.
-     * Use for one-shot actions; use {@link #isPressed()} for behavior that continues while held.
+     * Use for one-shot actions; use {@link #isHeld()} for behavior that continues while held.
      *
      * @return true only on the loop the button was first pressed
      */

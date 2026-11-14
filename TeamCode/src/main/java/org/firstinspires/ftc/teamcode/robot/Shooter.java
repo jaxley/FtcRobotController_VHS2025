@@ -196,14 +196,14 @@ public class Shooter {
                         "Shooter loop took %.0f ms (>%.0f ms): a quick tap of the fire button can be missed", loopMs, LOOP_LAG_WARN_MS));
             }
             fireButton.update(gamepad.x);
-            telemetryMirror.addData("Fire Button", fireButton.isPressed() ? "held" : "-");
+            telemetryMirror.addData("Fire Button", fireButton.isHeld() ? "held" : "-");
             telemetryMirror.addData("Fire Servo Pos", fireServo.getPosition());
             // Hold the fire position the whole time the button is held (re-commanding
             // it every loop), then keep holding until firePeriodMs has elapsed since
             // the LAST fire command, using a dedicated timer. Measuring the hold with
             // time-between-loops breaks when the opmode loop runs slower than the hold
             // period: the next loop exhausts the budget and immediately resets.
-            if (fireButton.isPressed()) {
+            if (fireButton.isHeld()) {
                 fire(telemetryMirror);
                 fireTimer.reset();
             } else if (fireTimer.milliseconds() >= firePeriodMs) {

@@ -45,9 +45,9 @@ public class Limelight {
 
         // Dynamically update state utilizing your team's custom DButton class
         targetingButton.update(gamepad.y);
-        telemetryMirror.addData("Limelight targeting active", targetingButton.isPressed());
+        telemetryMirror.addData("Limelight targeting active", targetingButton.isHeld());
 
-        if (targetingButton.isPressed()) {
+        if (targetingButton.isHeld()) {
             calculateTargetingVectors(telemetryMirror);
         } else {
             stop(telemetryMirror);
@@ -112,7 +112,7 @@ public class Limelight {
     }
 
     public boolean isTargetingActive() {
-        return targetingButton.isPressed();
+        return targetingButton.isHeld();
     }
 
     public Gamepad getTrackingGamepad() {

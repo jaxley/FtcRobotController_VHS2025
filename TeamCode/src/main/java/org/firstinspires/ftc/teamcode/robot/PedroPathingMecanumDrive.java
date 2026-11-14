@@ -5,7 +5,6 @@ import com.pedropathing.math.Pose; // FIX: Correct Pedro 3 package path
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
-import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.utils.DButton;
 import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
 
@@ -74,7 +73,7 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
 
         holdButton.update(driveGamepad.left_trigger != 0);
 
-        if (holdButton.isPressed()) {
+        if (holdButton.isHeld()) {
             this.hold();
         } else {
             // FIX: Standard manual driving input vector for TeleOp
