@@ -44,7 +44,7 @@ public class Shooter {
 
     final double fireUpPos = 0.15;
 
-    final double firePeriodMs = 800; // ms
+    final double firePeriodMs = 100; // ms
     private final ElapsedTime fireTimer = new ElapsedTime();
     double fireTime = 0;
     private static final double LOOP_LAG_WARN_MS = 100; // loop slower than this can swallow brief fire presses

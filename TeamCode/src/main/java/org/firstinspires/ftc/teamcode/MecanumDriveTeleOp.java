@@ -50,5 +50,8 @@ public class MecanumDriveTeleOp extends PanelsOpMode {
         if (robotBase != null) {
             robotBase.stop(telemetryMirror);
         }
+        // Drop the singleton so the next OpMode run rebuilds hardware from a fresh
+        // HardwareMap instead of reusing devices from this (now closing) one.
+        RobotBase.reset();
     }
 }

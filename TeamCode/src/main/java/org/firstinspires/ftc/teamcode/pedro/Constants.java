@@ -27,9 +27,8 @@ public class Constants {
         c.backLeftDirection.set(DcMotorSimple.Direction.FORWARD);
         c.backRightDirection.set(DcMotorSimple.Direction.REVERSE);
     });
-
     // 6 inches L and R; -6 3/4 strafe
-    public static ThreeWheelConfig LOCALIZER_CONFIG = new ThreeWheelConfig(c -> {
+    public static ThreeWheelConfig LOCALIZER_CONFIG_ALPHA = new ThreeWheelConfig(c -> {
         c.leftEncoderName.set("frontLeft");
         c.rightEncoderName.set("frontRight");
         c.strafeEncoderName.set("backLeft");
@@ -44,6 +43,23 @@ public class Constants {
         c.strafeEncoderDirection.set(Encoder.REVERSE);
     });
 
+    public static ThreeWheelConfig LOCALIZER_CONFIG_BETA = new ThreeWheelConfig(c -> {
+        c.leftEncoderName.set("frontLeft");
+        c.rightEncoderName.set("frontRight");
+        c.strafeEncoderName.set("backLeft");
+        c.leftPodY.set(2.625);
+        c.rightPodY.set(-3.0);
+        c.strafePodX.set(7.25);
+        c.forwardTicksToInches.set(0.0019179912279850189);
+        c.strafeTicksToInches.set(0.00198);
+        c.turnTicksToRadians.set(0.0023111587484619923);
+        c.leftEncoderDirection.set(Encoder.REVERSE);
+        c.rightEncoderDirection.set(Encoder.REVERSE);
+        c.strafeEncoderDirection.set(Encoder.FORWARD);
+    });
+
+    // Change this to match the current bot, beta is for betabot and alpha is for alphabot.
+    protected static final ThreeWheelConfig LOCALIZER_CONFIG = LOCALIZER_CONFIG_ALPHA;
 
     public static ForesightConfig FORESIGHT_CONFIG = new ForesightConfig(
             c -> {

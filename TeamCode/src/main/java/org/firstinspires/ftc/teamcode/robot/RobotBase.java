@@ -31,6 +31,16 @@ public class RobotBase {
         return INSTANCE;
     }
 
+    /**
+     * Discards the singleton so the next OpMode run rebuilds all hardware from a fresh
+     * HardwareMap. Hardware device objects belong to the OpMode run that created them;
+     * reusing them across runs leaves the Follower/localizer/motors bound to a dead
+     * HardwareMap and drives erratically until the robot is power cycled.
+     */
+    public static void reset() {
+        INSTANCE = null;
+    }
+
     protected RobotBase(HardwareMap hardwareMap, boolean teleop) {
         this.TELEOP_MODE = teleop;
 
