@@ -48,6 +48,8 @@ public class PedroPathingMecanumDrive implements IMecanumDrive {
     public DcMotor getBackLeft() { return backLeft; }
     public DcMotor getBackRight() { return backRight; }
 
+    public Follower getFollower() { return follower; }
+
     public void init(TelemetryMirror telemetryMirror, Pose startingPose) {
         if (startingPose != null) {
             // FIX: Uses standard Pedro 3 positioning method

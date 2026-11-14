@@ -39,13 +39,16 @@ public class Shooter {
     private boolean use_encoder = true;
 
     public static class FiringServo {
-        static double fireDownPos = 0.15;
+        static double fireDownPos = 0.45;
     }
 
-    final double fireUpPos = 0.35;
+    final double fireUpPos = 0.15;
 
     final double firePeriodMs = 800; // ms
+    private final ElapsedTime fireTimer = new ElapsedTime();
     double fireTime = 0;
+    private static final double LOOP_LAG_WARN_MS = 100; // loop slower than this can swallow brief fire presses
+    private final ElapsedTime loopTimer = new ElapsedTime();
     private static ElapsedTime stopWatch = new ElapsedTime();
 
     final double triggerDZ = 0.25;
@@ -69,6 +72,11 @@ public class Shooter {
     public Shooter(DcMotorEx flywheel, Servo fireServo) {
         this.flywheel = flywheel;
         this.fireServo = fireServo;
+        // Servo wiring was corrected on the robot, which mirrored its travel:
+        // the old fireDownPos/fireUpPos values now land on the wrong ends.
+        // REVERSE maps every position to (1 - position), restoring the intended
+        // rest = fireDownPos, fire = fireUpPos without touching the wiring.
+        this.fireServo.setDirection(Servo.Direction.REVERSE);
     }
 
     private void killFlywheel(TelemetryMirror tm, String reason) {
@@ -183,10 +191,24 @@ public class Shooter {
 
         // Don't bind keys unless in teleop.
         if (TELEOP_MODE) {
+            double loopMs = loopTimer.milliseconds();
+            loopTimer.reset();
+            if (loopMs > LOOP_LAG_WARN_MS) {
+                telemetryMirror.addData("WARNING", String.format(
+                        "Shooter loop took %.0f ms (>%.0f ms): a quick tap of the fire button can be missed", loopMs, LOOP_LAG_WARN_MS));
+            }
             fireButton.update(gamepad.x);
-            if (fireButton.pressed()) {
+            telemetryMirror.addData("Fire Button", fireButton.isPressed() ? "held" : "-");
+            telemetryMirror.addData("Fire Servo Pos", fireServo.getPosition());
+            // Hold the fire position the whole time the button is held (re-commanding
+            // it every loop), then keep holding until firePeriodMs has elapsed since
+            // the LAST fire command, using a dedicated timer. Measuring the hold with
+            // time-between-loops breaks when the opmode loop runs slower than the hold
+            // period: the next loop exhausts the budget and immediately resets.
+            if (fireButton.isPressed()) {
                 fire(telemetryMirror);
-            } else if (fireButton.released()) {
+                fireTimer.reset();
+            } else if (fireTimer.milliseconds() >= firePeriodMs) {
                 reset(telemetryMirror);
             }
         }

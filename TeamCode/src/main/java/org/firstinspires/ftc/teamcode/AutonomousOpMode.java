@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.robot.RobotBaseAutonomous;
 import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
 
 @SuppressWarnings({"SpellCheckingInspection", "unused"})
-public abstract class AutonomousOpMode extends OpMode {
+public abstract class AutonomousOpMode extends PanelsOpMode {
 
     public static final String AUTONOMOUS_OP_MODE = "AutonomousOpMode";
     public static final String ALLIANCE = "Alliance";
@@ -25,14 +25,11 @@ public abstract class AutonomousOpMode extends OpMode {
         this.alliance = alliance;
     }
 
-    public static final boolean USE_PANELS = true;
-    protected Follower follower;
     protected final PoseFactory p = PoseFactory.degrees();
 
     private RobotBaseAutonomous robotBase;
     private Alliance alliance;
     private PathState pathState;
-    private TelemetryMirror telemetryMirror;
 
     protected Path autoPaths;
     int shotCount = 0;
@@ -51,7 +48,7 @@ public abstract class AutonomousOpMode extends OpMode {
         telemetryMirror.addData("y", follower.pose().y());
         telemetryMirror.addData("heading", Math.toDegrees(follower.pose().heading()));
         telemetryMirror.update();
-        draw();
+        super.loop();
     }
 
     @Override
@@ -64,7 +61,7 @@ public abstract class AutonomousOpMode extends OpMode {
 
         // FIX: Updated method to Pedro Pathing 3 syntax
         follower = Constants.create(hardwareMap);
-        drawOnlyCurrent();
+        super.init();
     }
 
     @Override
@@ -79,7 +76,7 @@ public abstract class AutonomousOpMode extends OpMode {
         telemetryMirror.update();
 
         follower.update();
-        drawOnlyCurrent();
+        super.init_loop();
     }
 
     @Override
@@ -147,6 +144,4 @@ public abstract class AutonomousOpMode extends OpMode {
     // Inner custom enums and blank helper implementations
     protected enum PathState { SCORE_PRELOADED, INTAKE_ROW3 }
     public enum Alliance { RED, BLUE }
-    protected void draw() { }
-    protected void drawOnlyCurrent() { draw(); }
 }

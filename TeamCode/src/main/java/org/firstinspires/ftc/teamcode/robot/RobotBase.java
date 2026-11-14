@@ -15,7 +15,9 @@ public class RobotBase {
     protected IMecanumDrive mecanumDrive;
     protected Intake intake;
     protected Shooter shooter;
+    protected FlowerCollection flowerCollection;
     protected Limelight limelight;
+    protected Follower follower;
 
     /**
      * Singleton accessor
@@ -39,6 +41,7 @@ public class RobotBase {
 
         if (TELEOP_MODE) {
             Follower follower = org.firstinspires.ftc.teamcode.pedro.Constants.create(hardwareMap);
+            this.follower = follower;
             mecanumDrive = new PedroPathingMecanumDrive(frontLeft, frontRight, backLeft, backRight, follower);
         }
 
@@ -47,6 +50,8 @@ public class RobotBase {
 
         shooter = new Shooter(hardwareMap.get(DcMotorEx.class, RobotConstants.Motor.FLYWHEEL),
                 hardwareMap.get(Servo.class, RobotConstants.Motor.LAUNCH_SERVO));
+
+        flowerCollection = new FlowerCollection(hardwareMap.get(Servo.class, RobotConstants.Motor.COLLECT_SERVO));
 
         this.limelight = new Limelight(hardwareMap);
     }
@@ -57,7 +62,9 @@ public class RobotBase {
 
     public Shooter getShooter() { return shooter; }
     public Intake getIntake() { return intake; }
+    public FlowerCollection getFlowerCollection() { return flowerCollection; }
     public IMecanumDrive getMecanumDrive() { return mecanumDrive; }
+    public Follower getFollower() { return follower; }
 
     public void run(Gamepad driverGamepad, Gamepad subsystemGamepad, TelemetryMirror telemetry) {
         // Process camera tracking algorithms and button edges cleanly
@@ -79,6 +86,7 @@ public class RobotBase {
 
         intake.run(subsystemGamepad, telemetry);
         shooter.run(subsystemGamepad, telemetry);
+        flowerCollection.run(subsystemGamepad, telemetry);
     }
 
     public void stop(TelemetryMirror telemetry) {
@@ -89,5 +97,6 @@ public class RobotBase {
         }
         intake.stop(telemetry);
         shooter.stop(telemetry);
+        flowerCollection.stop(telemetry);
     }
 }

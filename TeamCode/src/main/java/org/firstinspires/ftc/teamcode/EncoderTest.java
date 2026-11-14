@@ -1,4 +1,5 @@
-package org.firstinspires.ftc.teamcode.pedroPathing;
+/*
+package org.firstinspires.ftc.teamcode;
 
 import com.pedropathing.ftc.localization.Encoder;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -75,4 +76,4 @@ public class EncoderTest extends LinearOpMode {
         telemetry.addData("Left ticks -- BackLeft", robotBase.getMecanumDrive().getBackLeft().getCurrentPosition());
         telemetry.addData("BackRight ticks -- rightRear", robotBase.getMecanumDrive().getBackRight().getCurrentPosition());
     }
-}
+}*/

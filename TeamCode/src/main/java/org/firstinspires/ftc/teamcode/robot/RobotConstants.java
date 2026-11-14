@@ -14,6 +14,7 @@ public class RobotConstants {
         public static final String FLYWHEEL = "flywheel";
         public static final String LAUNCH_SERVO = "launch servo";
         public static final String INTAKE_ASSISTANT = "intakeAssistant";
+        public static final String COLLECT_SERVO = "collect servo";
     }
 
     public static final class EncoderWheel {
