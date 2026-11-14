@@ -7,11 +7,14 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.VoltageUnit;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoController;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 import org.firstinspires.ftc.teamcode.robot.RobotBase;
@@ -65,7 +68,13 @@ public class SystemCheckOpMode extends LinearOpMode {
                 HardwareDevice device = entry.getValue();
                 String detail = describe(device);
                 boolean wasExpected = expected.containsKey(name);
-                String expectedNote = wasExpected ? "" : " [UNEXPECTED - not referenced by code]";
+                // Always name the device inside the note itself: the telemetry caption
+                // can wrap or truncate on the DS screen, and the name is what we
+                // diagnose from.
+                String expectedNote = wasExpected ? ""
+                        : isImplicitHubDevice(device)
+                        ? " [implicit hub interface: '" + name + "']"
+                        : " [UNEXPECTED - not referenced by code: '" + name + "']";
                 telemetry.addData(String.format("%-14s %-10s", name, simpleName(type)), detail + expectedNote);
             }
         }
@@ -100,6 +109,18 @@ public class SystemCheckOpMode extends LinearOpMode {
         while (opModeIsActive()) {
             idle();
         }
+    }
+
+    /**
+     * Devices the SDK registers automatically alongside a hub's motors and servos
+     * (e.g. "Control Hub ServoController"). They are never configured by name in
+     * the DS UI, so they must not be flagged as UNEXPECTED.
+     */
+    private static boolean isImplicitHubDevice(HardwareDevice device) {
+        return device instanceof ServoController
+                || device instanceof DcMotorController
+                || device instanceof LynxModule
+                || device instanceof VoltageSensor;
     }
 
     private void checkDevice(String name, Class<? extends HardwareDevice> expectedClass) {
