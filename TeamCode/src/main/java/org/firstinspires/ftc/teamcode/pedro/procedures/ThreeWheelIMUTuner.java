@@ -13,19 +13,20 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import org.firstinspires.ftc.teamcode.robot.RobotConstants;
 
 import java.util.List;
 
 public class ThreeWheelIMUTuner extends Procedure {
 
-    private static String leftEncoderName = "lf";
-    private static String rightEncoderName = "rr";
-    private static String strafeEncoderName = "lr";
-    private static String frontLeftName = "lf";
-    private static String backLeftName = "lr";
-    private static String frontRightName = "rf";
-    private static String backRightName = "rr";
-    private static String imuName = "imu";
+    private static String leftEncoderName = RobotConstants.EncoderWheel.LEFT;
+    private static String rightEncoderName = RobotConstants.EncoderWheel.RIGHT;
+    private static String strafeEncoderName = RobotConstants.EncoderWheel.CENTER;
+    private static String frontLeftName = RobotConstants.Wheel.FRONT_LEFT;
+    private static String backLeftName = RobotConstants.Wheel.BACK_LEFT;
+    private static String frontRightName = RobotConstants.Wheel.FRONT_RIGHT;
+    private static String backRightName = RobotConstants.Wheel.BACK_RIGHT;
+    private static String imuName = RobotConstants.Sensor.IMU;
     private static RevHubOrientationOnRobot.LogoFacingDirection logoDirection =
             RevHubOrientationOnRobot.LogoFacingDirection.UP;
     private static RevHubOrientationOnRobot.UsbFacingDirection usbDirection =
@@ -39,14 +40,14 @@ public class ThreeWheelIMUTuner extends Procedure {
     public void run() throws InterruptedException {
         Inputs setup = inputs("Encoder + IMU Setup",
                 "Set encoder motor ports, IMU HardwareMap name, and Control Hub orientation.");
-        Inputs.Field<String> leftEncoder = setup.s("Left Encoder Motor Name").withDefault("lf");
-        Inputs.Field<String> rightEncoder = setup.s("Right Encoder Motor Name").withDefault("rr");
-        Inputs.Field<String> strafeEncoder = setup.s("Strafe Encoder Motor Name").withDefault("lr");
-        Inputs.Field<String> frontLeft = setup.s("Front Left Drive Motor Name").withDefault("lf");
-        Inputs.Field<String> backLeft = setup.s("Back Left Drive Motor Name").withDefault("lr");
-        Inputs.Field<String> frontRight = setup.s("Front Right Drive Motor Name").withDefault("rf");
-        Inputs.Field<String> backRight = setup.s("Back Right Drive Motor Name").withDefault("rr");
-        Inputs.Field<String> imu = setup.s("IMU HardwareMap Name").withDefault("imu");
+        Inputs.Field<String> leftEncoder = setup.s("Left Encoder Motor Name").withDefault(RobotConstants.EncoderWheel.LEFT);
+        Inputs.Field<String> rightEncoder = setup.s("Right Encoder Motor Name").withDefault(RobotConstants.EncoderWheel.RIGHT);
+        Inputs.Field<String> strafeEncoder = setup.s("Strafe Encoder Motor Name").withDefault(RobotConstants.EncoderWheel.CENTER);
+        Inputs.Field<String> frontLeft = setup.s("Front Left Drive Motor Name").withDefault(RobotConstants.Wheel.FRONT_LEFT);
+        Inputs.Field<String> backLeft = setup.s("Back Left Drive Motor Name").withDefault(RobotConstants.Wheel.BACK_LEFT);
+        Inputs.Field<String> frontRight = setup.s("Front Right Drive Motor Name").withDefault(RobotConstants.Wheel.FRONT_RIGHT);
+        Inputs.Field<String> backRight = setup.s("Back Right Drive Motor Name").withDefault(RobotConstants.Wheel.BACK_RIGHT);
+        Inputs.Field<String> imu = setup.s("IMU HardwareMap Name").withDefault(RobotConstants.Sensor.IMU);
         Inputs.Field<RevHubOrientationOnRobot.LogoFacingDirection> logo =
                 setup.e("Logo Facing Direction", RevHubOrientationOnRobot.LogoFacingDirection.class)
                         .withDefault(RevHubOrientationOnRobot.LogoFacingDirection.UP);
@@ -74,42 +75,70 @@ public class ThreeWheelIMUTuner extends Procedure {
             return;
         }
 
-        List<Double> left = measure("Left", distance.get());
+        Inputs reference = inputs("Physical Reference Measurements",
+                "Tape-measured values used to sanity check the results. Leave 0 to skip a check.");
+        Inputs.Field<Double> podSeparation = reference.d("Distance between left and right pods (inches)").withDefault(0.0);
+        Inputs.Field<Double> strafePodDistance = reference.d("Strafe pod distance from robot center (inches)").withDefault(0.0);
+        awaitInputs(reference);
+
+        ResolutionMeasurement left = measure("Left", distance.get());
         if (left == null) {
             return;
         }
-        List<Double> right = measure("Right", distance.get());
+        ResolutionMeasurement right = measure("Right", distance.get());
         if (right == null) {
             return;
         }
-        List<Double> strafe = measure("Strafe", distance.get());
+        ResolutionMeasurement strafe = measure("Strafe", distance.get());
         if (strafe == null) {
             return;
         }
 
-        double leftTicksPerInch = left.get(0);
-        double rightTicksPerInch = right.get(0);
-        double strafeTicksPerInch = strafe.get(0);
+        String resolutionProblem = ThreeWheelChecks.resolutionFlaw("Left", leftEncoderName, left, distance.get());
+        if (resolutionProblem == null) {
+            resolutionProblem = ThreeWheelChecks.resolutionFlaw("Right", rightEncoderName, right, distance.get());
+        }
+        if (resolutionProblem == null) {
+            resolutionProblem = ThreeWheelChecks.resolutionFlaw("Strafe", strafeEncoderName, strafe, distance.get());
+        }
+        if (resolutionProblem == null) {
+            resolutionProblem = ThreeWheelChecks.tpiFlaw(leftEncoderName, rightEncoderName, strafeEncoderName, left, right, strafe);
+        }
+        if (resolutionProblem != null) {
+            abort(resolutionProblem);
+            return;
+        }
+
+        double leftTicksPerInch = left.ticksPerInch;
+        double rightTicksPerInch = right.ticksPerInch;
+        double strafeTicksPerInch = strafe.ticksPerInch;
         double forwardTicksPerInch = 2.0 / (1.0 / leftTicksPerInch + 1.0 / rightTicksPerInch);
 
         double forward = 1.0 / forwardTicksPerInch;
         double lateral = 1.0 / strafeTicksPerInch;
 
         List<Double> leftOffsets = runOpMode(new ThreeWheelIMUOffsets(
-                true, forward, lateral, left.get(1), right.get(1), strafe.get(1)));
+                true, forward, lateral, left.direction, right.direction, strafe.direction));
         if (leftOffsets == null) {
             abort("Left stage ended without parallel pod travel. Rotate 180 degrees CCW, then press Stop.");
             return;
         }
         List<Double> rightOffsets = runOpMode(new ThreeWheelIMUOffsets(
-                false, forward, lateral, left.get(1), right.get(1), strafe.get(1)));
+                false, forward, lateral, left.direction, right.direction, strafe.direction));
 
         if (rightOffsets == null) {
             abort("Right stage ended without parallel pod travel. Rotate 180 degrees CCW, then press Stop.");
             return;
         }
+
+        String offsetProblem = ThreeWheelChecks.offsetStageFlaw(leftOffsets, rightOffsets);
+        if (offsetProblem != null) {
+            abort(offsetProblem);
+            return;
+        }
+
         ThreeWheelIMUConfig config = config(true, forward, lateral,
-                left.get(1), right.get(1), strafe.get(1));
+                left.direction, right.direction, strafe.direction);
         config.leftPodY.set(leftOffsets.get(0));
         config.rightPodY.set(rightOffsets.get(0));
         config.turnTicksToRadians.set(forward);
@@ -119,7 +148,21 @@ public class ThreeWheelIMUTuner extends Procedure {
             abort("Turn stage ended without positive rotation. Rotate 360 degrees CCW, then press Stop.");
             return;
         }
+
+        String turnProblem = ThreeWheelChecks.turnFlaw(turn, forward);
+        if (turnProblem != null) {
+            abort(turnProblem);
+            return;
+        }
+
         double strafeX = (leftOffsets.get(1) + rightOffsets.get(1)) / 2.0 * turn / lateral;
+
+        String geometryProblem = ThreeWheelChecks.geometryFlaw(strafeX, leftOffsets.get(0), rightOffsets.get(0),
+                podSeparation.get(), strafePodDistance.get());
+        if (geometryProblem != null) {
+            abort(geometryProblem);
+            return;
+        }
 
         result("leftEncoderName", leftEncoderName);
         result("rightEncoderName", rightEncoderName);
@@ -137,9 +180,12 @@ public class ThreeWheelIMUTuner extends Procedure {
         result("forwardTicksToInches", forward);
         result("strafeTicksToInches", lateral);
         result("turnTicksToRadians", turn);
-        result("leftEncoderDirection", direction(left.get(1)));
-        result("rightEncoderDirection", direction(right.get(1)));
-        result("strafeEncoderDirection", direction(strafe.get(1)));
+        result("leftEncoderDirection", direction(left.direction));
+        result("rightEncoderDirection", direction(right.direction));
+        result("strafeEncoderDirection", direction(strafe.direction));
+        result("podSeparation", Math.abs(leftOffsets.get(0) - rightOffsets.get(0)));
+        result("turnToForwardRatio", turn / forward);
+        result("offsetStageStrafeTravel", (leftOffsets.get(1) + rightOffsets.get(1)) / 2.0);
 
         code(Language.JAVA,
                 "public static ThreeWheelIMUConfig localizerConfig = new ThreeWheelIMUConfig(c -> {\n" +
@@ -157,14 +203,14 @@ public class ThreeWheelIMUTuner extends Procedure {
                         "    c.forwardTicksToInches.set(" + forward + ");\n" +
                         "    c.strafeTicksToInches.set(" + lateral + ");\n" +
                         "    c.turnTicksToRadians.set(" + turn + ");\n" +
-                        "    c.leftEncoderDirection.set(" + direction(left.get(1)) + ");\n" +
-                        "    c.rightEncoderDirection.set(" + direction(right.get(1)) + ");\n" +
-                        "    c.strafeEncoderDirection.set(" + direction(strafe.get(1)) + ");\n" +
+                        "    c.leftEncoderDirection.set(" + direction(left.direction) + ");\n" +
+                        "    c.rightEncoderDirection.set(" + direction(right.direction) + ");\n" +
+                        "    c.strafeEncoderDirection.set(" + direction(strafe.direction) + ");\n" +
                         "});");
     }
 
-    private List<Double> measure(String pod, double distance) throws InterruptedException {
-        List<Double> measured = runOpMode(new ThreeWheelIMUResolution(pod, distance));
+    private ResolutionMeasurement measure(String pod, double distance) throws InterruptedException {
+        ResolutionMeasurement measured = runOpMode(new ThreeWheelIMUResolution(pod, distance));
         if (measured == null) {
             abort(pod + " stage ended without a nonzero measurement. Check the displayed ticks, complete the push, then press Stop.");
             return null;
@@ -183,7 +229,8 @@ public class ThreeWheelIMUTuner extends Procedure {
             c.rightEncoderName.set(rightEncoderName);
             c.strafeEncoderName.set(strafeEncoderName);
             c.imuName.set(imuName);
-            c.imu.set(new RevHubIMU(new RevHubOrientationOnRobot(logoDirection, usbDirection)));            c.leftPodY.set(left ? 0.0 : 1.0);
+            c.imu.set(new RevHubIMU(new RevHubOrientationOnRobot(logoDirection, usbDirection)));
+            c.leftPodY.set(left ? 0.0 : 1.0);
             c.rightPodY.set(left ? -1.0 : 0.0);
             c.strafePodX.set(0.0);
             c.forwardTicksToInches.set(forward);
@@ -211,7 +258,7 @@ public class ThreeWheelIMUTuner extends Procedure {
     }
 }
 
-class ThreeWheelIMUResolution extends TuningOpMode<List<Double>> {
+class ThreeWheelIMUResolution extends TuningOpMode<ResolutionMeasurement> {
 
     String pod;
     double distance;
@@ -225,7 +272,7 @@ class ThreeWheelIMUResolution extends TuningOpMode<List<Double>> {
     }
 
     @Override
-    protected List<Double> runTuningOpMode() {
+    protected ResolutionMeasurement runTuningOpMode() {
         ThreeWheelIMUConfig config = ThreeWheelIMUTuner.config(!pod.equals("Right"), 1.0, 1.0,
                 Encoder.FORWARD, Encoder.FORWARD, Encoder.FORWARD);
         ThreeWheelIMULocalizer localizer = ThreeWheelIMUTuner.localizer(hardwareMap, config);
@@ -241,11 +288,13 @@ class ThreeWheelIMUResolution extends TuningOpMode<List<Double>> {
         if (position == null) {
             return null;
         }
-        double movement = pod.equals("Strafe") ? position.y() : position.x();
-        if (movement == 0.0) {
+        double primary = pod.equals("Strafe") ? position.y() : position.x();
+        double cross = pod.equals("Strafe") ? position.x() : position.y();
+        if (primary == 0.0) {
             return null;
         }
-        return List.of(Math.abs(movement / distance), movement < 0 ? Encoder.REVERSE : Encoder.FORWARD);
+        return new ResolutionMeasurement(Math.abs(primary / distance),
+                primary < 0 ? Encoder.REVERSE : Encoder.FORWARD, primary, cross);
     }
 }
 

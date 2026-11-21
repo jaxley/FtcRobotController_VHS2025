@@ -25,4 +25,8 @@ public class RobotConstants {
         public static final String RIGHT = Wheel.FRONT_RIGHT; // "enc_right"; // port 1
     }
 
+    public static final class Sensor {
+        public static final String IMU = "imu";
+    }
+
 }
