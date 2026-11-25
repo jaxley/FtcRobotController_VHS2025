@@ -100,7 +100,8 @@ public class RobotBase {
         shooter = new Shooter(hardwareMap.get(DcMotorEx.class, RobotConstants.Motor.FLYWHEEL),
                 hardwareMap.get(Servo.class, RobotConstants.Motor.LAUNCH_SERVO));
 
-        flowerCollection = new FlowerCollection(hardwareMap.get(Servo.class, RobotConstants.Motor.COLLECT_SERVO));
+        flowerCollection = new FlowerCollection(hardwareMap.get(Servo.class, RobotConstants.Motor.COLLECT_SERVO),
+                hardwareMap.get(Servo.class, RobotConstants.Motor.COLLECT_SERVO_2));
 
         this.limelight = new Limelight(hardwareMap);
     }
