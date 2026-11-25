@@ -9,7 +9,7 @@ public class Intake {
     private final DcMotor motor;
     private final DcMotor intakeAssistant;
     private boolean intakeRunning = false;
-    final double intakeFwdPower = -0.8;
+    final double intakeFwdPower = -1.0;
     final double intakeRevPower = 0.2;
     final double triggerDZ = 0.25;
 

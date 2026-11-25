@@ -29,8 +29,23 @@ public class Constants {
         c.backLeftDirection.set(DcMotorSimple.Direction.FORWARD);
         c.backRightDirection.set(DcMotorSimple.Direction.REVERSE);
     });
-    // 6 inches L and R; -6 3/4 strafe
+
     public static ThreeWheelConfig LOCALIZER_CONFIG_ALPHA = new ThreeWheelConfig(c -> {
+        c.leftEncoderName.set("frontLeft");
+        c.rightEncoderName.set("frontRight");
+        c.strafeEncoderName.set("backLeft");
+        c.leftPodY.set(6.0);
+        c.rightPodY.set(-6.0);
+        c.strafePodX.set(-6.75); // flipped 2026-11-13: sign was backwards, caused arc during in-place spin
+        c.forwardTicksToInches.set(0.0021440409972891573);
+        c.strafeTicksToInches.set(0.00198); // 12 from tuning.... sign via strafeEncoderDirection; positive so left-strafe reads +y
+        c.turnTicksToRadians.set(0.002200094356695412);
+        c.leftEncoderDirection.set(Encoder.REVERSE);
+        c.rightEncoderDirection.set(Encoder.REVERSE);
+        c.strafeEncoderDirection.set(Encoder.FORWARD);
+    });
+    // 6 inches L and R; -6 3/4 strafe
+    public static ThreeWheelConfig LOCALIZER_CONFIG_ALPHA_2 = new ThreeWheelConfig(c -> {
         c.leftEncoderName.set("frontLeft");
         c.rightEncoderName.set("frontRight");
         c.strafeEncoderName.set("backLeft");

@@ -17,6 +17,10 @@ public class RobotConstants {
         public static final String COLLECT_SERVO = "collect servo";
     }
 
+    public static final class Camera {
+        public static final String LIMELIGHT = "limelight";
+    }
+
     public static final class EncoderWheel {
         //public static final String LEFT = Wheel.BACK_LEFT; // "enc_left"; // port 2 // orig
         public static final String LEFT = Wheel.FRONT_LEFT; // 0

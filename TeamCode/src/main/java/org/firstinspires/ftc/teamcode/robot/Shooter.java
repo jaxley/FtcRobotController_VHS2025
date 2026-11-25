@@ -27,7 +27,7 @@ public class Shooter {
 
     final double flywheelSpeedRpm = 4414; // RPM
 
-    double flywheelPower = 0.76;
+    double flywheelPower = 0.77;
 
     private static final double minFlywheelPower = 0.1;
     private static final double maxFlywheelPower = 1.0;

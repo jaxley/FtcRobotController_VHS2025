@@ -15,7 +15,7 @@ public abstract class AutonomousOpMode extends PanelsOpMode {
 
     public static final String AUTONOMOUS_OP_MODE = "AutonomousOpMode";
     public static final String ALLIANCE = "Alliance";
-    public static final double FLYWHEEL_POWER = -0.825;
+    public static final double FLYWHEEL_POWER = 0.76;
     private boolean reset = true;
 
     protected AutonomousOpMode() {
